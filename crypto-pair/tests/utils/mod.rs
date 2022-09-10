@@ -9,6 +9,7 @@ pub(super) fn http_get(url: &str) -> Result<String> {
 
     let client = reqwest::blocking::Client::builder()
          .default_headers(headers)
+         .danger_accept_invalid_certs(true) // For zbg 'unable to get local issuer certificate' error
          .user_agent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/87.0.4280.88 Safari/537.36")
          .gzip(true)
          .build()?;
