@@ -1,5 +1,9 @@
 # crypto-message
 
+[![](https://img.shields.io/crates/v/crypto-message.svg)](https://crates.io/crates/crypto-message)
+[![](https://docs.rs/crypto-message/badge.svg)](https://docs.rs/crypto-message)
+==========
+
 Unified data structures for all cryptocurrency exchanges.
 
 This library contains all output data types of [`crypto-msg-parser`](https://crates.io/crates/crypto-msg-parser).

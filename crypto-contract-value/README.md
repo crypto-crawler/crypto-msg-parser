@@ -1,5 +1,9 @@
 # crypto-contract-value
 
+[![](https://img.shields.io/crates/v/crypto-contract-value.svg)](https://crates.io/crates/crypto-contract-value)
+[![](https://docs.rs/crypto-contract-value/badge.svg)](https://docs.rs/crypto-contract-value)
+==========
+
 The value of an unit of contract diffs in different exchanges, and even in the same exchange it differs in different markets.
 
 For example:
