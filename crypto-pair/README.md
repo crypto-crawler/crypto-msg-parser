@@ -1,6 +1,5 @@
 # crypto-pair
 
-[![](https://img.shields.io/github/workflow/status/crypto-crawler/crypto-crawler-rs/CI/main)](https://github.com/crypto-crawler/crypto-crawler-rs/actions?query=branch%3Amain)
 [![](https://img.shields.io/crates/v/crypto-pair.svg)](https://crates.io/crates/crypto-pair)
 [![](https://docs.rs/crypto-pair/badge.svg)](https://docs.rs/crypto-pair)
 ==========
