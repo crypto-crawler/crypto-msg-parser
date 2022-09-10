@@ -1,7 +1,7 @@
 [workspace]
 members = [
   "crypto-contract-value",
-   "crypto-message",
+  "crypto-message",
   "crypto-msg-parser",
   "crypto-pair",
 ]
