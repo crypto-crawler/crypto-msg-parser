@@ -1200,14 +1200,12 @@ mod candlestick {
         let raw_msg = r#"{"arg":{"channel":"candle1m","instId":"BTC-USD-220624-50000-C"},"data":[["1654155480000","0.0005","0.0005","0.0005","0.0005","0","0"]]}"#;
 
         assert_eq!(
-            1654155480000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            None,
+            extract_timestamp(EXCHANGE_NAME, MarketType::EuropeanOption, raw_msg).unwrap()
         );
         assert_eq!(
             "BTC-USD-220624-50000-C",
-            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
+            extract_symbol(EXCHANGE_NAME, MarketType::EuropeanOption, raw_msg).unwrap()
         );
     }
 }

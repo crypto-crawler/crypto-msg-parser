@@ -7,7 +7,7 @@ env:
 
 # Stop the previous CI tasks (which is deprecated)
 # to conserve the runner resource.
-concurrency: 
+concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
@@ -35,33 +35,9 @@ jobs:
         with:
           toolchain: nightly
           override: true
-      - uses: taiki-e/install-action@nextest
-      - uses: actions-rs/cargo@v1
-        with:
-          command: build
-      - name: Run cargo nextest
-        run: |
-          # Run all tests except:
-          # * bitmex, because bitmex has very low rate limit
-          # * zbg, due to the "invalid peer certificate: UnknownIssuer" error
-          cargo nextest run -E 'all() - binary(~bitmex) - binary(~zbg)'
-
-          # Run the '*bitmex*' tests in -j1.
-          cargo nextest run -E 'binary(~bitmex)' -j1 || true
-
-  doc-test:
-    name: Cargo doctest
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions-rs/toolchain@v1
-        with:
-          toolchain: nightly
-          override: true
       - uses: actions-rs/cargo@v1
         with:
           command: test
-          args: --doc
 
   fmt:
     name: Cargo fmt

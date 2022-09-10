@@ -76,6 +76,7 @@ fn fetch_swap_markets_raw() -> Vec<SwapMarket> {
     resp.datas
 }
 
+#[ignore = "prone to HTTP request timeout"]
 #[test]
 fn verify_swap_symbols() {
     let markets = fetch_swap_markets_raw();
