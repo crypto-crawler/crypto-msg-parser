@@ -3,7 +3,6 @@
 The parser library to parse messages from [crypto-crawler](https://github.com/crypto-crawler/crypto-crawler-rs/tree/main/crypto-crawler).
 
 [![](https://img.shields.io/github/workflow/status/crypto-crawler/crypto-msg-parser/CI/main)](https://github.com/crypto-crawler/crypto-msg-parser/actions?query=branch%3Amain)
-
 [![](https://img.shields.io/crates/v/crypto-msg-parser.svg)](https://crates.io/crates/crypto-msg-parser)
 [![](https://docs.rs/crypto-msg-parser/badge.svg)](https://docs.rs/crypto-msg-parser)
 
