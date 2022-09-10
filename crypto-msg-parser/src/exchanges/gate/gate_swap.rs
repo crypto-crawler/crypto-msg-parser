@@ -3,7 +3,7 @@ use crypto_msg_type::MessageType;
 
 use super::{super::utils::calc_quantity_and_volume, messages::WebsocketMsg};
 
-use crypto_message::{BboMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{BboMsg, CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -76,6 +76,19 @@ struct SwapRestL2SnapshotMsg {
     update: f64,
     asks: Vec<SwapRestL2SnapshotOrder>,
     bids: Vec<SwapRestL2SnapshotOrder>,
+}
+
+// https://www.gate.io/docs/developers/delivery/ws/en/#candlesticks-api
+// https://www.gate.io/docs/developers/futures/ws/en/#candlesticks-api
+#[derive(Serialize, Deserialize)]
+struct RawCandlestickMsg {
+    t: i64,    // Unix timestamp in seconds
+    v: f64,    // Total volume
+    c: String, // Close price
+    h: String, // Highest price
+    l: String, // Lowest price
+    o: String, // Open price
+    n: String, // <interval>_<contract>
 }
 
 pub(super) fn extract_symbol(_market_type_: MarketType, msg: &str) -> Result<String, SimpleError> {
@@ -561,4 +574,66 @@ pub(super) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
     };
 
     Ok(vec![bbo_msg])
+}
+
+pub(super) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<RawCandlestickMsg>>>(msg)
+        .map_err(SimpleError::from)?;
+    debug_assert_eq!(ws_msg.channel, "futures.candlesticks");
+    debug_assert_eq!(ws_msg.event, "update");
+    let result = ws_msg.result;
+
+    let candlestick_messages = result
+        .into_iter()
+        .map(|raw_candlestick| {
+            let (period, symbol) = {
+                let pos = raw_candlestick.n.find('_').unwrap();
+                (&raw_candlestick.n[..pos], &raw_candlestick.n[pos + 1..])
+            };
+            let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+
+            let open = raw_candlestick.o.parse::<f64>().unwrap();
+            let high = raw_candlestick.h.parse::<f64>().unwrap();
+            let low = raw_candlestick.l.parse::<f64>().unwrap();
+            let close = raw_candlestick.c.parse::<f64>().unwrap();
+
+            let contract_value =
+                crypto_contract_value::get_contract_value(EXCHANGE_NAME, market_type, &pair)
+                    .unwrap();
+
+            let (volume, quote_volume) = if market_type == MarketType::InverseFuture
+                || market_type == MarketType::InverseSwap
+            {
+                let quote_volume = raw_candlestick.v * contract_value;
+                let price = (open + high + low + close) / 4.0;
+                (quote_volume / price, Some(quote_volume))
+            } else {
+                let base_volume = raw_candlestick.v * contract_value;
+                (base_volume, None)
+            };
+
+            CandlestickMsg {
+                exchange: EXCHANGE_NAME.to_string(),
+                market_type,
+                msg_type: MessageType::Candlestick,
+                symbol: symbol.to_string(),
+                pair,
+                timestamp: ws_msg.time * 1000,
+                period: period.to_string(),
+                begin_time: raw_candlestick.t,
+                open,
+                high,
+                low,
+                close,
+                volume,
+                quote_volume,
+                json: msg.to_string(),
+            }
+        })
+        .collect();
+
+    Ok(candlestick_messages)
 }

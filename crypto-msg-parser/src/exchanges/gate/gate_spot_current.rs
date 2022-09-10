@@ -2,7 +2,7 @@ use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
 use super::messages::WebsocketMsg;
-use crypto_message::{BboMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{BboMsg, CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use simple_error::SimpleError;
@@ -75,6 +75,20 @@ struct RawBboMsg {
     A: String, // best ask amount
     #[serde(flatten)]
     extra: HashMap<String, Value>,
+}
+
+// https://www.gate.io/docs/developers/apiv4/ws/en/#candlesticks-channel
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawCandlestickMsg {
+    t: String, // Unix timestamp in seconds
+    v: String, // Total volume
+    c: String, // Close price
+    h: String, // Highest price
+    l: String, // Lowest price
+    o: String, // Open price
+    n: String, // Name of the subscription, in the format of <interval>_<cp>
+    a: String, // Total volume in quote currency
 }
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
@@ -308,4 +322,38 @@ pub(super) fn parse_bbo(msg: &str) -> Result<Vec<BboMsg>, SimpleError> {
     };
 
     Ok(vec![bbo_msg])
+}
+
+pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(SimpleError::from)?;
+    debug_assert_eq!(ws_msg.channel, "spot.candlesticks");
+    debug_assert_eq!(ws_msg.event, "update");
+    let result = ws_msg.result;
+
+    let (period, symbol) = {
+        let pos = result.n.find('_').unwrap();
+        (&result.n[..pos], &result.n[pos + 1..])
+    };
+    let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+
+    let candlestick_msg = CandlestickMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type: MarketType::Spot,
+        msg_type: MessageType::Candlestick,
+        symbol: symbol.to_string(),
+        pair,
+        timestamp: ws_msg.time * 1000,
+        period: period.to_string(),
+        begin_time: result.t.parse().unwrap(),
+        open: result.o.parse().unwrap(),
+        high: result.h.parse().unwrap(),
+        low: result.l.parse().unwrap(),
+        close: result.c.parse().unwrap(),
+        volume: result.a.parse().unwrap(),
+        quote_volume: result.v.parse().ok(),
+        json: msg.to_string(),
+    };
+
+    Ok(vec![candlestick_msg])
 }
