@@ -62,6 +62,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("EOS/USDT", 10_f64),
             ("ETC/USDT", 10_f64),
             ("ETH/USDT", 0.1_f64),
+            ("ETHW/USDT", 0.1_f64),
             ("FIL/USDT", 0.1_f64),
             ("FITFI/USDT", 10_f64),
             ("FLM/USDT", 10_f64),
@@ -86,6 +87,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("LRC/USDT", 10_f64),
             ("LTC/USDT", 1_f64),
             ("LUNA/USDT", 1_f64),
+            ("LUNC/USDT", 10000_f64),
             ("MANA/USDT", 10_f64),
             ("MASK/USDT", 1_f64),
             ("MATIC/USDT", 10_f64),
@@ -118,6 +120,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("STORJ/USDT", 10_f64),
             ("SUN/USDT", 0.1_f64),
             ("SUSHI/USDT", 1_f64),
+            ("SWEAT/USDT", 100_f64),
             ("SWRV/USDT", 1_f64),
             ("THETA/USDT", 10_f64),
             ("TONCOIN/USDT", 1_f64),
@@ -260,6 +263,7 @@ mod tests {
 
     use super::fetch_contract_val;
 
+    #[ignore]
     #[test]
     fn linear_swap() {
         let new_data = fetch_contract_val("SWAP");
@@ -277,6 +281,7 @@ mod tests {
         }
     }
 
+    #[ignore]
     #[test]
     fn linear_future() {
         let new_data = fetch_contract_val("FUTURES");

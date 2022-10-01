@@ -34,6 +34,7 @@ static CONTRACT_VALUES: Lazy<HashMap<String, f64>> = Lazy::new(|| {
         ("linear_swap.FTM/USDT", 0.01),
         ("linear_swap.GAL/USDT", 0.001),
         ("linear_swap.GMT/USDT", 0.001),
+        ("linear_swap.KLAY/USDT", 0.01),
         ("linear_swap.LINK/USDT", 0.001),
         ("linear_swap.LTC/USDT", 0.0001),
         ("linear_swap.LUNA/USDT", 0.001),

@@ -142,6 +142,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("EOS/USDT", 1_f64),
             ("ETC/USDT", 0.1_f64),
             ("ETH/USDT", 0.01_f64),
+            ("ETHW/USDT", 0.1_f64),
             ("EXCH/USDT", 0.001_f64),
             ("FIDA/USDT", 1_f64),
             ("FIL/USDT", 0.01_f64),
@@ -408,6 +409,7 @@ pub(crate) fn get_contract_value(market_type: MarketType, pair: &str) -> Option<
 mod tests {
     use super::{fetch_quanto_multipliers, INVERSE_SWAP_URL, LINEAR_FUTURE_URL, LINEAR_SWAP_URL};
 
+    #[ignore]
     #[test]
     fn inverse_swap() {
         let mapping = fetch_quanto_multipliers(INVERSE_SWAP_URL);
@@ -416,6 +418,7 @@ mod tests {
         }
     }
 
+    #[ignore]
     #[test]
     fn linear_swap() {
         let mapping = fetch_quanto_multipliers(LINEAR_SWAP_URL);
@@ -424,6 +427,7 @@ mod tests {
         }
     }
 
+    #[ignore]
     #[test]
     fn linear_future() {
         let mapping = fetch_quanto_multipliers(LINEAR_FUTURE_URL);

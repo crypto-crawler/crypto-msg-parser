@@ -65,6 +65,7 @@ static LINEAR_CONTRACT_VALUES: Lazy<HashMap<String, f64>> = Lazy::new(|| {
         ("HBAR/USDT", 10_f64),
         ("ICP/USDT", 0.01_f64),
         ("IMX/USDT", 1_f64),
+        ("INJ/USDT", 1_f64),
         ("IOST/USDT", 100_f64),
         ("IOTX/USDT", 10_f64),
         ("JASMY/USDT", 10_f64),
@@ -200,6 +201,7 @@ mod tests {
 
     use super::fetch_linear_multipliers;
 
+    #[ignore]
     #[test]
     fn linear() {
         let new_data = fetch_linear_multipliers();

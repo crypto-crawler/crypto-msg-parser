@@ -66,6 +66,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("EOS/USDT", 1_f64),
             ("ETC/USDT", 1_f64),
             ("ETH/USDT", 0.01_f64),
+            ("ETHW/USDT", 0.01_f64),
             ("FIL/USDT", 0.1_f64),
             ("FITFI/USDT", 10_f64),
             ("FLOW/USDT", 0.1_f64),
@@ -262,6 +263,7 @@ mod tests {
 
     use super::{fetch_contract_size, LINEAR_OPTION_URL, LINEAR_SWAP_URL};
 
+    #[ignore]
     #[test]
     fn linear_swap() {
         let new_data = fetch_contract_size(LINEAR_SWAP_URL);
@@ -279,8 +281,8 @@ mod tests {
         }
     }
 
-    #[test]
     #[ignore]
+    #[test]
     fn linear_option() {
         let mapping = fetch_contract_size(LINEAR_OPTION_URL);
         for (pair, contract_value) in mapping {

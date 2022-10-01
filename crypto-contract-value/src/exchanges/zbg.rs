@@ -104,6 +104,7 @@ mod tests {
 
     use super::fetch_contract_val;
 
+    #[ignore]
     #[test]
     fn print_contract_values() {
         let new_data = fetch_contract_val();
