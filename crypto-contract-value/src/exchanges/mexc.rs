@@ -73,6 +73,7 @@ static LINEAR_CONTRACT_VALUES: Lazy<HashMap<String, f64>> = Lazy::new(|| {
         ("COCOS/USDT", 1_f64),
         ("COMP/USDT", 0.01_f64),
         ("COTI/USDT", 1_f64),
+        ("CPH/USDT", 100_f64),
         ("CRO/USDT", 10_f64),
         ("CRV/USDT", 0.1_f64),
         ("CSPR/USDT", 1_f64),
