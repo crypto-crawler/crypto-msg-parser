@@ -49,6 +49,7 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("ADAZ19", (349, 0.00000001)),
         ("ADAZ20", (427, 0.00000001)),
         ("ADAZ21", (638, 0.00000001)),
+        ("ADAZ22", (1071, 0.00000001)),
         ("ALTMEXTUSDT", (801, 0.01)),
         ("ALTMEXUSD", (616, 0.01)),
         ("APEUSD", (879, 0.001)),
@@ -196,6 +197,8 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("GMTUSD", (839, 0.0001)),
         ("GMTUSDT", (838, 0.0001)),
         ("GNOM17", (184, 0.000001)),
+        ("KLAYUSD", (1069, 0.00001)),
+        ("KLAYUSDT", (1070, 0.00001)),
         ("LINKUSD", (708, 0.001)),
         ("LINKUSDT", (441, 0.001)),
         ("LINKUSDTH21", (465, 0.0005)),
@@ -247,6 +250,7 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("SNTN17", (202, 0.00000001)),
         ("SOLUSD", (709, 0.01)),
         ("SOLUSDT", (549, 0.01)),
+        ("SOL_USDT", (1075, 0.01)),
         ("SRMUSDT", (632, 0.001)),
         ("SUSHIUSDT", (618, 0.001)),
         ("TRXH19", (325, 0.00000001)),
@@ -265,6 +269,7 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("TRXZ19", (351, 0.00000001)),
         ("TRXZ20", (429, 0.00000001)),
         ("TRXZ21", (640, 0.0000000001)),
+        ("TRX_USDT", (1058, 0.0001)),
         ("UNIUSDT", (520, 0.001)),
         ("UNI_USDT", (856, 0.001)),
         ("USDBRL", (1015, 0.0001)),
@@ -336,6 +341,7 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("XBTM20", (361, 0.5)),
         ("XBTM21", (454, 0.5)),
         ("XBTM22", (758, 0.5)),
+        ("XBTM23", (1073, 0.5)),
         ("XBTN15", (44, 0.01)),
         ("XBTN22", (890, 0.5)),
         ("XBTQ15", (46, 0.01)),
@@ -352,12 +358,14 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("XBTUSD", (88, 0.01)),
         ("XBTUSDT", (732, 0.5)),
         ("XBTUSDTH22", (763, 0.5)),
+        ("XBTUSDTH23", (1074, 0.5)),
         ("XBTUSDTM22", (816, 0.5)),
         ("XBTUSDTU22", (819, 0.5)),
         ("XBTUSDTZ21", (733, 0.5)),
         ("XBTUSDTZ22", (895, 0.5)),
         ("XBTV15", (56, 0.01)),
         ("XBTV21", (650, 0.5)),
+        ("XBTV22", (1057, 0.5)),
         ("XBTX21", (705, 0.5)),
         ("XBTZ14", (0, 0.01)),
         ("XBTZ14_F15", (2, 0.01)),
@@ -424,6 +432,7 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("XRPZ19", (347, 0.00000001)),
         ("XRPZ20", (425, 0.00000001)),
         ("XRPZ21", (636, 0.00000001)),
+        ("XRPZ22", (1072, 0.00000001)),
         ("XTZUSDTH21", (466, 0.0005)),
         ("XTZUSDTZ20", (434, 0.0005)),
         ("XTZZ17", (215, 0.000001)),
@@ -952,6 +961,7 @@ pub(crate) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
 
 #[cfg(test)]
 mod tests {
+
     #[test]
     #[ignore]
     fn test_fetch_tick_sizes() {
