@@ -139,13 +139,15 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
 
 #[cfg(test)]
 mod tests {
-    use super::fetch_spot_quotes;
+    use super::{fetch_spot_quotes, SPOT_QUOTES};
 
     #[test]
     fn spot_quotes() {
         let map = fetch_spot_quotes();
         for quote in map {
-            println!("\"{}\",", quote);
+            if !SPOT_QUOTES.contains(&quote) {
+                println!("\"{}\",", quote);
+            }
         }
     }
 }
