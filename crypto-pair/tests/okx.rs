@@ -103,7 +103,7 @@ fn verify_swap_symbols() {
         let market_type = get_market_type(&market.instId, EXCHANGE_NAME, None);
         if market.ctType == "linear" {
             // linear
-            assert_eq!(market.settleCcy, "USDT");
+            assert!(market.settleCcy == "USDT" || market.settleCcy == "USDC");
             let pair_expected = format!(
                 "{}/{}",
                 normalize_currency(&market.ctValCcy, EXCHANGE_NAME),
@@ -135,7 +135,7 @@ fn verify_future_symbols() {
         let market_type = get_market_type(&market.instId, EXCHANGE_NAME, None);
         if market.ctType == "linear" {
             // linear
-            assert_eq!(market.settleCcy, "USDT");
+            assert!(market.settleCcy == "USDT" || market.settleCcy == "USDC");
             let pair_expected = format!(
                 "{}/{}",
                 normalize_currency(&market.ctValCcy, EXCHANGE_NAME),

@@ -3,14 +3,14 @@ use crypto_market_type::MarketType;
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {
     if symbol.ends_with("-USD-SWAP") {
         MarketType::InverseSwap
-    } else if symbol.ends_with("-USDT-SWAP") {
+    } else if symbol.ends_with("-USDT-SWAP") || symbol.ends_with("-USDC-SWAP") {
         MarketType::LinearSwap
     } else if symbol.ends_with("-C") || symbol.ends_with("-P") {
         MarketType::EuropeanOption
     } else if symbol[(symbol.len() - 6)..].parse::<i64>().is_ok() {
         if symbol.contains("-USD-") {
             MarketType::InverseFuture
-        } else if symbol.contains("-USDT-") {
+        } else if symbol.contains("-USDT-") || symbol.contains("-USDC-") {
             MarketType::LinearFuture
         } else {
             MarketType::Unknown
