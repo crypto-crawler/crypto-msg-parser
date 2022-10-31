@@ -1,7 +1,7 @@
 use crypto_market_type::MarketType;
 
 pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
-    if symbol.ends_with("_SPBL") || symbol.ends_with("_UMCBL") || symbol.ends_with("_DMCBL") {
+    if symbol.ends_with("_SPBL") || symbol.contains("_UMCBL") || symbol.contains("_DMCBL") {
         let pos = symbol.find('_').unwrap();
         let pair = &symbol[..pos];
         if pair.ends_with("USDT") {
@@ -36,14 +36,20 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
 }
 
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {
-    if symbol.ends_with("_SPBL") || symbol.ends_with("_UMCBL") || symbol.ends_with("_DMCBL") {
+    if symbol.ends_with("_SPBL") || symbol.contains("_UMCBL") || symbol.contains("_DMCBL") {
         // bitget v3 API
         if symbol.ends_with("_SPBL") {
             MarketType::Spot
         } else if symbol.ends_with("_UMCBL") {
             MarketType::LinearSwap
-        } else {
+        } else if symbol.ends_with("_DMCBL") {
             MarketType::InverseSwap
+        } else if symbol.contains("_UMCBL_") {
+            MarketType::LinearFuture
+        } else if symbol.contains("_DMCBL_") {
+            MarketType::InverseFuture
+        } else {
+            MarketType::Unknown
         }
     } else {
         // deprecated bitget v1 API
@@ -56,5 +62,26 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
         } else {
             MarketType::Unknown
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crypto_market_type::MarketType;
+
+    #[test]
+    fn test_get_market_type() {
+        assert_eq!(
+            MarketType::InverseFuture,
+            super::get_market_type("BTCUSD_DMCBL_221230")
+        );
+    }
+
+    #[test]
+    fn test_normalize_pair() {
+        assert_eq!(
+            "BTC/USD",
+            super::normalize_pair("BTCUSD_DMCBL_221230").unwrap()
+        );
     }
 }
