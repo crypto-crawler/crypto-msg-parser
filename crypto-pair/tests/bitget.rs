@@ -110,10 +110,12 @@ fn verify_spot_symbols() {
 
 #[test]
 fn verify_swap_symbols() {
-    let linear_markets = fetch_swap_markets_raw("umcbl");
+    let usdt_linear_markets = fetch_swap_markets_raw("umcbl");
+    let usdc_linear_markets = fetch_swap_markets_raw("cmcbl");
     let inverse_markets = fetch_swap_markets_raw("dmcbl");
-    let markets = linear_markets
+    let markets = usdt_linear_markets
         .into_iter()
+        .chain(usdc_linear_markets.into_iter())
         .chain(inverse_markets.into_iter())
         .collect::<Vec<SwapMarket>>();
     for market in markets.iter() {
@@ -121,7 +123,14 @@ fn verify_swap_symbols() {
         let pair_expected = format!(
             "{}/{}",
             normalize_currency(&market.baseCoin, EXCHANGE_NAME),
-            normalize_currency(&market.quoteCoin, EXCHANGE_NAME)
+            normalize_currency(
+                if market.symbol.ends_with("PERP_CMCBL") {
+                    "USDC"
+                } else {
+                    &market.quoteCoin
+                },
+                EXCHANGE_NAME
+            )
         );
         assert_eq!(pair.as_str(), pair_expected);
 

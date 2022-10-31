@@ -1,10 +1,19 @@
 use crypto_market_type::MarketType;
 
 pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
-    if symbol.ends_with("_SPBL") || symbol.contains("_UMCBL") || symbol.contains("_DMCBL") {
+    if symbol.ends_with("_SPBL")
+        || symbol.contains("_UMCBL")
+        || symbol.contains("_CMCBL")
+        || symbol.contains("_DMCBL")
+    {
         let pos = symbol.find('_').unwrap();
         let pair = &symbol[..pos];
-        if pair.ends_with("USDT") {
+        if symbol.ends_with("PERP_CMCBL") {
+            Some(format!(
+                "{}/USDC",
+                symbol.strip_suffix("PERP_CMCBL").unwrap()
+            ))
+        } else if pair.ends_with("USDT") {
             Some(format!("{}/USDT", pair.strip_suffix("USDT").unwrap()))
         } else if pair.ends_with("USD") {
             Some(format!("{}/USD", pair.strip_suffix("USD").unwrap()))
@@ -36,15 +45,19 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
 }
 
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {
-    if symbol.ends_with("_SPBL") || symbol.contains("_UMCBL") || symbol.contains("_DMCBL") {
+    if symbol.ends_with("_SPBL")
+        || symbol.contains("_UMCBL")
+        || symbol.contains("_CMCBL")
+        || symbol.contains("_DMCBL")
+    {
         // bitget v3 API
         if symbol.ends_with("_SPBL") {
             MarketType::Spot
-        } else if symbol.ends_with("_UMCBL") {
+        } else if symbol.ends_with("_UMCBL") || symbol.ends_with("_CMCBL") {
             MarketType::LinearSwap
         } else if symbol.ends_with("_DMCBL") {
             MarketType::InverseSwap
-        } else if symbol.contains("_UMCBL_") {
+        } else if symbol.contains("_UMCBL_") | symbol.contains("_CMCBL_") {
             MarketType::LinearFuture
         } else if symbol.contains("_DMCBL_") {
             MarketType::InverseFuture
@@ -75,6 +88,10 @@ mod tests {
             MarketType::InverseFuture,
             super::get_market_type("BTCUSD_DMCBL_221230")
         );
+        assert_eq!(
+            MarketType::LinearSwap,
+            super::get_market_type("BTCPERP_CMCBL")
+        );
     }
 
     #[test]
@@ -83,5 +100,6 @@ mod tests {
             "BTC/USD",
             super::normalize_pair("BTCUSD_DMCBL_221230").unwrap()
         );
+        assert_eq!("BTC/USDC", super::normalize_pair("BTCPERP_CMCBL").unwrap());
     }
 }
