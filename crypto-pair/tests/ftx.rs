@@ -34,6 +34,7 @@ fn fetch_markets_raw() -> Vec<FtxMarket> {
     resp.result
 }
 
+#[ignore = "503 Service Temporarily Unavailable"]
 #[test]
 fn verify_all_symbols() {
     let markets = fetch_markets_raw();

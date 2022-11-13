@@ -1,6 +1,6 @@
 [package]
 name = "crypto-message"
-version = "1.1.15"
+version = "1.1.16"
 edition = "2021"
 description = "Unified data structures for all cryptocurrency exchanges."
 license = "Apache-2.0"
@@ -10,8 +10,8 @@ keywords = ["cryptocurrency", "blockchain", "trading"]
 
 [dependencies]
 ahash = "0.8.0"
-crypto-market-type = "1.1.4"
-crypto-msg-type = "1.0.10"
+crypto-market-type = "1.1.5"
+crypto-msg-type = "1.0.11"
 protobuf = "3.2.0"
 serde = { version = "1.0.147", features = ["derive"] }
 serde_json = "1.0.87"
