@@ -56,7 +56,7 @@ struct SwapTradeMsg {
     id: i64,
     create_time: i64,
     create_time_ms: i64,
-    price: String,
+    price: Value, // String or f64
     contract: String,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
@@ -181,13 +181,8 @@ pub(super) fn parse_trade(
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     match market_type {
         MarketType::InverseFuture | MarketType::LinearFuture => {
-            let ws_msg =
-                serde_json::from_str::<WebsocketMsg<Vec<FutureTradeMsg>>>(msg).map_err(|_e| {
-                    SimpleError::new(format!(
-                        "Failed to deserialize {} to WebsocketMsg<Vec<FutureTradeMsg>>",
-                        msg
-                    ))
-                })?;
+            let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<FutureTradeMsg>>>(msg)
+                .map_err(SimpleError::from)?;
 
             let mut trades: Vec<TradeMsg> = ws_msg
                 .result
@@ -233,13 +228,8 @@ pub(super) fn parse_trade(
             Ok(trades)
         }
         MarketType::InverseSwap | MarketType::LinearSwap => {
-            let ws_msg =
-                serde_json::from_str::<WebsocketMsg<Vec<SwapTradeMsg>>>(msg).map_err(|_e| {
-                    SimpleError::new(format!(
-                        "Failed to deserialize {} to WebsocketMsg<Vec<SwapTradeMsg>>",
-                        msg
-                    ))
-                })?;
+            let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<SwapTradeMsg>>>(msg)
+                .map_err(SimpleError::from)?;
 
             let mut trades: Vec<TradeMsg> = ws_msg
                 .result
@@ -247,7 +237,11 @@ pub(super) fn parse_trade(
                 .map(|raw_trade| {
                     let symbol = raw_trade.contract.as_str();
                     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
-                    let price = raw_trade.price.parse::<f64>().unwrap();
+                    let price = if let Some(p) = raw_trade.price.as_str() {
+                        p.parse::<f64>().unwrap()
+                    } else {
+                        raw_trade.price.as_f64().unwrap()
+                    };
                     let quantity = f64::abs(raw_trade.size);
                     let (quantity_base, quantity_quote, quantity_contract) =
                         calc_quantity_and_volume(

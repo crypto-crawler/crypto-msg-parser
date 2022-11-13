@@ -55,6 +55,8 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("APEUSD", (879, 0.001)),
         ("APEUSDT", (826, 0.001)),
         ("APE_USDT", (860, 0.001)),
+        ("APTUSD", (1157, 0.001)),
+        ("APTUSDT", (1156, 0.001)),
         ("AVAXUSD", (675, 0.001)),
         ("AVAXUSDT", (808, 0.001)),
         ("AXSUSD", (706, 0.01)),

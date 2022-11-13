@@ -183,6 +183,41 @@ mod trade {
         assert_eq!(trade.quantity_contract, Some(50.0));
         assert_eq!(trade.side, TradeSide::Buy);
     }
+
+    #[test]
+    fn linear_swap_2() {
+        let raw_msg = r#"{"time":1667469835,"channel":"futures.trades","event":"update","result":[{"contract":"MOB_USDT","create_time":1667469835,"create_time_ms":1667469835931,"id":927273,"price":0.836,"size":-90}]}"#;
+
+        assert_eq!(
+            "MOB_USDT",
+            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
+        );
+        assert_eq!(
+            1667469835931,
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
+                .unwrap()
+                .unwrap()
+        );
+
+        let trades = &parse_trade(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap();
+
+        assert_eq!(trades.len(), 1);
+        let trade = &trades[0];
+
+        crate::utils::check_trade_fields(
+            EXCHANGE_NAME,
+            MarketType::LinearSwap,
+            "MOB/USDT".to_string(),
+            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap(),
+            trade,
+            raw_msg,
+        );
+
+        assert_eq!(trade.quantity_base, 90.0);
+        assert_eq!(trade.quantity_quote, 90.0 * 0.836);
+        assert_eq!(trade.quantity_contract, Some(90.0));
+        assert_eq!(trade.side, TradeSide::Sell);
+    }
 }
 
 #[cfg(test)]
