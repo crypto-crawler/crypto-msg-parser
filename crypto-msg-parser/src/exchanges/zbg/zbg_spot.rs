@@ -282,7 +282,11 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         return ret;
     }
     let arr = if let Ok(list) = serde_json::from_str::<Vec<Vec<Value>>>(msg) {
-        list[0].clone()
+        if list.is_empty() {
+            panic!("Empty list in {}", msg);
+        } else {
+            list[0].clone()
+        }
     } else if let Ok(arr) = serde_json::from_str::<Vec<Value>>(msg) {
         arr
     } else {
