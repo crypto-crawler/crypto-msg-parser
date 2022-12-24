@@ -249,6 +249,9 @@ fn fetch_symbol_info() -> BTreeMap<i64, String> {
 // NOTE:zbg spot websocket sometimes returns lowercase symbols, and sometimes
 // returns uppercase, which is very annoying, thus we unify to lowercase here
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
+    if msg == "[]" {
+        return Ok("NONE".to_string());
+    }
     if msg.contains("datas") && msg.contains("resMsg") {
         // RESTful
         let obj = serde_json::from_str::<HashMap<String, Value>>(msg).unwrap();
@@ -282,11 +285,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         return ret;
     }
     let arr = if let Ok(list) = serde_json::from_str::<Vec<Vec<Value>>>(msg) {
-        if list.is_empty() {
-            panic!("Empty list in {}", msg);
-        } else {
-            list[0].clone()
-        }
+        list[0].clone()
     } else if let Ok(arr) = serde_json::from_str::<Vec<Value>>(msg) {
         arr
     } else {
