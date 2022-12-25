@@ -119,13 +119,15 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
     } else {
         symbol
     };
-    // 0, linear; 1, inverse; 2, quanto
+    // 0, linear; 1, inverse; 2, quanto; 3, Yield
     let linear_inverse_quanto = if real_symbol.ends_with("USDT") {
         0
     } else if real_symbol.starts_with("XBT") || symbol.ends_with("_ETH") {
         1
     } else if real_symbol.ends_with("USD") || real_symbol.ends_with("EUR") {
         2
+    } else if real_symbol.ends_with("YLD") {
+        3
     } else {
         // Settled in XBT, quoted in XBT
         0
@@ -153,6 +155,7 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
                 MarketType::QuantoSwap
             }
         }
+        3 => MarketType::Unknown,
         _ => panic!("Impossible {}", symbol),
     }
 }
@@ -182,6 +185,7 @@ mod tests {
             super::get_market_type("ETHPOWZ22")
         );
         assert_eq!(MarketType::LinearFuture, super::get_market_type("ETHZ22"));
+        assert_eq!(MarketType::Unknown, super::get_market_type("ETHYLDZ22"));
     }
 
     #[test]
