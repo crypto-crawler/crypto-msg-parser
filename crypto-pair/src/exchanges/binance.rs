@@ -12,8 +12,8 @@ static SPOT_QUOTES: Lazy<HashSet<String>> = Lazy::new(|| {
     // offline data, in case the network is down
     let mut set: HashSet<String> = vec![
         "AUD", "BIDR", "BKRW", "BNB", "BRL", "BTC", "BUSD", "BVND", "DAI", "DOGE", "DOT", "ETH",
-        "EUR", "GBP", "GYEN", "IDRT", "NGN", "PAX", "PLN", "RUB", "TRX", "TRY", "TUSD", "UAH",
-        "USDC", "USDP", "USDS", "USDT", "UST", "VAI", "XRP", "ZAR",
+        "EUR", "GBP", "GYEN", "IDRT", "NGN", "PAX", "PLN", "RON", "RUB", "TRX", "TRY", "TUSD",
+        "UAH", "USDC", "USDP", "USDS", "USDT", "UST", "VAI", "XRP", "ZAR",
     ]
     .into_iter()
     .map(|x| x.to_string())
@@ -110,11 +110,12 @@ mod tests {
 
     #[test]
     fn spot_quotes() {
-        let map = fetch_spot_quotes();
+        let mut map = fetch_spot_quotes();
+        for coin in super::SPOT_QUOTES.iter() {
+            map.insert(coin.clone());
+        }
         for quote in map.iter() {
-            if !super::SPOT_QUOTES.contains(quote) {
-                println!("\"{}\",", quote);
-            }
+            println!("\"{}\",", quote);
         }
     }
 
