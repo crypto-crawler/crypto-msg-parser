@@ -107,7 +107,8 @@ pub struct TradeMsg {
     pub side: TradeSide,
     /// price
     pub price: f64,
-    /// quantity, comes from one of quantity_base, quantity_quote and quantity_contract.
+    /// quantity, comes from one of quantity_base, quantity_quote and
+    /// quantity_contract.
     pub quantity: f64,
 }
 
@@ -126,9 +127,11 @@ pub struct OrderBookMsg {
     pub timestamp: i64,
     // true means snapshot, false means updates
     pub snapshot: bool,
-    /// sorted in ascending order by price if snapshot=true, otherwise not sorted
+    /// sorted in ascending order by price if snapshot=true, otherwise not
+    /// sorted
     pub asks: Vec<Order>,
-    /// sorted in descending order by price if snapshot=true, otherwise not sorted
+    /// sorted in descending order by price if snapshot=true, otherwise not
+    /// sorted
     pub bids: Vec<Order>,
 }
 
@@ -150,7 +153,8 @@ pub struct FundingRateMsg {
     pub funding_rate: f64,
     // Funding time, the moment when funding rate is used
     pub funding_time: i64,
-    // Estimated funding rate between [funding_time-h, funding_time], it will be static after funding_time
+    // Estimated funding rate between [funding_time-h, funding_time], it will be static after
+    // funding_time
     #[serde(skip_serializing_if = "Option::is_none")]
     pub estimated_rate: Option<f64>,
 }
@@ -258,16 +262,8 @@ impl OrderBookMsg {
             symbol: calculate_hash(&msg.symbol),
             timestamp: msg.timestamp,
             snapshot: msg.snapshot,
-            asks: msg
-                .asks
-                .iter()
-                .map(|order| convert_order(order, quantity_choice))
-                .collect(),
-            bids: msg
-                .bids
-                .iter()
-                .map(|order| convert_order(order, quantity_choice))
-                .collect(),
+            asks: msg.asks.iter().map(|order| convert_order(order, quantity_choice)).collect(),
+            bids: msg.bids.iter().map(|order| convert_order(order, quantity_choice)).collect(),
         }
     }
 }

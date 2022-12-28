@@ -150,13 +150,9 @@ pub fn parse_l2(
             for orderbook in orderbooks.iter_mut() {
                 if orderbook.snapshot {
                     // sorted in ascending order by price
-                    orderbook
-                        .asks
-                        .sort_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
+                    orderbook.asks.sort_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
                     // sorted in descending order by price
-                    orderbook
-                        .bids
-                        .sort_by(|a, b| b.price.partial_cmp(&a.price).unwrap());
+                    orderbook.bids.sort_by(|a, b| b.price.partial_cmp(&a.price).unwrap());
                 }
             }
             Ok(orderbooks)
@@ -191,13 +187,9 @@ pub fn parse_l2_topk(
             for orderbook in orderbooks.iter_mut() {
                 if orderbook.snapshot {
                     // sorted in ascending order by price
-                    orderbook
-                        .asks
-                        .sort_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
+                    orderbook.asks.sort_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
                     // sorted in descending order by price
-                    orderbook
-                        .bids
-                        .sort_by(|a, b| b.price.partial_cmp(&a.price).unwrap());
+                    orderbook.bids.sort_by(|a, b| b.price.partial_cmp(&a.price).unwrap());
                 }
             }
             Ok(orderbooks)
@@ -257,10 +249,7 @@ pub fn parse_funding_rate(
             msg,
             received_at.expect("OKX funding rate messages don't have timestamp"),
         ),
-        _ => Err(SimpleError::new(format!(
-            "{} does NOT have perpetual swap market",
-            exchange
-        ))),
+        _ => Err(SimpleError::new(format!("{} does NOT have perpetual swap market", exchange))),
     }
 }
 

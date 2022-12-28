@@ -52,10 +52,7 @@ struct WebsocketMsg<T: Sized> {
 
 pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<String, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
     })?;
     let symbol = ws_msg.params.symbol.as_str();
     Ok(symbol.to_string())
@@ -66,10 +63,7 @@ pub(crate) fn extract_timestamp(
     msg: &str,
 ) -> Result<Option<i64>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
     })?;
     Ok(Some(ws_msg.time))
 }
@@ -79,10 +73,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<SpotTradeMsg>>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>", msg))
     })?;
     let symbol = ws_msg.params.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
@@ -110,11 +101,7 @@ pub(crate) fn parse_trade(
                 quantity_base: quantity,
                 quantity_quote: price * quantity,
                 quantity_contract: None,
-                side: if raw_trade.s == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.s == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: timestamp.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -131,10 +118,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
     })?;
     debug_assert_eq!(ws_msg.action, "Pushdata.depth");
     let symbol = ws_msg.params.symbol.as_str();
@@ -151,12 +135,7 @@ pub(crate) fn parse_l2(
             (base, quote)
         };
 
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract: None,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract: None }
     };
 
     let orderbook = OrderBookMsg {

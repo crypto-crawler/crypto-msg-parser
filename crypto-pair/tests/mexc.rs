@@ -11,10 +11,7 @@ const EXCHANGE_NAME: &str = "mexc";
 
 #[test]
 fn verify_spot_symbols() {
-    assert_eq!(
-        "BTC/USDT".to_string(),
-        normalize_pair("BTC_USDT", EXCHANGE_NAME).unwrap()
-    );
+    assert_eq!("BTC/USDT".to_string(), normalize_pair("BTC_USDT", EXCHANGE_NAME).unwrap());
 }
 
 #[derive(Serialize, Deserialize)]

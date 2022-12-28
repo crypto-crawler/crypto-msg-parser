@@ -5,12 +5,6 @@ const EXCHANGE_NAME: &str = "bithumb";
 
 #[test]
 fn verify_spot_symbols() {
-    assert_eq!(
-        "ETH/USDT".to_string(),
-        normalize_pair("ETH-USDT", EXCHANGE_NAME).unwrap()
-    );
-    assert_eq!(
-        MarketType::Spot,
-        get_market_type("ETH-USDT", EXCHANGE_NAME, None)
-    );
+    assert_eq!("ETH/USDT".to_string(), normalize_pair("ETH-USDT", EXCHANGE_NAME).unwrap());
+    assert_eq!(MarketType::Spot, get_market_type("ETH-USDT", EXCHANGE_NAME, None));
 }

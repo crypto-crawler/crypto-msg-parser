@@ -18,10 +18,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         // https://api.dydx.exchange/v3/markets
         Ok("ALL".to_string())
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
@@ -31,10 +28,7 @@ pub(crate) fn extract_timestamp(
 ) -> Result<Option<i64>, SimpleError> {
     match market_type {
         MarketType::LinearSwap => dydx_swap::extract_timestamp(msg),
-        _ => Err(SimpleError::new(format!(
-            "Unknown dYdX market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown dYdX market type {}", market_type))),
     }
 }
 
@@ -44,10 +38,7 @@ pub(crate) fn parse_trade(
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     match market_type {
         MarketType::LinearSwap => dydx_swap::parse_trade(market_type, msg),
-        _ => Err(SimpleError::new(format!(
-            "Unknown dYdX market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown dYdX market type {}", market_type))),
     }
 }
 
@@ -58,9 +49,6 @@ pub(crate) fn parse_l2(
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     match market_type {
         MarketType::LinearSwap => dydx_swap::parse_l2(market_type, msg, timestamp),
-        _ => Err(SimpleError::new(format!(
-            "Unknown dYdX market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown dYdX market type {}", market_type))),
     }
 }

@@ -53,10 +53,7 @@ pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     assert_eq!(event_type, "trade_all");
 
     let all_trades: OptionTradeAllMsg = serde_json::from_value(data.clone()).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to OptionTradeAllMsg",
-            data
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to OptionTradeAllMsg", data))
     })?;
     let trades: Vec<TradeMsg> = all_trades
         .t

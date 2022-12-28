@@ -108,11 +108,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
                 quantity_base: quantity,
                 quantity_quote: price * quantity,
                 quantity_contract: None,
-                side: if raw_trade.type_ == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.type_ == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.id.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }

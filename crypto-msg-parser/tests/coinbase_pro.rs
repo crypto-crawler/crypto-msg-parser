@@ -24,9 +24,7 @@ fn trade() {
     );
     assert_eq!(
         1616298447112,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
 
     assert_eq!(trade.quantity_base, 0.00031874);
@@ -53,10 +51,7 @@ fn l2_orderbook_snapshot() {
         orderbook,
         raw_msg,
     );
-    assert_eq!(
-        None,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-    );
+    assert_eq!(None, extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
     assert_eq!(received_at, orderbook.timestamp);
 
     assert_eq!(orderbook.bids[0].price, 37209.96);
@@ -96,9 +91,7 @@ fn l2_orderbook_update() {
     );
     assert_eq!(
         1622624529048,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
 
     assert_eq!(orderbook.timestamp, 1622624529048);
@@ -114,14 +107,9 @@ fn l3_event() {
 
     assert_eq!(
         1654072341469,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
-    assert_eq!(
-        "BTC-USD",
-        extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-    );
+    assert_eq!("BTC-USD", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
 }
 
 #[test]
@@ -130,27 +118,16 @@ fn ticker() {
 
     assert_eq!(
         1654161654127,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
-    assert_eq!(
-        "BTC-USD",
-        extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-    );
+    assert_eq!("BTC-USD", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
 }
 
 #[test]
 fn l2_snapshot() {
     let raw_msg = r#"{"bids": [["0.1135", "35", 1], ["0.1134", "20606.7", 5], ["0.1133", "41561.8", 8], ["0.1132", "51132.8", 4], ["0.1131", "745", 2]], "asks": [["0.1137", "10113.4", 4], ["0.1138", "49781.3", 6], ["0.1139", "34339.9", 6], ["0.114", "34409.1", 4], ["0.1141", "4126.6", 2]], "sequence": 406959136, "auction_mode": false, "auction": null}"#;
 
-    assert_eq!(
-        "NONE",
-        extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-    );
+    assert_eq!("NONE", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
 
-    assert_eq!(
-        None,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-    );
+    assert_eq!(None, extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
 }

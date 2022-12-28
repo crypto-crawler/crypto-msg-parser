@@ -17,10 +17,11 @@ struct RawMarket {
     instId: String,    // Instrument ID, e.g. BTC-USD-SWAP
     baseCcy: String,   // Base currency, e.g. BTC inBTC-USDT. Only applicable to SPOT
     quoteCcy: String,  // Quote currency, e.g. USDT in BTC-USDT. Only applicable to SPOT
-    settleCcy: String, // Settlement and margin currency, e.g. BTC. Only applicable to FUTURES/SWAP/OPTION
-    ctValCcy: String,  // Contract value currency. Only applicable to FUTURES/SWAP/OPTION
-    ctType: String,    // Contract type, linear, inverse. Only applicable to FUTURES/SWAP
-    state: String,     // Instrument status, live, suspend, preopen, settlement
+    settleCcy: String, /* Settlement and margin currency, e.g. BTC. Only applicable to
+                        * FUTURES/SWAP/OPTION */
+    ctValCcy: String, // Contract value currency. Only applicable to FUTURES/SWAP/OPTION
+    ctType: String,   // Contract type, linear, inverse. Only applicable to FUTURES/SWAP
+    state: String,    // Instrument status, live, suspend, preopen, settlement
     #[serde(flatten)]
     extra: HashMap<String, Value>,
 }
@@ -35,12 +36,8 @@ fn fetch_raw_markets_raw(inst_type: &str) -> Vec<RawMarket> {
             let txt =
                 http_get("https://www.okx.com/api/v5/public/underlying?instType=OPTION").unwrap();
             let json_obj = serde_json::from_str::<HashMap<String, Value>>(&txt).unwrap();
-            let data = json_obj.get("data").unwrap().as_array().unwrap()[0]
-                .as_array()
-                .unwrap();
-            data.iter()
-                .map(|x| x.as_str().unwrap().to_string())
-                .collect::<Vec<String>>()
+            let data = json_obj.get("data").unwrap().as_array().unwrap()[0].as_array().unwrap();
+            data.iter().map(|x| x.as_str().unwrap().to_string()).collect::<Vec<String>>()
         };
 
         let mut markets = Vec::<RawMarket>::new();
@@ -60,10 +57,7 @@ fn fetch_raw_markets_raw(inst_type: &str) -> Vec<RawMarket> {
 
         markets
     } else {
-        let url = format!(
-            "https://www.okx.com/api/v5/public/instruments?instType={}",
-            inst_type
-        );
+        let url = format!("https://www.okx.com/api/v5/public/instruments?instType={}", inst_type);
         let txt = {
             let txt = http_get(url.as_str()).unwrap();
             let json_obj = serde_json::from_str::<HashMap<String, Value>>(&txt).unwrap();
@@ -87,10 +81,7 @@ fn verify_spot_symbols() {
 
         assert_eq!(pair.as_str(), pair_expected);
 
-        assert_eq!(
-            MarketType::Spot,
-            get_market_type(&market.instId, EXCHANGE_NAME, None)
-        );
+        assert_eq!(MarketType::Spot, get_market_type(&market.instId, EXCHANGE_NAME, None));
     }
 }
 
@@ -164,10 +155,7 @@ fn verify_option_symbols() {
     for market in markets.iter() {
         assert_eq!("OPTION", market.instType);
         let pair = normalize_pair(&market.instId, EXCHANGE_NAME).unwrap();
-        let pair_expected = format!(
-            "{}/USD",
-            normalize_currency(&market.settleCcy, EXCHANGE_NAME)
-        );
+        let pair_expected = format!("{}/USD", normalize_currency(&market.settleCcy, EXCHANGE_NAME));
 
         assert_eq!(pair.as_str(), pair_expected);
 

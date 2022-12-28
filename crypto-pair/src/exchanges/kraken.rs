@@ -87,11 +87,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
             (v[0].to_string(), v[1].to_string())
         };
 
-        Some(format!(
-            "{}/{}",
-            normalize_currency(&base),
-            normalize_currency(&quote)
-        ))
+        Some(format!("{}/{}", normalize_currency(&base), normalize_currency(&quote)))
     } else if symbol.starts_with("pi_")
         || symbol.starts_with("fi_")
         || symbol.starts_with("PI_")
@@ -109,19 +105,11 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
     } else if SPOT_QUOTES.contains(&symbol[(symbol.len() - 4)..]) {
         let base = &symbol[..(symbol.len() - 4)];
         let quote = &symbol[(symbol.len() - 4)..];
-        Some(format!(
-            "{}/{}",
-            normalize_currency(base),
-            normalize_currency(quote)
-        ))
+        Some(format!("{}/{}", normalize_currency(base), normalize_currency(quote)))
     } else if SPOT_QUOTES.contains(&symbol[(symbol.len() - 3)..]) {
         let base = &symbol[..(symbol.len() - 3)];
         let quote = &symbol[(symbol.len() - 3)..];
-        Some(format!(
-            "{}/{}",
-            normalize_currency(base),
-            normalize_currency(quote)
-        ))
+        Some(format!("{}/{}", normalize_currency(base), normalize_currency(quote)))
     } else {
         None
     }

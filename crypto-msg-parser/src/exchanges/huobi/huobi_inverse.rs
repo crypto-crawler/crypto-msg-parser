@@ -125,11 +125,7 @@ pub(crate) fn parse_trade(
                 quantity_base: raw_trade.quantity,
                 quantity_quote,
                 quantity_contract: Some(raw_trade.amount),
-                side: if raw_trade.direction == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.direction == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.id.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -148,12 +144,7 @@ fn parse_order(market_type: MarketType, pair: &str, raw_order: &[f64; 2]) -> Ord
 
     let (quantity_base, quantity_quote, quantity_contract) =
         calc_quantity_and_volume(EXCHANGE_NAME, market_type, pair, price, quantity);
-    Order {
-        price,
-        quantity_base,
-        quantity_quote,
-        quantity_contract,
-    }
+    Order { price, quantity_base, quantity_quote, quantity_contract }
 }
 
 pub(crate) fn parse_l2(
@@ -190,18 +181,8 @@ pub(crate) fn parse_l2(
         timestamp,
         seq_id: Some(ws_msg.tick.mrid),
         prev_seq_id: None,
-        asks: ws_msg
-            .tick
-            .asks
-            .iter()
-            .map(|x| parse_order(market_type, &pair, x))
-            .collect(),
-        bids: ws_msg
-            .tick
-            .bids
-            .iter()
-            .map(|x| parse_order(market_type, &pair, x))
-            .collect(),
+        asks: ws_msg.tick.asks.iter().map(|x| parse_order(market_type, &pair, x)).collect(),
+        bids: ws_msg.tick.bids.iter().map(|x| parse_order(market_type, &pair, x)).collect(),
         snapshot,
         json: msg.to_string(),
     };

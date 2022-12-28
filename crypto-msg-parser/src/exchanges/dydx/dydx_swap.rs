@@ -85,10 +85,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 Ok(timestamp) // contents.trades can be an empty array sometimes
             }
             "v3_orderbook" => Ok(None),
-            _ => Err(SimpleError::new(format!(
-                "Failed to extract timestamp from {}",
-                msg
-            ))),
+            _ => Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg))),
         }
     } else if msg.starts_with(r#"{"markets":"#)
         || serde_json::from_str::<L2SnapshotRawMsg>(msg).is_ok()
@@ -96,10 +93,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
         // e.g., https://api.dydx.exchange/v3/markets
         Ok(None)
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
@@ -108,10 +102,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradesMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawTradesMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradesMsg>", msg))
     })?;
     let symbol = ws_msg.id;
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
@@ -123,9 +114,8 @@ pub(crate) fn parse_trade(
         .trades
         .into_iter()
         .map(|raw_trade| {
-            let timestamp = DateTime::parse_from_rfc3339(&raw_trade.createdAt)
-                .unwrap()
-                .timestamp_millis();
+            let timestamp =
+                DateTime::parse_from_rfc3339(&raw_trade.createdAt).unwrap().timestamp_millis();
             let price = raw_trade.price.parse::<f64>().unwrap();
             let size = raw_trade.size.parse::<f64>().unwrap();
             TradeMsg {
@@ -139,11 +129,7 @@ pub(crate) fn parse_trade(
                 quantity_base: size,
                 quantity_quote: price * size,
                 quantity_contract: Some(size),
-                side: if raw_trade.side == "SELL" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.side == "SELL" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: timestamp.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -202,18 +188,8 @@ pub(crate) fn parse_l2(
                 ))
             })?;
         (
-            ws_msg
-                .contents
-                .asks
-                .into_iter()
-                .map(|x| parse_order_snapshot(&x))
-                .collect(),
-            ws_msg
-                .contents
-                .bids
-                .into_iter()
-                .map(|x| parse_order_snapshot(&x))
-                .collect(),
+            ws_msg.contents.asks.into_iter().map(|x| parse_order_snapshot(&x)).collect(),
+            ws_msg.contents.bids.into_iter().map(|x| parse_order_snapshot(&x)).collect(),
         )
     } else {
         let ws_msg =
@@ -224,18 +200,8 @@ pub(crate) fn parse_l2(
                 ))
             })?;
         (
-            ws_msg
-                .contents
-                .asks
-                .into_iter()
-                .map(|x| parse_order_update(&x))
-                .collect(),
-            ws_msg
-                .contents
-                .bids
-                .into_iter()
-                .map(|x| parse_order_update(&x))
-                .collect(),
+            ws_msg.contents.asks.into_iter().map(|x| parse_order_update(&x)).collect(),
+            ws_msg.contents.bids.into_iter().map(|x| parse_order_update(&x)).collect(),
         )
     };
 

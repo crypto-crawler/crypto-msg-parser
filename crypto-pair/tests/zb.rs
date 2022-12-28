@@ -31,11 +31,7 @@ struct Response {
 fn fetch_swap_markets(url: &str) -> Vec<SwapMarket> {
     let txt = http_get(url).unwrap();
     let resp = serde_json::from_str::<Response>(&txt).unwrap();
-    if resp.code == 1000 {
-        resp.data
-    } else {
-        Vec::new()
-    }
+    if resp.code == 1000 { resp.data } else { Vec::new() }
 }
 
 fn fetch_swap_markets_all() -> Vec<SwapMarket> {
@@ -50,14 +46,8 @@ fn fetch_swap_markets_all() -> Vec<SwapMarket> {
 
 #[test]
 fn verify_spot_symbols() {
-    assert_eq!(
-        Some("BTC/USDT".to_string()),
-        normalize_pair("btc_usdt", EXCHANGE_NAME)
-    );
-    assert_eq!(
-        Some("BTC/USDT".to_string()),
-        normalize_pair("btcusdt", EXCHANGE_NAME)
-    );
+    assert_eq!(Some("BTC/USDT".to_string()), normalize_pair("btc_usdt", EXCHANGE_NAME));
+    assert_eq!(Some("BTC/USDT".to_string()), normalize_pair("btcusdt", EXCHANGE_NAME));
 }
 
 #[test]
@@ -65,10 +55,7 @@ fn verify_swap_symbols() {
     let markets = fetch_swap_markets_all();
     for market in markets.iter() {
         let pair = normalize_pair(&market.symbol, EXCHANGE_NAME).unwrap();
-        let pair_expected = format!(
-            "{}/{}",
-            &market.buyerCurrencyName, &market.sellerCurrencyName
-        );
+        let pair_expected = format!("{}/{}", &market.buyerCurrencyName, &market.sellerCurrencyName);
 
         assert_eq!(pair.as_str(), pair_expected);
 

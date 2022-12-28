@@ -91,17 +91,10 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
             Ok(data["instrument_name"].as_str().unwrap().to_string())
         } else if data.is_array() {
             let arr = data.as_array().unwrap();
-            let symbol = arr
-                .iter()
-                .map(|v| v["instrument_name"].as_str().unwrap())
-                .next()
-                .unwrap();
+            let symbol = arr.iter().map(|v| v["instrument_name"].as_str().unwrap()).next().unwrap();
             Ok(symbol.to_string())
         } else {
-            Err(SimpleError::new(format!(
-                "Unknown websocket message format: {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unknown websocket message format: {}", msg)))
         }
     } else if let Ok(rest_resp) = serde_json::from_str::<RestfulResp<Value>>(msg) {
         if let Some(json_obj) = rest_resp.result.as_object() {
@@ -118,16 +111,10 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
                 Ok("NONE".to_string())
             }
         } else {
-            Err(SimpleError::new(format!(
-                "Unknown HTTP message format: {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unknown HTTP message format: {}", msg)))
         }
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
@@ -152,10 +139,7 @@ pub(crate) fn extract_timestamp(
                 Ok(timestamp)
             }
         } else {
-            Err(SimpleError::new(format!(
-                "Unsupported websocket message format: {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unsupported websocket message format: {}", msg)))
         }
     } else if let Ok(rest_resp) = serde_json::from_str::<RestfulResp<Value>>(msg) {
         if let Some(json_obj) = rest_resp.result.as_object() {
@@ -163,22 +147,13 @@ pub(crate) fn extract_timestamp(
         } else if let Some(arr) = rest_resp.result.as_array() {
             // open interest
             debug_assert!(msg.contains("open_interest"));
-            let timestamp = arr
-                .iter()
-                .map(|x| x["creation_timestamp"].as_i64().unwrap())
-                .max();
+            let timestamp = arr.iter().map(|x| x["creation_timestamp"].as_i64().unwrap()).max();
             Ok(timestamp)
         } else {
-            Err(SimpleError::new(format!(
-                "Unknown HTTP message format: {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unknown HTTP message format: {}", msg)))
         }
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
@@ -215,10 +190,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<RawTradeMsg>>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Vec<RawTradeMsg>>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Vec<RawTradeMsg>>", msg))
     })?;
     let mut trades: Vec<TradeMsg> = ws_msg
         .params
@@ -246,11 +218,7 @@ pub(crate) fn parse_trade(
                 quantity_base,
                 quantity_quote,
                 quantity_contract,
-                side: if raw_trade.direction == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.direction == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.trade_id.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -268,10 +236,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
     })?;
     debug_assert!(ws_msg.params.channel.starts_with("book."));
     let msg_type = if ws_msg.params.channel.matches('.').count() == 2 {
@@ -292,26 +257,15 @@ pub(crate) fn parse_l2(
 
     let parse_order = |raw_order: &[Value]| -> Order {
         let (price, quantity) = if raw_order.len() == 3 {
-            (
-                raw_order[1].as_f64().unwrap(),
-                raw_order[2].as_f64().unwrap(),
-            )
+            (raw_order[1].as_f64().unwrap(), raw_order[2].as_f64().unwrap())
         } else {
             debug_assert_eq!(2, raw_order.len());
-            (
-                raw_order[0].as_f64().unwrap(),
-                raw_order[1].as_f64().unwrap(),
-            )
+            (raw_order[0].as_f64().unwrap(), raw_order[1].as_f64().unwrap())
         };
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
 
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbook = OrderBookMsg {

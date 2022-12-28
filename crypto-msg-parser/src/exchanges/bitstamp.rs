@@ -56,10 +56,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
         // l2_snapshot has no symbol
         Ok("NONE".to_string())
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
     }
 }
 
@@ -70,23 +67,11 @@ pub(crate) fn extract_timestamp(
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg)
         .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
     if let Some(data) = json_obj.get("data") {
-        Ok(Some(
-            data["microtimestamp"]
-                .as_str()
-                .unwrap()
-                .parse::<i64>()
-                .unwrap()
-                / 1000,
-        ))
+        Ok(Some(data["microtimestamp"].as_str().unwrap().parse::<i64>().unwrap() / 1000))
     } else if let Some(microtimestamp) = json_obj.get("microtimestamp") {
-        Ok(Some(
-            microtimestamp.as_str().unwrap().parse::<i64>().unwrap() / 1000,
-        ))
+        Ok(Some(microtimestamp.as_str().unwrap().parse::<i64>().unwrap() / 1000))
     } else {
-        Err(SimpleError::new(format!(
-            "No microtimestamp field in  {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("No microtimestamp field in  {}", msg)))
     }
 }
 
@@ -95,10 +80,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>", msg))
     })?;
     let symbol = ws_msg.channel.split('_').last().unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
@@ -116,11 +98,7 @@ pub(crate) fn parse_trade(
         quantity_base: raw_trade.amount,
         quantity_quote: raw_trade.price * raw_trade.amount,
         quantity_contract: None,
-        side: if raw_trade.type_ == 1 {
-            TradeSide::Sell
-        } else {
-            TradeSide::Buy
-        },
+        side: if raw_trade.type_ == 1 { TradeSide::Sell } else { TradeSide::Buy },
         trade_id: raw_trade.id.to_string(),
         json: msg.to_string(),
     };
@@ -133,10 +111,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
     })?;
     let symbol = ws_msg.channel.split('_').last().unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)

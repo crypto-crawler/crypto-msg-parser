@@ -581,19 +581,12 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
         return Ok(symbol.to_string());
     }
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
     })?;
     if ws_msg.table == "funding" && ws_msg.data.len() > 1 {
         return Ok("ALL".to_string());
     }
-    let symbol = ws_msg
-        .data
-        .iter()
-        .map(|v| v["symbol"].as_str().unwrap())
-        .next();
+    let symbol = ws_msg.data.iter().map(|v| v["symbol"].as_str().unwrap()).next();
     if let Some(symbol) = symbol {
         Ok(symbol.to_string())
     } else {
@@ -649,17 +642,15 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
     })?;
     debug_assert_eq!("trade", ws_msg.table);
     let raw_trades = ws_msg.data;
     let mut trades: Vec<TradeMsg> = raw_trades
         .into_iter()
         .map(|raw_trade| {
-            // assert_eq!(raw_trade.foreignNotional, raw_trade.homeNotional * raw_trade.price); // tiny diff actually exists
+            // assert_eq!(raw_trade.foreignNotional, raw_trade.homeNotional *
+            // raw_trade.price); // tiny diff actually exists
             let timestamp = DateTime::parse_from_rfc3339(&raw_trade.timestamp).unwrap();
             let market_type = if market_type == MarketType::Unknown {
                 get_market_type(&raw_trade.symbol, EXCHANGE_NAME, None)
@@ -677,11 +668,7 @@ pub(crate) fn parse_trade(
                 quantity_base: raw_trade.homeNotional,
                 quantity_quote: raw_trade.foreignNotional,
                 quantity_contract: Some(raw_trade.size),
-                side: if raw_trade.side == "Sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.side == "Sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.trdMatchID.clone(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -760,10 +747,7 @@ pub(crate) fn parse_l2(
     received_at: i64,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrder>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawOrder>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrder>", msg))
     })?;
     debug_assert!(ws_msg.table.starts_with("orderBookL2")); // orderBookL2, orderBookL2_25
     let snapshot = ws_msg.action == "partial";
@@ -800,12 +784,7 @@ pub(crate) fn parse_l2(
         let quantity = raw_order.size.unwrap_or(0.0); // 0.0 means delete
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbook = OrderBookMsg {
@@ -817,18 +796,8 @@ pub(crate) fn parse_l2(
         timestamp: timestamp.unwrap_or(received_at),
         seq_id: None,
         prev_seq_id: None,
-        asks: ws_msg
-            .data
-            .iter()
-            .filter(|x| x.side == "Sell")
-            .map(|x| parse_order(x))
-            .collect(),
-        bids: ws_msg
-            .data
-            .iter()
-            .filter(|x| x.side == "Buy")
-            .map(|x| parse_order(x))
-            .collect(),
+        asks: ws_msg.data.iter().filter(|x| x.side == "Sell").map(|x| parse_order(x)).collect(),
+        bids: ws_msg.data.iter().filter(|x| x.side == "Buy").map(|x| parse_order(x)).collect(),
         snapshot,
         json: msg.to_string(),
     };
@@ -865,10 +834,7 @@ pub(crate) fn parse_l2_topk(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<OrderBook10Msg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawOrder>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrder>", msg))
     })?;
     debug_assert_eq!("orderBook10", ws_msg.table);
     if ws_msg.data.is_empty() {
@@ -880,12 +846,7 @@ pub(crate) fn parse_l2_topk(
         let quantity = raw_order[1];
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, pair, price, quantity);
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbooks: Vec<OrderBookMsg> = ws_msg
@@ -906,16 +867,8 @@ pub(crate) fn parse_l2_topk(
                 timestamp,
                 seq_id: None,
                 prev_seq_id: None,
-                asks: orderbook10_msg
-                    .asks
-                    .iter()
-                    .map(|x| parse_order(x, &pair))
-                    .collect(),
-                bids: orderbook10_msg
-                    .bids
-                    .iter()
-                    .map(|x| parse_order(x, &pair))
-                    .collect(),
+                asks: orderbook10_msg.asks.iter().map(|x| parse_order(x, &pair)).collect(),
+                bids: orderbook10_msg.bids.iter().map(|x| parse_order(x, &pair)).collect(),
                 snapshot: true,
                 json: msg.to_string(),
             }

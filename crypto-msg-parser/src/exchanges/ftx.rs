@@ -76,10 +76,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
             if result.contains_key("asks") && result.contains_key("bids") {
                 Ok("NONE".to_string())
             } else {
-                Err(SimpleError::new(format!(
-                    "Unsupported message format {}",
-                    msg
-                )))
+                Err(SimpleError::new(format!("Unsupported message format {}", msg)))
             }
         } else if let Some(result) = rest_msg.result.as_array() {
             #[allow(clippy::comparison_chain)]
@@ -91,16 +88,10 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
                 Ok("NONE".to_string())
             }
         } else {
-            Err(SimpleError::new(format!(
-                "Unsupported message format {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unsupported message format {}", msg)))
         }
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
@@ -130,13 +121,10 @@ pub(crate) fn extract_timestamp(
                     Ok(timestamp)
                 }
             }
-            "orderbook" | "ticker" => Ok(Some(
-                (ws_msg.data["time"].as_f64().unwrap() * 1000.0) as i64,
-            )),
-            _ => Err(SimpleError::new(format!(
-                "unknown channel {} in {}",
-                channel, msg
-            ))),
+            "orderbook" | "ticker" => {
+                Ok(Some((ws_msg.data["time"].as_f64().unwrap() * 1000.0) as i64))
+            }
+            _ => Err(SimpleError::new(format!("unknown channel {} in {}", channel, msg))),
         }
     } else if let Ok(rest_msg) = serde_json::from_str::<RestMsg<Value>>(msg) {
         if !rest_msg.success {
@@ -145,10 +133,7 @@ pub(crate) fn extract_timestamp(
             Ok(None)
         }
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
@@ -174,10 +159,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<RawTradeMsg>>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Vec<RawTradeMsg>>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Vec<RawTradeMsg>>", msg))
     })?;
     let symbol = ws_msg.market.as_str();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
@@ -206,11 +188,7 @@ pub(crate) fn parse_trade(
                 quantity_base,
                 quantity_quote,
                 quantity_contract,
-                side: if raw_trade.side == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.side == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.id.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -228,10 +206,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
     })?;
     debug_assert_eq!(ws_msg.channel, "orderbook");
     let symbol = ws_msg.market.as_str();
@@ -246,12 +221,7 @@ pub(crate) fn parse_l2(
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
 
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbook = OrderBookMsg {

@@ -9,10 +9,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         let pos = symbol.find('_').unwrap();
         let pair = &symbol[..pos];
         if symbol.ends_with("PERP_CMCBL") {
-            Some(format!(
-                "{}/USDC",
-                symbol.strip_suffix("PERP_CMCBL").unwrap()
-            ))
+            Some(format!("{}/USDC", symbol.strip_suffix("PERP_CMCBL").unwrap()))
         } else if pair.ends_with("USDT") {
             Some(format!("{}/USDT", pair.strip_suffix("USDT").unwrap()))
         } else if pair.ends_with("USD") {
@@ -84,22 +81,13 @@ mod tests {
 
     #[test]
     fn test_get_market_type() {
-        assert_eq!(
-            MarketType::InverseFuture,
-            super::get_market_type("BTCUSD_DMCBL_221230")
-        );
-        assert_eq!(
-            MarketType::LinearSwap,
-            super::get_market_type("BTCPERP_CMCBL")
-        );
+        assert_eq!(MarketType::InverseFuture, super::get_market_type("BTCUSD_DMCBL_221230"));
+        assert_eq!(MarketType::LinearSwap, super::get_market_type("BTCPERP_CMCBL"));
     }
 
     #[test]
     fn test_normalize_pair() {
-        assert_eq!(
-            "BTC/USD",
-            super::normalize_pair("BTCUSD_DMCBL_221230").unwrap()
-        );
+        assert_eq!("BTC/USD", super::normalize_pair("BTCUSD_DMCBL_221230").unwrap());
         assert_eq!("BTC/USDC", super::normalize_pair("BTCPERP_CMCBL").unwrap());
     }
 }

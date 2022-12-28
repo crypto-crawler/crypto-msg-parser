@@ -105,14 +105,18 @@ pub struct OrderBookMsg {
     pub timestamp: i64,
     // true means snapshot, false means updates
     pub snapshot: bool,
-    /// sorted in ascending order by price if snapshot=true, otherwise not sorted
+    /// sorted in ascending order by price if snapshot=true, otherwise not
+    /// sorted
     pub asks: Vec<Order>,
-    /// sorted in descending order by price if snapshot=true, otherwise not sorted
+    /// sorted in descending order by price if snapshot=true, otherwise not
+    /// sorted
     pub bids: Vec<Order>,
-    /// The sequence ID for this update (not all exchanges provide this information)
+    /// The sequence ID for this update (not all exchanges provide this
+    /// information)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub seq_id: Option<u64>,
-    /// The sequence ID for the previous update (not all exchanges provide this information)
+    /// The sequence ID for the previous update (not all exchanges provide this
+    /// information)
     #[serde(skip_serializing_if = "Option::is_none")]
     pub prev_seq_id: Option<u64>,
     /// the original JSON message
@@ -139,7 +143,8 @@ pub struct FundingRateMsg {
     pub funding_rate: f64,
     // Funding time, the moment when funding rate is used
     pub funding_time: i64,
-    // Estimated funding rate between [funding_time-h, funding_time], it will be static after funding_time
+    // Estimated funding rate between [funding_time-h, funding_time], it will be static after
+    // funding_time
     #[serde(skip_serializing_if = "Option::is_none")]
     pub estimated_rate: Option<f64>,
     /// the original JSON message
@@ -218,8 +223,8 @@ fn round(f: f64) -> f64 {
 impl TradeMsg {
     /// Convert to a CSV string.
     ///
-    /// The `exchange`, `market_type`, `msg_type`, `pair` and `symbol` fields are not
-    /// included to save some disk space.
+    /// The `exchange`, `market_type`, `msg_type`, `pair` and `symbol` fields
+    /// are not included to save some disk space.
     pub fn to_csv_string(&self) -> String {
         format!(
             "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}",
@@ -255,11 +260,8 @@ impl TradeMsg {
         let price = v[2].parse::<f64>().unwrap();
         let quantity_base = v[3].parse::<f64>().unwrap();
         let quantity_quote = v[4].parse::<f64>().unwrap();
-        let quantity_contract = if v[5].is_empty() {
-            None
-        } else {
-            Some(v[5].parse::<f64>().unwrap())
-        };
+        let quantity_contract =
+            if v[5].is_empty() { None } else { Some(v[5].parse::<f64>().unwrap()) };
 
         TradeMsg {
             exchange: exchange.to_string(),
@@ -306,11 +308,7 @@ impl TradeMsg {
     ) -> Self {
         let market_type = MarketType::from_str(market_type).unwrap();
         let msg_type = MessageType::from_str(msg_type).unwrap();
-        let side = if proto_msg.side {
-            TradeSide::Sell
-        } else {
-            TradeSide::Buy
-        };
+        let side = if proto_msg.side { TradeSide::Sell } else { TradeSide::Buy };
         let timestamp =
             proto_msg.timestamp.seconds * 1000 + (proto_msg.timestamp.nanos / 1000000) as i64;
 
@@ -335,8 +333,8 @@ impl TradeMsg {
 impl OrderBookMsg {
     /// Convert to a CSV string.
     ///
-    /// The `exchange`, `market_type`, `msg_type`, `pair` and `symbol` fields are not
-    /// included to save some disk space.
+    /// The `exchange`, `market_type`, `msg_type`, `pair` and `symbol` fields
+    /// are not included to save some disk space.
     pub fn to_csv_string(&self) -> String {
         format!(
             "{}\t{}\t{}\t{}\t{}\t{}",
@@ -364,16 +362,8 @@ impl OrderBookMsg {
         let msg_type = MessageType::from_str(msg_type).unwrap();
         let asks = serde_json::from_str::<Vec<Order>>(v[2]).unwrap();
         let bids = serde_json::from_str::<Vec<Order>>(v[3]).unwrap();
-        let seq_id = if v[4].is_empty() {
-            None
-        } else {
-            Some(v[4].parse::<u64>().unwrap())
-        };
-        let prev_seq_id = if v[5].is_empty() {
-            None
-        } else {
-            Some(v[5].parse::<u64>().unwrap())
-        };
+        let seq_id = if v[4].is_empty() { None } else { Some(v[4].parse::<u64>().unwrap()) };
+        let prev_seq_id = if v[5].is_empty() { None } else { Some(v[5].parse::<u64>().unwrap()) };
 
         OrderBookMsg {
             exchange: exchange.to_string(),

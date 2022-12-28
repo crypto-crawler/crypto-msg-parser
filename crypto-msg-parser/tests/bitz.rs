@@ -25,9 +25,7 @@ fn trade() {
     }
     assert_eq!(
         1616486110921,
-        extract_timestamp("bitz", MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp("bitz", MarketType::Spot, raw_msg).unwrap().unwrap()
     );
 
     assert_eq!(trades[0].side, TradeSide::Sell);
@@ -58,9 +56,7 @@ fn l2_orderbook_update() {
     );
     assert_eq!(
         1622527417489,
-        extract_timestamp("bitz", MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp("bitz", MarketType::Spot, raw_msg).unwrap().unwrap()
     );
 
     assert_eq!(orderbook.timestamp, 1622527417489);

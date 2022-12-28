@@ -89,14 +89,9 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     if channel == "trade" {
         let raw_trades: Vec<Vec<String>> =
             serde_json::from_value(arr[1].clone()).map_err(|_e| {
-                SimpleError::new(format!(
-                    "Failed to deserialize {} to Vec<Vec<String>>",
-                    arr[1]
-                ))
+                SimpleError::new(format!("Failed to deserialize {} to Vec<Vec<String>>", arr[1]))
             })?;
-        Ok(Some(
-            (raw_trades[0][2].parse::<f64>().unwrap() * 1000.0) as i64,
-        ))
+        Ok(Some((raw_trades[0][2].parse::<f64>().unwrap() * 1000.0) as i64))
     } else if channel == "spread" {
         let arr: Vec<String> = serde_json::from_value(arr[1].clone()).map_err(SimpleError::from)?;
         Ok(Some((arr[2].parse::<f64>().unwrap() * 1000.0) as i64))
@@ -134,7 +129,8 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 }
             };
             if timestamp == std::i64::MIN {
-                // as and bs can be both empty, e.g., [6960,{"as":[],"bs":[]},"book-25","LINK/JPY"]
+                // as and bs can be both empty, e.g.,
+                // [6960,{"as":[],"bs":[]},"book-25","LINK/JPY"]
                 Ok(None)
             } else {
                 Ok(Some(timestamp))
@@ -190,10 +186,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             };
 
             if timestamp == std::i64::MIN {
-                Err(SimpleError::new(format!(
-                    "Neither a nor b exists in {}",
-                    msg
-                )))
+                Err(SimpleError::new(format!("Neither a nor b exists in {}", msg)))
             } else {
                 Ok(Some(timestamp))
             }
@@ -212,10 +205,7 @@ pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
         .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
     let raw_trades: Vec<Vec<String>> = serde_json::from_value(arr[1].clone()).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to Vec<Vec<String>>",
-            arr[1]
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to Vec<Vec<String>>", arr[1]))
     })?;
 
     // trade format https://docs.kraken.com/websockets/#message-trade
@@ -237,11 +227,7 @@ pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
                 quantity_base: quantity,
                 quantity_quote: price * quantity,
                 quantity_contract: None,
-                side: if raw_trade[3] == "s" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade[3] == "s" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: timestamp.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -281,10 +267,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let orderbooks = if snapshot {
         let orderbook_snapshot = serde_json::from_value::<OrderbookSnapshot>(arr[1].clone())
             .map_err(|_e| {
-                SimpleError::new(format!(
-                    "Failed to deserialize {} to OrderbookSnapshot",
-                    arr[1]
-                ))
+                SimpleError::new(format!("Failed to deserialize {} to OrderbookSnapshot", arr[1]))
             })?;
 
         let timestamp = {
@@ -315,16 +298,8 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
                 timestamp,
                 seq_id: None,
                 prev_seq_id: None,
-                asks: orderbook_snapshot
-                    .asks
-                    .iter()
-                    .map(|x| parse_order(x))
-                    .collect(),
-                bids: orderbook_snapshot
-                    .bids
-                    .iter()
-                    .map(|x| parse_order(x))
-                    .collect(),
+                asks: orderbook_snapshot.asks.iter().map(|x| parse_order(x)).collect(),
+                bids: orderbook_snapshot.bids.iter().map(|x| parse_order(x)).collect(),
                 snapshot,
                 json: msg.to_string(),
             }]
@@ -356,27 +331,18 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
         if arr.len() == 4 {
             let update =
                 serde_json::from_value::<OrderbookUpdate>(arr[1].clone()).map_err(|_e| {
-                    SimpleError::new(format!(
-                        "Failed to deserialize {} to OrderbookUpdate",
-                        arr[1]
-                    ))
+                    SimpleError::new(format!("Failed to deserialize {} to OrderbookUpdate", arr[1]))
                 })?;
             process_update(update);
         } else if arr.len() == 5 {
             let update =
                 serde_json::from_value::<OrderbookUpdate>(arr[1].clone()).map_err(|_e| {
-                    SimpleError::new(format!(
-                        "Failed to deserialize {} to OrderbookUpdate",
-                        arr[1]
-                    ))
+                    SimpleError::new(format!("Failed to deserialize {} to OrderbookUpdate", arr[1]))
                 })?;
             process_update(update);
             let update =
                 serde_json::from_value::<OrderbookUpdate>(arr[2].clone()).map_err(|_e| {
-                    SimpleError::new(format!(
-                        "Failed to deserialize {} to OrderbookUpdate",
-                        arr[2]
-                    ))
+                    SimpleError::new(format!("Failed to deserialize {} to OrderbookUpdate", arr[2]))
                 })?;
             process_update(update);
         } else {

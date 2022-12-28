@@ -90,10 +90,7 @@ fn verify_spot_symbols() {
         );
 
         assert_eq!(pair, pair_expected);
-        assert_eq!(
-            MarketType::Spot,
-            get_market_type(&market.symbol, EXCHANGE_NAME, Some(true))
-        );
+        assert_eq!(MarketType::Spot, get_market_type(&market.symbol, EXCHANGE_NAME, Some(true)));
     }
 }
 
@@ -140,10 +137,7 @@ fn verify_option_symbols() {
     for market in markets.iter() {
         let pair = normalize_pair(&market.symbol, EXCHANGE_NAME).unwrap();
 
-        let base = market
-            .underlying
-            .strip_suffix(market.quoteAsset.as_str())
-            .unwrap();
+        let base = market.underlying.strip_suffix(market.quoteAsset.as_str()).unwrap();
         let pair_expected = format!(
             "{}/{}",
             normalize_currency(base, EXCHANGE_NAME),

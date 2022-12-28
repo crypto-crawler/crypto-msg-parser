@@ -19,9 +19,5 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
 
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {
     let lowercase = symbol.to_lowercase();
-    if lowercase.as_str() == symbol {
-        MarketType::Spot
-    } else {
-        MarketType::LinearSwap
-    }
+    if lowercase.as_str() == symbol { MarketType::Spot } else { MarketType::LinearSwap }
 }

@@ -48,10 +48,7 @@ impl Serialize for Order {
         let mut seq = serializer.serialize_seq(Some(len))?;
         seq.serialize_element(&self.price)?;
         // limit the number of decimals to 9
-        let quantity = format!("{:.9}", self.quantity)
-            .as_str()
-            .parse::<f64>()
-            .unwrap();
+        let quantity = format!("{:.9}", self.quantity).as_str().parse::<f64>().unwrap();
         seq.serialize_element(&quantity)?;
 
         seq.end()
@@ -77,10 +74,7 @@ impl<'de> Visitor<'de> for OrderVisitor {
             vec.push(elem);
         }
 
-        let order = Order {
-            price: vec[0] as Float,
-            quantity: vec[1] as Float,
-        };
+        let order = Order { price: vec[0] as Float, quantity: vec[1] as Float };
 
         Ok(order)
     }
@@ -101,27 +95,18 @@ mod tests {
 
     #[test]
     fn order_serialize() {
-        let order = Order {
-            price: 59999.8,
-            quantity: 1.7000000001,
-        };
+        let order = Order { price: 59999.8, quantity: 1.7000000001 };
         let text = serde_json::to_string(&order).unwrap();
         assert_eq!(text.as_str(), "[59999.8,1.7]");
 
-        let order = Order {
-            price: 59999.8,
-            quantity: 1.7000000006,
-        };
+        let order = Order { price: 59999.8, quantity: 1.7000000006 };
         let text = serde_json::to_string(&order).unwrap();
         assert_eq!(text.as_str(), "[59999.8,1.700000001]");
     }
 
     #[test]
     fn order_deserialize() {
-        let expected = Order {
-            price: 59999.8,
-            quantity: 1.7,
-        };
+        let expected = Order { price: 59999.8, quantity: 1.7 };
         let actual = serde_json::from_str::<Order>("[59999.8,1.7,101999.66,1.7]").unwrap();
         assert_eq!(expected.price, actual.price);
         assert_eq!(expected.quantity, actual.quantity);

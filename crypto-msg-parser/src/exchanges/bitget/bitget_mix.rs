@@ -49,10 +49,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
                 Ok(format!("{}_DMCBL", symbol))
             }
         }
-        _ => Err(SimpleError::new(format!(
-            "Unsupported instType {} in {}",
-            inst_type, msg
-        ))),
+        _ => Err(SimpleError::new(format!("Unsupported instType {} in {}", inst_type, msg))),
     }
 }
 
@@ -117,11 +114,8 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
             let timestamp = raw_trade[0].parse::<i64>().unwrap();
             let price = raw_trade[1].parse::<f64>().unwrap();
             let quantity = raw_trade[2].parse::<f64>().unwrap();
-            let side = if raw_trade[3].as_str() == "sell" {
-                TradeSide::Sell
-            } else {
-                TradeSide::Buy
-            };
+            let side =
+                if raw_trade[3].as_str() == "sell" { TradeSide::Sell } else { TradeSide::Buy };
             TradeMsg {
                 exchange: EXCHANGE_NAME.to_string(),
                 market_type,
@@ -181,11 +175,7 @@ pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
             price,
             quantity_base: quantity,
             quantity_quote: quantity * price,
-            quantity_contract: if market_type == MarketType::Spot {
-                None
-            } else {
-                Some(quantity)
-            },
+            quantity_contract: if market_type == MarketType::Spot { None } else { Some(quantity) },
         }
     };
 

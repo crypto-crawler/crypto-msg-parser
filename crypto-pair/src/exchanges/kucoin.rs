@@ -22,16 +22,10 @@ pub(crate) fn normalize_currency(currency: &str) -> String {
 pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
     let (base, quote) = if symbol.ends_with("USDM") {
         // inverse swap
-        (
-            symbol.strip_suffix("USDM").unwrap().to_string(),
-            "USD".to_string(),
-        )
+        (symbol.strip_suffix("USDM").unwrap().to_string(), "USD".to_string())
     } else if symbol.ends_with("USDTM") {
         // linear swap
-        (
-            symbol.strip_suffix("USDTM").unwrap().to_string(),
-            "USDT".to_string(),
-        )
+        (symbol.strip_suffix("USDTM").unwrap().to_string(), "USDT".to_string())
     } else if symbol[(symbol.len() - 2)..].parse::<i64>().is_ok() {
         // inverse future
         let base = &symbol[..symbol.len() - 4];
@@ -44,11 +38,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         panic!("Unknown symbol {}", symbol);
     };
 
-    Some(format!(
-        "{}/{}",
-        normalize_currency(&base),
-        normalize_currency(&quote)
-    ))
+    Some(format!("{}/{}", normalize_currency(&base), normalize_currency(&quote)))
 }
 
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {

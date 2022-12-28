@@ -36,9 +36,6 @@ fn verify_spot_symbols() {
         );
 
         assert_eq!(pair.as_str(), pair_expected);
-        assert_eq!(
-            MarketType::Spot,
-            get_market_type(&market.id, EXCHANGE_NAME, None)
-        );
+        assert_eq!(MarketType::Spot, get_market_type(&market.id, EXCHANGE_NAME, None));
     }
 }

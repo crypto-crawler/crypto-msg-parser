@@ -44,10 +44,7 @@ struct Response<T: Sized> {
 fn fetch_spot_quotes() -> BTreeSet<String> {
     if let Ok(txt) = http_get("https://api.huobi.pro/v1/common/symbols") {
         let resp = serde_json::from_str::<Response<SpotMarket>>(&txt).unwrap();
-        resp.data
-            .into_iter()
-            .map(|m| m.quote_currency)
-            .collect::<BTreeSet<String>>()
+        resp.data.into_iter().map(|m| m.quote_currency).collect::<BTreeSet<String>>()
     } else {
         BTreeSet::new()
     }

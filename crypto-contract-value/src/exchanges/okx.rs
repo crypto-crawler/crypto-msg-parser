@@ -226,10 +226,7 @@ fn fetch_contract_val(inst_type: &str) -> BTreeMap<String, f64> {
 
     let markets = {
         // doc: https://www.okx.com/docs-v5/en/#rest-api-public-data-get-instruments
-        let url = format!(
-            "https://www.okx.com/api/v5/public/instruments?instType={}",
-            inst_type
-        );
+        let url = format!("https://www.okx.com/api/v5/public/instruments?instType={}", inst_type);
         let txt = match http_get(url.as_str()) {
             Ok(txt) => {
                 let json_obj = serde_json::from_str::<HashMap<String, Value>>(&txt).unwrap();

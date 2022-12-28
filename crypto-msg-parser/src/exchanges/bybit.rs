@@ -125,12 +125,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg)
         .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
     if json_obj.contains_key("topic") && json_obj["topic"].is_string() {
-        let symbol = json_obj["topic"]
-            .as_str()
-            .unwrap()
-            .split('.')
-            .last()
-            .unwrap();
+        let symbol = json_obj["topic"].as_str().unwrap().split('.').last().unwrap();
         Ok(symbol.to_string())
     } else if json_obj.contains_key("ret_code")
         && json_obj.contains_key("ret_msg")
@@ -143,10 +138,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
         let arr = json_obj["result"].as_array().unwrap();
         Ok(arr[0]["symbol"].as_str().unwrap().to_string())
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
     }
 }
 
@@ -157,12 +149,7 @@ pub(crate) fn extract_timestamp(
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg)
         .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
     if json_obj.contains_key("topic") && json_obj["topic"].is_string() {
-        let msg_type = json_obj["topic"]
-            .as_str()
-            .unwrap()
-            .split('.')
-            .next()
-            .unwrap();
+        let msg_type = json_obj["topic"].as_str().unwrap().split('.').next().unwrap();
         match msg_type {
             "trade" => {
                 let raw_trades = json_obj["data"].as_array().unwrap();
@@ -172,11 +159,7 @@ pub(crate) fn extract_timestamp(
                         if raw_trade["trade_time_ms"].is_i64() {
                             raw_trade["trade_time_ms"].as_i64().unwrap()
                         } else {
-                            raw_trade["trade_time_ms"]
-                                .as_str()
-                                .unwrap()
-                                .parse::<i64>()
-                                .unwrap()
+                            raw_trade["trade_time_ms"].as_str().unwrap().parse::<i64>().unwrap()
                         }
                     })
                     .max();
@@ -209,10 +192,7 @@ pub(crate) fn extract_timestamp(
             .get("time_now")
             .map(|x| (x.as_str().unwrap().parse::<f64>().unwrap() * 1000.0) as i64))
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract timestamp from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
     }
 }
 
@@ -270,11 +250,7 @@ pub(crate) fn parse_trade(
                     // https://www.bybit.com/data/basic/future-inverse/contract-detail?symbol=BTCUSD0625
                     quantity_quote: raw_trade.size,
                     quantity_contract: Some(raw_trade.size),
-                    side: if raw_trade.side == "Sell" {
-                        TradeSide::Sell
-                    } else {
-                        TradeSide::Buy
-                    },
+                    side: if raw_trade.side == "Sell" { TradeSide::Sell } else { TradeSide::Buy },
                     trade_id: raw_trade.trade_id.clone(),
                     json: serde_json::to_string(&raw_trade).unwrap(),
                 })
@@ -327,10 +303,7 @@ pub(crate) fn parse_trade(
             }
             Ok(trades)
         }
-        _ => Err(SimpleError::new(format!(
-            "Unknown market_type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown market_type {}", market_type))),
     }
 }
 
@@ -348,12 +321,7 @@ pub(crate) fn parse_l2(
     let timestamp = if ws_msg.timestamp_e6.is_i64() {
         ws_msg.timestamp_e6.as_i64().unwrap()
     } else {
-        ws_msg
-            .timestamp_e6
-            .as_str()
-            .unwrap()
-            .parse::<i64>()
-            .unwrap()
+        ws_msg.timestamp_e6.as_str().unwrap().parse::<i64>().unwrap()
     } / 1000;
 
     let parse_order = |raw_order: &RawOrder| -> Order {
@@ -362,12 +330,7 @@ pub(crate) fn parse_l2(
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
 
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let mut orderbook = OrderBookMsg {
@@ -436,12 +399,7 @@ pub(crate) fn parse_l2(
                 v
             }
         }
-        _ => {
-            return Err(SimpleError::new(format!(
-                "Unknown market_type {}",
-                market_type
-            )))
-        }
+        _ => return Err(SimpleError::new(format!("Unknown market_type {}", market_type))),
     };
 
     for raw_order in raw_orders.iter() {
@@ -529,9 +487,6 @@ pub(crate) fn parse_candlestick(
                 .collect();
             Ok(candlestick_messages)
         }
-        _ => Err(SimpleError::new(format!(
-            "Unknown market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown market type {}", market_type))),
     }
 }

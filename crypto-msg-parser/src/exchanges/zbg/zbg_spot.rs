@@ -236,10 +236,7 @@ fn fetch_symbol_info() -> BTreeMap<i64, String> {
         let spot_markets = resp.datas;
 
         for spot_market in spot_markets.iter() {
-            mapping.insert(
-                spot_market.id.parse::<i64>().unwrap(),
-                spot_market.symbol.clone(),
-            );
+            mapping.insert(spot_market.id.parse::<i64>().unwrap(), spot_market.symbol.clone());
         }
     }
 
@@ -269,17 +266,11 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         let ret = if trade_statistic.len() > 1 {
             Ok("ALL".to_string())
         } else {
-            let symbol_id = trade_statistic[0][0]
-                .as_str()
-                .unwrap()
-                .parse::<i64>()
-                .unwrap();
+            let symbol_id = trade_statistic[0][0].as_str().unwrap().parse::<i64>().unwrap();
             if let Some(symbol) = SYMBOL_MAP.get(&symbol_id) {
                 Ok(symbol.to_string())
             } else {
-                Err(SimpleError::new(format!(
-                    "{symbol_id} NOT found in SYMBOL_MAP"
-                )))
+                Err(SimpleError::new(format!("{symbol_id} NOT found in SYMBOL_MAP")))
             }
         };
         return ret;
@@ -289,19 +280,13 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     } else if let Ok(arr) = serde_json::from_str::<Vec<Value>>(msg) {
         arr
     } else {
-        return Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )));
+        return Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)));
     };
     let msg_type = arr[0].as_str().unwrap();
     match msg_type {
         "T" | "E" => Ok(arr[3].as_str().unwrap().to_lowercase()),
         "K" | "AE" => Ok(arr[2].as_str().unwrap().to_lowercase()),
-        _ => Err(SimpleError::new(format!(
-            "Unsupported msg_type {} in {}",
-            msg_type, msg
-        ))),
+        _ => Err(SimpleError::new(format!("Unsupported msg_type {} in {}", msg_type, msg))),
     }
 }
 
@@ -325,10 +310,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     } else if let Ok(list) = serde_json::from_str::<Vec<Value>>(msg) {
         vec![list]
     } else {
-        return Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )));
+        return Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)));
     };
 
     let timestamp = arr_2d
@@ -377,11 +359,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
             assert_eq!(raw_trade[0], "T");
             let timestamp = raw_trade[2].parse::<i64>().unwrap() * 1000;
             let symbol = raw_trade[3].as_str();
-            let side = if raw_trade[4] == "ask" {
-                TradeSide::Sell
-            } else {
-                TradeSide::Buy
-            };
+            let side = if raw_trade[4] == "ask" { TradeSide::Sell } else { TradeSide::Buy };
             let price = raw_trade[5].parse::<f64>().unwrap();
             let quantity = raw_trade[6].parse::<f64>().unwrap();
 
@@ -417,8 +395,8 @@ struct OrderbookSnapshot {
 
 // https://zbgapi.github.io/docs/spot/v1/en/#market-depth
 // snapshot：
-// [AE, symbol-id, symbol, timestamp, asks:[[price, quantity]], bids[[price, quantity]]]
-// update:
+// [AE, symbol-id, symbol, timestamp, asks:[[price, quantity]], bids[[price,
+// quantity]]] update:
 // [E, symbol-id, timestamp, symbol, ask/bid, price, quantity]
 pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let snapshot = msg.starts_with(r#"[["AE","#);
@@ -462,24 +440,14 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
                 let timestamp = raw_orderbook[3].as_str().unwrap().parse::<i64>().unwrap() * 1000;
 
                 let asks = serde_json::from_value::<Vec<[Value; 2]>>(
-                    raw_orderbook[4]
-                        .as_object()
-                        .unwrap()
-                        .get("asks")
-                        .unwrap()
-                        .clone(),
+                    raw_orderbook[4].as_object().unwrap().get("asks").unwrap().clone(),
                 )
                 .unwrap()
                 .iter()
                 .map(|x| parse_order(x))
                 .collect::<Vec<Order>>();
                 let bids = serde_json::from_value::<Vec<[Value; 2]>>(
-                    raw_orderbook[5]
-                        .as_object()
-                        .unwrap()
-                        .get("bids")
-                        .unwrap()
-                        .clone(),
+                    raw_orderbook[5].as_object().unwrap().get("bids").unwrap().clone(),
                 )
                 .unwrap()
                 .iter()
@@ -498,10 +466,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
                     asks,
                     bids,
                     snapshot,
-                    json: serde_json::to_string(raw_orderbook)
-                        .unwrap()
-                        .as_str()
-                        .to_string(),
+                    json: serde_json::to_string(raw_orderbook).unwrap().as_str().to_string(),
                 }
             })
             .collect::<Vec<OrderBookMsg>>();

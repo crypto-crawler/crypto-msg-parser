@@ -28,10 +28,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         let pos = key.find(':').unwrap();
         Ok(key[pos + 1..].to_string())
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
     }
 }
 
@@ -53,10 +50,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 if let Some(timestamp) = arr[2].as_array().unwrap()[1].as_i64() {
                     Ok(Some(timestamp))
                 } else {
-                    Err(SimpleError::new(format!(
-                        "Failed to extract timestamp from {}",
-                        msg
-                    )))
+                    Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
                 }
             } else if arr[1].is_array() {
                 // snapshot
@@ -64,10 +58,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 let timestamp = raw_trades.iter().map(|raw_trade| raw_trade[1] as i64).max();
                 Ok(timestamp) // Sometimes data can be empty, for example: [{"channel":"trades","symbol":"tBTC:CNHT"}, []]
             } else {
-                Err(SimpleError::new(format!(
-                    "Failed to extract timestamp from {}",
-                    msg
-                )))
+                Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
             }
         }
         "candles" => {
@@ -80,10 +71,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             }
         }
         "book" | "ticker" => Ok(None),
-        _ => Err(SimpleError::new(format!(
-            "Failed to extract timestamp from {}",
-            msg
-        ))),
+        _ => Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg))),
     }
 }
 
@@ -109,11 +97,7 @@ fn parse_one_trade(market_type: MarketType, symbol: &str, nums: &[f64]) -> Trade
         quantity_base,
         quantity_quote,
         quantity_contract,
-        side: if quantity < 0.0 {
-            TradeSide::Sell
-        } else {
-            TradeSide::Buy
-        },
+        side: if quantity < 0.0 { TradeSide::Sell } else { TradeSide::Buy },
         trade_id: trade_id.to_string(),
         json: serde_json::to_string(&nums).unwrap(),
     }
@@ -130,10 +114,7 @@ pub(crate) fn parse_trade(
     let symbol = if let Some(symbol) = obj.get("symbol") {
         symbol.as_str().unwrap()
     } else {
-        return Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )));
+        return Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)));
     };
 
     // see https://docs.bitfinex.com/reference#ws-public-trades
@@ -148,10 +129,8 @@ pub(crate) fn parse_trade(
         None => {
             // snapshot
             let nums_arr: Vec<Vec<f64>> = serde_json::from_value(arr[1].clone()).unwrap();
-            let mut trades: Vec<TradeMsg> = nums_arr
-                .iter()
-                .map(|nums| parse_one_trade(market_type, symbol, nums))
-                .collect();
+            let mut trades: Vec<TradeMsg> =
+                nums_arr.iter().map(|nums| parse_one_trade(market_type, symbol, nums)).collect();
             if trades.len() == 1 {
                 trades[0].json = msg.to_string();
             }
@@ -186,21 +165,12 @@ pub(crate) fn parse_l2(
     let parse_order = |x: &[f64; 3]| -> Order {
         let price = x[0];
         // delete price level if count = 0
-        let quantity = if (x[1] as i32) == 0 {
-            0.0
-        } else {
-            f64::abs(x[2])
-        };
+        let quantity = if (x[1] as i32) == 0 { 0.0 } else { f64::abs(x[2]) };
 
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
 
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let mut orderbook = OrderBookMsg {
@@ -275,8 +245,11 @@ fn parse_one_candle(
 ///
 /// Samples:
 ///
-/// * `[{"key":"trade:5m:tBTCF0:USTF0","channel":"candles"},[1656649200000,19578,19599,19599,19560,1.51796395]]`
-/// * `[{"key":"trade:1m:tBTCF0:USTF0","channel":"candles"},[[1656649380000,19590,19593,19593,19590,0.02779935],[1656649320000,19564,19588,19588,19560,0.7836714499999999]]]`
+/// * `[{"key":"trade:5m:tBTCF0:USTF0","channel":"candles"},[1656649200000,
+///   19578,19599,19599,19560,1.51796395]]`
+/// * `[{"key":"trade:1m:tBTCF0:USTF0","channel":"candles"},[[1656649380000,
+///   19590,19593,19593,19590,0.02779935],[1656649320000,19564,19588,19588,
+///   19560,0.7836714499999999]]]`
 pub(crate) fn parse_candlestick(
     market_type: MarketType,
     msg: &str,
@@ -284,11 +257,8 @@ pub(crate) fn parse_candlestick(
     let ws_msg = serde_json::from_str::<Vec<Value>>(msg).map_err(SimpleError::from)?;
 
     let (symbol, period) = {
-        let key = ws_msg[0].as_object().unwrap()["key"]
-            .as_str()
-            .unwrap()
-            .strip_prefix("trade:")
-            .unwrap();
+        let key =
+            ws_msg[0].as_object().unwrap()["key"].as_str().unwrap().strip_prefix("trade:").unwrap();
         let pos = key.find(':').unwrap();
         let period = &key[..pos];
         let symbol = &key[pos + 1..];

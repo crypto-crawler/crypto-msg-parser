@@ -25,10 +25,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
             let symbol = channel.split('_').next().unwrap();
             Ok(symbol.to_string())
         } else {
-            Err(SimpleError::new(format!(
-                "Failed to extract symbol from {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
         }
     } else if obj.contains_key("asks") && obj.contains_key("bids") {
         // e.g., https://api.zbex.site/data/v1/depth?market=btc_usdt&size=50

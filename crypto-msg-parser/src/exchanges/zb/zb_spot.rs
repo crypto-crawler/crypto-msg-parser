@@ -44,10 +44,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                     Ok(timestamp)
                 }
             }
-            _ => Err(SimpleError::new(format!(
-                "Failed to extract timestamp from {}",
-                msg
-            ))),
+            _ => Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg))),
         }
     } else {
         // RESTful
@@ -93,10 +90,7 @@ struct L2TopKMsg {
 
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
     })?;
     debug_assert_eq!("trades", ws_msg.dataType);
     debug_assert!(ws_msg.channel.ends_with("_trades"));
@@ -120,11 +114,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
                 quantity_base,
                 quantity_quote: price * quantity_base,
                 quantity_contract: None,
-                side: if raw_trade.type_ == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.type_ == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.tid.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -135,9 +125,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 }
 
 pub(super) fn parse_l2(_msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
-    Err(SimpleError::new(
-        "ZB spor market doesn't provide incrememtal level2 channel",
-    ))
+    Err(SimpleError::new("ZB spor market doesn't provide incrememtal level2 channel"))
 }
 
 pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {

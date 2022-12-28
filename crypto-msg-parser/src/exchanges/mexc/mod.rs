@@ -46,10 +46,8 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 let data = arr[1]["data"].as_object().unwrap();
                 if let Some(deals) = data.get("deals") {
                     let raw_trades = deals.as_array().unwrap();
-                    let timestamp = raw_trades
-                        .iter()
-                        .map(|raw_trade| raw_trade["t"].as_i64().unwrap())
-                        .max();
+                    let timestamp =
+                        raw_trades.iter().map(|raw_trade| raw_trade["t"].as_i64().unwrap()).max();
 
                     if timestamp.is_none() {
                         Err(SimpleError::new(format!("deals is empty in {}", msg)))
@@ -65,10 +63,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 let t = data["t"].as_i64().unwrap();
                 Ok(Some(t * 1000))
             }
-            _ => Err(SimpleError::new(format!(
-                "Unknown channel {} in {}",
-                channel, msg
-            ))),
+            _ => Err(SimpleError::new(format!("Unknown channel {} in {}", channel, msg))),
         }
     } else if let Ok(json_obj) = serde_json::from_str::<HashMap<String, Value>>(msg) {
         if json_obj.contains_key("code") && json_obj.contains_key("data") {
@@ -108,10 +103,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             }
         }
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
     }
 }
 

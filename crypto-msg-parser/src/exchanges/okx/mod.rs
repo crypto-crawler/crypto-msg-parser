@@ -48,9 +48,8 @@ pub(crate) fn extract_timestamp(
 }
 
 pub(crate) fn get_msg_type(msg: &str) -> MessageType {
-    let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(SimpleError::from)
-        .unwrap();
+    let obj =
+        serde_json::from_str::<HashMap<String, Value>>(msg).map_err(SimpleError::from).unwrap();
     if obj.contains_key("arg") && obj.contains_key("data") {
         // websocket v5
         okx_v5::get_msg_type(msg)
@@ -70,9 +69,8 @@ pub(crate) fn parse_trade(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
-    let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(SimpleError::from)
-        .unwrap();
+    let obj =
+        serde_json::from_str::<HashMap<String, Value>>(msg).map_err(SimpleError::from).unwrap();
     if obj.contains_key("arg") && obj.contains_key("data") {
         okx_v5::parse_trade(market_type, msg)
     } else if obj.contains_key("table") && obj.contains_key("data") {
@@ -86,9 +84,8 @@ pub(crate) fn parse_l2(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
-    let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(SimpleError::from)
-        .unwrap();
+    let obj =
+        serde_json::from_str::<HashMap<String, Value>>(msg).map_err(SimpleError::from).unwrap();
     if obj.contains_key("arg") && obj.contains_key("data") {
         okx_v5::parse_l2(market_type, msg)
     } else if obj.contains_key("table") && obj.contains_key("data") {

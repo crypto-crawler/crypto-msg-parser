@@ -18,10 +18,8 @@ pub fn check_trade_fields(
     assert_eq!(trade.pair, pair);
     assert_eq!(trade.symbol, symbol);
     assert_eq!(trade.msg_type, MessageType::Trade);
-    if [
-        "binance", "bitget", "bitmex", "bybit", "deribit", "ftx", "huobi", "okex",
-    ]
-    .contains(&exchange)
+    if ["binance", "bitget", "bitmex", "bybit", "deribit", "ftx", "huobi", "okex"]
+        .contains(&exchange)
     {
         assert_eq!(MessageType::Trade, get_msg_type(exchange, raw_msg));
     }
@@ -29,10 +27,7 @@ pub fn check_trade_fields(
     assert!(trade.quantity_base > 0.0);
     assert!(trade.quantity_quote > 0.0);
     if exchange != "bitmex" {
-        assert_eq!(
-            round(trade.quantity_quote),
-            round(trade.price * trade.quantity_base)
-        );
+        assert_eq!(round(trade.quantity_quote), round(trade.price * trade.quantity_base));
     }
     assert!(!trade.trade_id.is_empty());
     assert_eq!(trade.timestamp.to_string().len(), 13);
@@ -52,10 +47,8 @@ pub fn check_orderbook_fields(
     assert_eq!(orderbook.msg_type, msg_type);
     assert_eq!(orderbook.pair, pair);
     assert_eq!(orderbook.symbol, symbol);
-    if [
-        "binance", "bitget", "bitmex", "bybit", "deribit", "ftx", "huobi", "okex",
-    ]
-    .contains(&exchange)
+    if ["binance", "bitget", "bitmex", "bybit", "deribit", "ftx", "huobi", "okex"]
+        .contains(&exchange)
     {
         assert_eq!(msg_type, get_msg_type(exchange, raw_msg));
     }

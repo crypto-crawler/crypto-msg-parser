@@ -89,11 +89,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
                 quantity_base: quantity,
                 quantity_quote: price * quantity,
                 quantity_contract: None,
-                side: if raw_trade.T == 2 {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.T == 2 { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.t.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -111,12 +107,7 @@ fn parse_order(raw_order: &RawOrder) -> Order {
     let quantity_base = raw_order.q.parse::<f64>().unwrap();
     let quantity_quote = raw_order.a.parse::<f64>().unwrap();
 
-    Order {
-        price,
-        quantity_base,
-        quantity_quote,
-        quantity_contract: None,
-    }
+    Order { price, quantity_base, quantity_quote, quantity_contract: None }
 }
 
 pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, SimpleError> {
@@ -205,18 +196,8 @@ pub(super) fn parse_l2_topk(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMs
         timestamp,
         seq_id: ws_msg.version.map(|v| v.parse::<u64>().unwrap()),
         prev_seq_id: None,
-        asks: ws_msg
-            .data
-            .asks
-            .iter()
-            .map(parse_order)
-            .collect::<Vec<Order>>(),
-        bids: ws_msg
-            .data
-            .bids
-            .iter()
-            .map(parse_order)
-            .collect::<Vec<Order>>(),
+        asks: ws_msg.data.asks.iter().map(parse_order).collect::<Vec<Order>>(),
+        bids: ws_msg.data.bids.iter().map(parse_order).collect::<Vec<Order>>(),
         snapshot: true,
         json: msg.to_string(),
     };

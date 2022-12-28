@@ -55,11 +55,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
         Ok(raw_msg.data["symbol"].as_str().unwrap().to_string())
     } else if raw_msg.data.is_array() {
         let arr = raw_msg.data.as_array().unwrap();
-        let symbol = arr
-            .iter()
-            .map(|v| v["symbol"].as_str().unwrap())
-            .next()
-            .unwrap();
+        let symbol = arr.iter().map(|v| v["symbol"].as_str().unwrap()).next().unwrap();
         Ok(symbol.to_string())
     } else {
         Err(SimpleError::new(format!("Unknown message format: {}", msg)))
@@ -80,10 +76,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
     })?;
     let raw_trades = if ws_msg.code == "00006" {
         // snapshot
@@ -98,10 +91,7 @@ pub(crate) fn parse_trade(
     } else if ws_msg.code == "00007" {
         // updates
         let ws_msg = serde_json::from_str::<WebsocketMsg<SpotTradeMsg>>(msg).map_err(|_e| {
-            SimpleError::new(format!(
-                "Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>",
-                msg
-            ))
+            SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>", msg))
         })?;
         vec![ws_msg.data]
     } else {
@@ -124,11 +114,7 @@ pub(crate) fn parse_trade(
                 quantity_base: quantity,
                 quantity_quote: price * quantity,
                 quantity_contract: None,
-                side: if raw_trade.s == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.s == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.ver.clone(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -145,10 +131,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
     })?;
     debug_assert_eq!(ws_msg.topic, "ORDERBOOK");
     let snapshot = if ws_msg.code == "00006" {

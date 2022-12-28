@@ -79,10 +79,7 @@ struct RawCandlestickMsg {
 
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<TradeTick>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<TradeTick>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<TradeTick>", msg))
     })?;
 
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
@@ -104,11 +101,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
             quantity_base: raw_trade.amount,
             quantity_quote: raw_trade.price * raw_trade.amount,
             quantity_contract: None,
-            side: if raw_trade.direction == "sell" {
-                TradeSide::Sell
-            } else {
-                TradeSide::Buy
-            },
+            side: if raw_trade.direction == "sell" { TradeSide::Sell } else { TradeSide::Buy },
             trade_id: raw_trade.tradeId.to_string(),
             json: serde_json::to_string(&raw_trade).unwrap(),
         })
@@ -122,10 +115,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 
 pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
     })?;
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
@@ -160,20 +150,8 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
         timestamp,
         seq_id: ws_msg.tick.seq_num,
         prev_seq_id: ws_msg.tick.prev_seq_num,
-        asks: ws_msg
-            .tick
-            .asks
-            .into_iter()
-            .flatten()
-            .map(|x| parse_order(&x))
-            .collect(),
-        bids: ws_msg
-            .tick
-            .bids
-            .into_iter()
-            .flatten()
-            .map(|x| parse_order(&x))
-            .collect(),
+        asks: ws_msg.tick.asks.into_iter().flatten().map(|x| parse_order(&x)).collect(),
+        bids: ws_msg.tick.bids.into_iter().flatten().map(|x| parse_order(&x)).collect(),
         snapshot: msg_type == MessageType::L2TopK,
         json: msg.to_string(),
     };

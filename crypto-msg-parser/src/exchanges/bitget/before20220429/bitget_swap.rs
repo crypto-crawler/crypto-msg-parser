@@ -43,10 +43,7 @@ struct WebsocketMsg<T: Sized> {
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
     })?;
     if ws_msg.data.is_array() {
         let instrument_ids = ws_msg
@@ -64,29 +61,17 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     } else if ws_msg.data.is_object() && ws_msg.data.get("instrument_id").is_some() {
         Ok(ws_msg.data["instrument_id"].as_str().unwrap().to_string())
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
     }
 }
 
 pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
     })?;
     let table = ws_msg.table.as_str();
     let timestamp = if table.starts_with("swap/candle") {
-        Some(
-            ws_msg.data["candle"].as_array().unwrap()[0]
-                .as_str()
-                .unwrap()
-                .parse::<i64>()
-                .unwrap(),
-        )
+        Some(ws_msg.data["candle"].as_array().unwrap()[0].as_str().unwrap().parse::<i64>().unwrap())
     } else {
         ws_msg
             .data
@@ -135,10 +120,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<SwapTradeMsg>>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SwapTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SwapTradeMsg>", msg))
     })?;
     let mut trades: Vec<TradeMsg> = ws_msg
         .data
@@ -162,11 +144,7 @@ pub(super) fn parse_trade(
                 quantity_base,
                 quantity_quote,
                 quantity_contract,
-                side: if raw_trade.side == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.side == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 // Use timestamp as ID because bitget doesn't provide trade_id
                 trade_id: raw_trade.timestamp.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
@@ -262,12 +240,7 @@ pub(super) fn parse_l2(
             let quantity = raw_order[1].parse::<f64>().unwrap();
             let (quantity_base, quantity_quote, quantity_contract) =
                 calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
-            Order {
-                price,
-                quantity_base,
-                quantity_quote,
-                quantity_contract,
-            }
+            Order { price, quantity_base, quantity_quote, quantity_contract }
         };
 
         let orderbook = OrderBookMsg {

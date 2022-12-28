@@ -32,10 +32,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     } else if json_obj.contains_key("topic") {
         json_obj["topic"].as_str().unwrap()
     } else {
-        return Err(SimpleError::new(format!(
-            "No channel or topic found in {}",
-            msg
-        )));
+        return Err(SimpleError::new(format!("No channel or topic found in {}", msg)));
     };
     if channel == "public.*.funding_rate" {
         Ok("ALL".to_string())
@@ -96,10 +93,7 @@ pub(crate) fn parse_trade(
         MarketType::LinearFuture | MarketType::LinearSwap | MarketType::EuropeanOption => {
             huobi_linear::parse_trade(market_type, msg)
         }
-        _ => Err(SimpleError::new(format!(
-            "Unknown huobi market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown huobi market type {}", market_type))),
     }
 }
 
@@ -110,10 +104,7 @@ pub(crate) fn parse_funding_rate(
     if market_type == MarketType::InverseSwap || market_type == MarketType::LinearSwap {
         funding_rate::parse_funding_rate(market_type, msg)
     } else {
-        Err(SimpleError::new(format!(
-            "Huobi {} does NOT have funding rates",
-            market_type
-        )))
+        Err(SimpleError::new(format!("Huobi {} does NOT have funding rates", market_type)))
     }
 }
 
@@ -129,10 +120,7 @@ pub(crate) fn parse_l2(
         MarketType::LinearFuture | MarketType::LinearSwap | MarketType::EuropeanOption => {
             huobi_inverse::parse_l2(market_type, msg)
         }
-        _ => Err(SimpleError::new(format!(
-            "Unknown huobi market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown huobi market type {}", market_type))),
     }
 }
 
@@ -152,10 +140,7 @@ pub(crate) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
         MarketType::LinearFuture | MarketType::LinearSwap | MarketType::EuropeanOption => {
             huobi_inverse::parse_bbo(market_type, msg)
         }
-        _ => Err(SimpleError::new(format!(
-            "Unknown huobi market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown huobi market type {}", market_type))),
     }
 }
 
@@ -169,9 +154,6 @@ pub(crate) fn parse_candlestick(
             huobi_inverse::parse_candlestick(market_type, msg)
         }
         MarketType::LinearSwap => huobi_linear::parse_candlestick(market_type, msg),
-        _ => Err(SimpleError::new(format!(
-            "Unknown huobi market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown huobi market type {}", market_type))),
     }
 }

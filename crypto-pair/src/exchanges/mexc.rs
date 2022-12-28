@@ -5,11 +5,7 @@ pub(crate) fn get_market_type(symbol: &str, is_spot: Option<bool>) -> MarketType
         MarketType::InverseSwap
     } else if symbol.ends_with("_USDT") {
         if let Some(is_spot) = is_spot {
-            if is_spot {
-                MarketType::Spot
-            } else {
-                MarketType::LinearSwap
-            }
+            if is_spot { MarketType::Spot } else { MarketType::LinearSwap }
         } else {
             MarketType::LinearSwap
         }

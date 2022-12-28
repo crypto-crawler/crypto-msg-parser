@@ -67,11 +67,7 @@ struct WebsocketMsg<T: Sized> {
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(SimpleError::from)?;
-    let symbol = ws_msg
-        .data
-        .iter()
-        .map(|v| v["instrument_id"].as_str().unwrap())
-        .next();
+    let symbol = ws_msg.data.iter().map(|v| v["instrument_id"].as_str().unwrap()).next();
     if let Some(symbol) = symbol {
         Ok(symbol.to_string())
     } else {
@@ -94,9 +90,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                     .timestamp_millis()
             } else if let Some(candle) = x.get("candle") {
                 let arr = candle.as_array().unwrap();
-                DateTime::parse_from_rfc3339(arr[0].as_str().unwrap())
-                    .unwrap()
-                    .timestamp_millis()
+                DateTime::parse_from_rfc3339(arr[0].as_str().unwrap()).unwrap().timestamp_millis()
             } else {
                 panic!("Unknown message format: {}", msg);
             }
@@ -142,10 +136,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
     })?;
     let mut trades: Vec<Result<TradeMsg, SimpleError>> = ws_msg
         .data
@@ -158,9 +149,7 @@ pub(super) fn parse_trade(
             } else if raw_trade.size.is_some() {
                 raw_trade.size.clone().unwrap().parse::<f64>().unwrap()
             } else {
-                return Err(SimpleError::new(
-                    "qty and size are both missing".to_string(),
-                ));
+                return Err(SimpleError::new("qty and size are both missing".to_string()));
             };
             let side = raw_trade.side.clone().unwrap();
             let pair =
@@ -178,16 +167,8 @@ pub(super) fn parse_trade(
                 price,
                 quantity_base,
                 quantity_quote,
-                quantity_contract: if market_type == MarketType::Spot {
-                    None
-                } else {
-                    Some(size)
-                },
-                side: if side.as_str() == "sell" {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                quantity_contract: if market_type == MarketType::Spot { None } else { Some(size) },
+                side: if side.as_str() == "sell" { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.trade_id.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             })
@@ -245,18 +226,12 @@ pub(super) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
     })?;
     debug_assert_eq!(ws_msg.data.len(), 1);
 
-    let msg_type = if ws_msg.table.ends_with("/depth5") {
-        MessageType::L2TopK
-    } else {
-        MessageType::L2Event
-    };
+    let msg_type =
+        if ws_msg.table.ends_with("/depth5") { MessageType::L2TopK } else { MessageType::L2Event };
     let snapshot = if let Some(action) = ws_msg.action {
         action == "partial"
     } else {
@@ -277,12 +252,7 @@ pub(super) fn parse_l2(
                 let (quantity_base, quantity_quote, quantity_contract) =
                     calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
 
-                Order {
-                    price,
-                    quantity_base,
-                    quantity_quote,
-                    quantity_contract,
-                }
+                Order { price, quantity_base, quantity_quote, quantity_contract }
             };
 
             OrderBookMsg {
@@ -294,16 +264,8 @@ pub(super) fn parse_l2(
                 timestamp: timestamp.timestamp_millis(),
                 seq_id: None,
                 prev_seq_id: None,
-                asks: raw_orderbook
-                    .asks
-                    .iter()
-                    .map(|x| parse_order(x))
-                    .collect::<Vec<Order>>(),
-                bids: raw_orderbook
-                    .bids
-                    .iter()
-                    .map(|x| parse_order(x))
-                    .collect::<Vec<Order>>(),
+                asks: raw_orderbook.asks.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
+                bids: raw_orderbook.bids.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
                 snapshot,
                 json: serde_json::to_string(raw_orderbook).unwrap(),
             }

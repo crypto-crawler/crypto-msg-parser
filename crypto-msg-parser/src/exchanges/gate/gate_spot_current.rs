@@ -103,18 +103,12 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
             let symbol = &n[(pos + 1)..];
             Ok(symbol.to_string())
         } else {
-            Err(SimpleError::new(format!(
-                "Unsupported websocket message format {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unsupported websocket message format {}", msg)))
         }
     } else if serde_json::from_str::<SpotRestL2SnapshotMsg>(msg).is_ok() {
         Ok("NONE".to_string())
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
@@ -122,11 +116,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     if let Ok(ws_msg) = serde_json::from_str::<WebsocketMsg<HashMap<String, Value>>>(msg) {
         if ws_msg.channel == "spot.trades" {
             Ok(Some(
-                ws_msg.result["create_time_ms"]
-                    .as_str()
-                    .unwrap()
-                    .parse::<f64>()
-                    .unwrap() as i64,
+                ws_msg.result["create_time_ms"].as_str().unwrap().parse::<f64>().unwrap() as i64
             ))
         } else if ws_msg.channel.starts_with("spot.order_book")
             || ws_msg.channel == "spot.book_ticker"
@@ -138,19 +128,13 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     } else if let Ok(l2_snapshot) = serde_json::from_str::<SpotRestL2SnapshotMsg>(msg) {
         Ok(Some(l2_snapshot.current))
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
     }
 }
 
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotTradeMsg>", msg))
     })?;
     debug_assert_eq!(ws_msg.channel, "spot.trades");
     debug_assert_eq!(ws_msg.event, "update");
@@ -172,11 +156,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
         quantity_base,
         quantity_quote: price * quantity_base,
         quantity_contract: None,
-        side: if result.side == "sell" {
-            TradeSide::Sell
-        } else {
-            TradeSide::Buy
-        },
+        side: if result.side == "sell" { TradeSide::Sell } else { TradeSide::Buy },
         trade_id: result.id.to_string(),
         json: msg.to_string(),
     };
@@ -187,12 +167,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 fn parse_order(raw_order: &[String; 2]) -> Order {
     let price = raw_order[0].parse::<f64>().unwrap();
     let quantity_base = raw_order[1].parse::<f64>().unwrap();
-    Order {
-        price,
-        quantity_base,
-        quantity_quote: price * quantity_base,
-        quantity_contract: None,
-    }
+    Order { price, quantity_base, quantity_quote: price * quantity_base, quantity_contract: None }
 }
 
 pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {

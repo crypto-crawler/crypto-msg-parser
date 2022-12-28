@@ -47,10 +47,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
     })?;
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
@@ -76,11 +73,7 @@ pub(super) fn parse_trade(
         quantity_base,
         quantity_quote,
         quantity_contract: Some(raw_trade.v),
-        side: if raw_trade.T == 2 {
-            TradeSide::Sell
-        } else {
-            TradeSide::Buy
-        },
+        side: if raw_trade.T == 2 { TradeSide::Sell } else { TradeSide::Buy },
         trade_id: raw_trade.t.to_string(),
         json: msg.to_string(),
     };
@@ -93,10 +86,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
     })?;
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
@@ -113,12 +103,7 @@ pub(crate) fn parse_l2(
         let quantity = raw_order[1];
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(super::EXCHANGE_NAME, market_type, &pair, price, quantity);
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbook = OrderBookMsg {
@@ -130,18 +115,8 @@ pub(crate) fn parse_l2(
         timestamp: ws_msg.ts,
         seq_id: ws_msg.data.version,
         prev_seq_id: None,
-        asks: ws_msg
-            .data
-            .asks
-            .iter()
-            .map(|x| parse_order(x))
-            .collect::<Vec<Order>>(),
-        bids: ws_msg
-            .data
-            .bids
-            .iter()
-            .map(|x| parse_order(x))
-            .collect::<Vec<Order>>(),
+        asks: ws_msg.data.asks.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
+        bids: ws_msg.data.bids.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
         snapshot: msg_type == MessageType::L2TopK,
         json: msg.to_string(),
     };

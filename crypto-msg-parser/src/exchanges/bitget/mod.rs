@@ -29,22 +29,12 @@ pub(crate) fn extract_symbol(market_type: MarketType, msg: &str) -> Result<Strin
         // from RESTful API
         if code == "00000" {
             let symbol = obj["data"].get("symbol").map(|x| x.as_str().unwrap());
-            if let Some(symbol) = symbol {
-                Ok(symbol.to_string())
-            } else {
-                Ok("NONE".to_string())
-            }
+            if let Some(symbol) = symbol { Ok(symbol.to_string()) } else { Ok("NONE".to_string()) }
         } else {
-            Err(SimpleError::new(format!(
-                "This is a failed HTTP response {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("This is a failed HTTP response {}", msg)))
         }
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract symbol from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
     }
 }
 
@@ -65,21 +55,14 @@ pub(crate) fn extract_timestamp(
         let code = obj["code"].as_str().unwrap();
         // from RESTful API
         if code == "00000" {
-            let timestamp = obj["data"]
-                .get("timestamp")
-                .map(|x| x.as_str().unwrap().parse::<i64>().unwrap());
+            let timestamp =
+                obj["data"].get("timestamp").map(|x| x.as_str().unwrap().parse::<i64>().unwrap());
             Ok(timestamp)
         } else {
-            Err(SimpleError::new(format!(
-                "This is a failed HTTP response {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("This is a failed HTTP response {}", msg)))
         }
     } else {
-        Err(SimpleError::new(format!(
-            "Failed to extract timestamp from {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
     }
 }
 
@@ -137,10 +120,7 @@ pub(crate) fn parse_trade(
     } else if obj.contains_key("data") && obj.contains_key("arg") {
         bitget_mix::parse_trade(msg)
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported Trade message {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported Trade message {}", msg)))
     }
 }
 
@@ -155,10 +135,7 @@ pub(crate) fn parse_l2(
     } else if obj.contains_key("data") && obj.contains_key("arg") {
         bitget_mix::parse_l2(msg)
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported L2Event message {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported L2Event message {}", msg)))
     }
 }
 
@@ -189,9 +166,6 @@ pub(crate) fn parse_funding_rate(
     } else if obj.contains_key("data") && obj.contains_key("arg") {
         Err(SimpleError::new("Not implemented"))
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported FundingRate message {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported FundingRate message {}", msg)))
     }
 }

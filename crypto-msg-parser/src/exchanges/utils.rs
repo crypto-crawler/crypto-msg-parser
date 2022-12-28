@@ -7,10 +7,7 @@ use serde_json::Value;
 
 pub(super) fn http_get(url: &str) -> Result<String> {
     let mut headers = header::HeaderMap::new();
-    headers.insert(
-        header::CONTENT_TYPE,
-        header::HeaderValue::from_static("application/json"),
-    );
+    headers.insert(header::CONTENT_TYPE, header::HeaderValue::from_static("application/json"));
 
     let client = reqwest::blocking::Client::builder()
          .default_headers(headers)
@@ -50,11 +47,7 @@ pub(super) fn calc_quantity_and_volume(
         }
         MarketType::LinearSwap | MarketType::LinearFuture | MarketType::Move | MarketType::BVOL => {
             let quantity_base = quantity * contract_value;
-            (
-                round(quantity_base),
-                round(quantity_base * price),
-                Some(quantity),
-            )
+            (round(quantity_base), round(quantity_base * price), Some(quantity))
         }
         MarketType::EuropeanOption => {
             let quantity_base = quantity * contract_value;
@@ -85,9 +78,7 @@ pub(super) fn convert_timestamp(v: &Value) -> Option<i64> {
         Some(convert_unix_timestamp_if_needed(ts))
     } else if v.is_string() {
         let s = v.as_str().unwrap();
-        let ts = s
-            .parse::<i64>()
-            .unwrap_or_else(|_| panic!("{}", v.to_string()));
+        let ts = s.parse::<i64>().unwrap_or_else(|_| panic!("{}", v.to_string()));
         Some(convert_unix_timestamp_if_needed(ts))
     } else {
         None

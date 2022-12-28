@@ -64,11 +64,7 @@ fn fetch_swap_markets_raw() -> Vec<SwapMarket> {
     }
     if let Ok(txt) = http_get("https://www.zbg.com/exchange/api/v1/future/common/contracts") {
         if let Ok(resp) = serde_json::from_str::<Response>(&txt) {
-            if resp.resMsg.code != "1" {
-                Vec::new()
-            } else {
-                resp.datas
-            }
+            if resp.resMsg.code != "1" { Vec::new() } else { resp.datas }
         } else {
             Vec::new()
         }
@@ -83,10 +79,7 @@ fn fetch_contract_val() -> BTreeMap<String, f64> {
     for market in markets {
         let contract_value = market.contractUnit.parse::<f64>().unwrap();
         assert!(contract_value > 0.0);
-        mapping.insert(
-            crypto_pair::normalize_pair(&market.symbol, "zbg").unwrap(),
-            contract_value,
-        );
+        mapping.insert(crypto_pair::normalize_pair(&market.symbol, "zbg").unwrap(), contract_value);
     }
     mapping
 }

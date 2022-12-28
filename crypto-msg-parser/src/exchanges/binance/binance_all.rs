@@ -65,7 +65,8 @@ struct RawOrderbookMsg {
     ps: Option<String>, // Pair, available to L2_TOPK
     U: u64,             // First update ID in event
     u: u64,             // Final update ID in event
-    pu: Option<i64>, // Previous event update sequense ("u" of previous message), -1 also means None
+    pu: Option<i64>,    /* Previous event update sequense ("u" of previous message), -1 also
+                         * means None */
     b: Vec<RawOrder>,
     a: Vec<RawOrder>,
     #[serde(flatten)]
@@ -115,11 +116,7 @@ pub(super) fn parse_trade(
                 quantity_base,
                 quantity_quote,
                 quantity_contract,
-                side: if agg_trade.m {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if agg_trade.m { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: agg_trade.a.to_string(),
                 json: msg.to_string(),
             };
@@ -149,21 +146,14 @@ pub(super) fn parse_trade(
                 quantity_base,
                 quantity_quote,
                 quantity_contract,
-                side: if raw_trade.m {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade.m { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: raw_trade.t.to_string(),
                 json: msg.to_string(),
             };
 
             Ok(vec![trade])
         }
-        _ => Err(SimpleError::new(format!(
-            "Unsupported event type {}",
-            event_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unsupported event type {}", event_type))),
     }
 }
 
@@ -174,10 +164,7 @@ pub(super) fn parse_l2(
     let ws_msg =
         serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(SimpleError::from)?;
     let pair = crypto_pair::normalize_pair(&ws_msg.data.s, EXCHANGE_NAME).ok_or_else(|| {
-        SimpleError::new(format!(
-            "Failed to normalize {} from {}",
-            ws_msg.data.s, msg
-        ))
+        SimpleError::new(format!("Failed to normalize {} from {}", ws_msg.data.s, msg))
     })?;
 
     let parse_order = |raw_order: &RawOrder| -> Order {
@@ -189,12 +176,7 @@ pub(super) fn parse_l2(
             price,
             raw_order[1].parse::<f64>().unwrap(),
         );
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbook = OrderBookMsg {
@@ -206,26 +188,12 @@ pub(super) fn parse_l2(
         timestamp: ws_msg.data.E,
         seq_id: Some(ws_msg.data.u),
         prev_seq_id: if let Some(id) = ws_msg.data.pu {
-            if id == -1 {
-                None
-            } else {
-                Some(id as u64)
-            }
+            if id == -1 { None } else { Some(id as u64) }
         } else {
             None
         },
-        asks: ws_msg
-            .data
-            .a
-            .iter()
-            .map(|raw_order| parse_order(raw_order))
-            .collect::<Vec<Order>>(),
-        bids: ws_msg
-            .data
-            .b
-            .iter()
-            .map(|raw_order| parse_order(raw_order))
-            .collect::<Vec<Order>>(),
+        asks: ws_msg.data.a.iter().map(|raw_order| parse_order(raw_order)).collect::<Vec<Order>>(),
+        bids: ws_msg.data.b.iter().map(|raw_order| parse_order(raw_order)).collect::<Vec<Order>>(),
         snapshot: false,
         json: msg.to_string(),
     };
@@ -272,17 +240,11 @@ pub(super) fn parse_bbo(
     received_at: Option<i64>,
 ) -> Result<Vec<BboMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawBboMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawBboMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawBboMsg>", msg))
     })?;
     debug_assert!(ws_msg.stream.ends_with("bookTicker"));
-    let timestamp = if market_type == MarketType::Spot {
-        received_at.unwrap()
-    } else {
-        ws_msg.data.E.unwrap()
-    };
+    let timestamp =
+        if market_type == MarketType::Spot { received_at.unwrap() } else { ws_msg.data.E.unwrap() };
 
     let symbol = ws_msg.data.s.as_str();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
@@ -332,7 +294,8 @@ struct RawFundingRateMsg {
     s: String,         // Symbol
     p: String,         // Mark price
     i: Option<String>, // Index price
-    P: String, // Estimated Settle Price, only useful in the last hour before the settlement starts
+    P: String,         /* Estimated Settle Price, only useful in the last hour before the
+                        * settlement starts */
     r: String, // Funding rate
     T: i64,    // Next funding time
     #[serde(flatten)]
@@ -344,10 +307,7 @@ pub(super) fn parse_funding_rate(
     msg: &str,
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     let stream = obj.get("stream").unwrap().as_str().unwrap();
     let data = if stream == "!markPrice@arr" {
@@ -361,10 +321,7 @@ pub(super) fn parse_funding_rate(
     } else if stream.ends_with("@markPrice") {
         vec![serde_json::from_value::<RawFundingRateMsg>(obj.get("data").unwrap().clone()).unwrap()]
     } else {
-        return Err(SimpleError::new(format!(
-            "Unknown funding rate messaeg {}",
-            msg
-        )));
+        return Err(SimpleError::new(format!("Unknown funding rate messaeg {}", msg)));
     };
     let mut funding_rates: Vec<FundingRateMsg> = data
         .into_iter()

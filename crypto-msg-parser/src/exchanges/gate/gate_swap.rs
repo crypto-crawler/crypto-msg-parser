@@ -110,20 +110,14 @@ pub(super) fn extract_symbol(_market_type_: MarketType, msg: &str) -> Result<Str
         } else if v.contains_key("c") && v["c"].is_string() {
             Ok(v["c"].as_str().unwrap().to_string())
         } else {
-            Err(SimpleError::new(format!(
-                "Unsupported websocket message format  {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unsupported websocket message format  {}", msg)))
         }
     } else if msg.contains("open_interest")
         || serde_json::from_str::<SwapRestL2SnapshotMsg>(msg).is_ok()
     {
         Ok("NONE".to_string())
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format  {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format  {}", msg)))
     }
 }
 
@@ -168,10 +162,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     } else if msg.contains("open_interest") {
         Ok(None)
     } else {
-        Err(SimpleError::new(format!(
-            "Unsupported message format  {}",
-            msg
-        )))
+        Err(SimpleError::new(format!("Unsupported message format  {}", msg)))
     }
 }
 
@@ -212,11 +203,7 @@ pub(super) fn parse_trade(
                         quantity_base,
                         quantity_quote,
                         quantity_contract,
-                        side: if raw_trade.size < 0.0 {
-                            TradeSide::Sell
-                        } else {
-                            TradeSide::Buy
-                        },
+                        side: if raw_trade.size < 0.0 { TradeSide::Sell } else { TradeSide::Buy },
                         trade_id: raw_trade.id.to_string(),
                         json: serde_json::to_string(&raw_trade).unwrap(),
                     }
@@ -263,11 +250,7 @@ pub(super) fn parse_trade(
                         quantity_base,
                         quantity_quote,
                         quantity_contract,
-                        side: if raw_trade.size < 0.0 {
-                            TradeSide::Sell
-                        } else {
-                            TradeSide::Buy
-                        },
+                        side: if raw_trade.size < 0.0 { TradeSide::Sell } else { TradeSide::Buy },
                         trade_id: raw_trade.id.to_string(),
                         json: serde_json::to_string(&raw_trade).unwrap(),
                     }
@@ -278,10 +261,7 @@ pub(super) fn parse_trade(
             }
             Ok(trades)
         }
-        _ => Err(SimpleError::new(format!(
-            "Unknown gate market type {}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown gate market type {}", market_type))),
     }
 }
 
@@ -295,10 +275,7 @@ pub(super) fn parse_l2_topk(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
     })?;
     debug_assert_eq!(ws_msg.channel, "futures.order_book");
     let snapshot = ws_msg.event == "all";
@@ -327,12 +304,7 @@ pub(super) fn parse_l2_topk(
 
             let (quantity_base, quantity_quote, quantity_contract) =
                 calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
-            Order {
-                price,
-                quantity_base,
-                quantity_quote,
-                quantity_contract,
-            }
+            Order { price, quantity_base, quantity_quote, quantity_contract }
         };
 
         OrderBookMsg {
@@ -379,12 +351,7 @@ pub(super) fn parse_l2_topk(
 
             let (quantity_base, quantity_quote, quantity_contract) =
                 calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
-            Order {
-                price,
-                quantity_base,
-                quantity_quote,
-                quantity_contract,
-            }
+            Order { price, quantity_base, quantity_quote, quantity_contract }
         };
 
         PRICE_HASHMAP.with(|slf| {
@@ -474,12 +441,7 @@ fn parse_order(market_type: MarketType, raw_order: &RawOrderNew, pair: &str) -> 
 
     let (quantity_base, quantity_quote, quantity_contract) =
         calc_quantity_and_volume(EXCHANGE_NAME, market_type, pair, price, quantity);
-    Order {
-        price,
-        quantity_base,
-        quantity_quote,
-        quantity_contract,
-    }
+    Order { price, quantity_base, quantity_quote, quantity_contract }
 }
 
 pub(super) fn parse_l2(
@@ -506,20 +468,9 @@ pub(super) fn parse_l2(
         msg_type: MessageType::L2Event,
         timestamp: result.t,
         seq_id: result.extra.get("u").and_then(|v| v.as_u64()),
-        prev_seq_id: result
-            .extra
-            .get("U")
-            .and_then(|v| v.as_u64().map(|v| v - 1)),
-        asks: result
-            .a
-            .iter()
-            .map(|x| parse_order(market_type, x, &pair))
-            .collect(),
-        bids: result
-            .b
-            .iter()
-            .map(|x| parse_order(market_type, x, &pair))
-            .collect(),
+        prev_seq_id: result.extra.get("U").and_then(|v| v.as_u64().map(|v| v - 1)),
+        asks: result.a.iter().map(|x| parse_order(market_type, x, &pair)).collect(),
+        bids: result.b.iter().map(|x| parse_order(market_type, x, &pair)).collect(),
         snapshot: ws_msg.event == "all",
         json: msg.to_string(),
     };

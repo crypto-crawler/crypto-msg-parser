@@ -22,9 +22,7 @@ fn trade() {
     );
     assert_eq!(
         1616297318187,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
 
     assert_eq!(trade.price, 57748.8);
@@ -54,9 +52,7 @@ fn l2_event() {
     );
     assert_eq!(
         1622520011989,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
 
     assert_eq!(orderbook.timestamp, 1622520011989);
@@ -99,9 +95,7 @@ fn l2_topk() {
     );
     assert_eq!(
         1653978373164,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
 
     assert_eq!(orderbook.timestamp, 1653978373164);
@@ -135,14 +129,9 @@ fn l3_event() {
 
     assert_eq!(
         1654072104363,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
-    assert_eq!(
-        "btcusd",
-        extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-    );
+    assert_eq!("btcusd", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
 }
 
 #[test]
@@ -151,12 +140,7 @@ fn l2_snapshot() {
 
     assert_eq!(
         1654243213142,
-        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-            .unwrap()
-            .unwrap()
+        extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
     );
-    assert_eq!(
-        "NONE",
-        extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-    );
+    assert_eq!("NONE", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
 }

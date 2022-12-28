@@ -55,10 +55,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<ContractTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<ContractTradeMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<ContractTradeMsg>", msg))
     })?;
     debug_assert_eq!(ws_msg.subject, "match");
     debug_assert!(ws_msg.topic.starts_with("/contractMarket/execution:"));
@@ -83,11 +80,7 @@ pub(super) fn parse_trade(
         quantity_base,
         quantity_quote,
         quantity_contract,
-        side: if raw_trade.side == "sell" {
-            TradeSide::Sell
-        } else {
-            TradeSide::Buy
-        },
+        side: if raw_trade.side == "sell" { TradeSide::Sell } else { TradeSide::Buy },
         trade_id: raw_trade.sequence.to_string(),
         json: msg.to_string(),
     };
@@ -117,12 +110,7 @@ pub(super) fn parse_l2(
 
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let mut asks: Vec<Order> = Vec::new();
@@ -168,10 +156,7 @@ pub(super) fn parse_l2_topk(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SwapL2TopKMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<SwapL2TopKMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SwapL2TopKMsg>", msg))
     })?;
     debug_assert_eq!(ws_msg.subject, "level2");
     debug_assert!(ws_msg.topic.starts_with("/contractMarket/level2Depth"));
@@ -184,12 +169,7 @@ pub(super) fn parse_l2_topk(
 
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, pair, price, quantity);
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbook = OrderBookMsg {

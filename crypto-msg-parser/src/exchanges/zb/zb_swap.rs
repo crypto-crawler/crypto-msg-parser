@@ -21,21 +21,17 @@ pub(super) fn extract_timestamp(
         let channel = raw_channel.split('.').nth(1).unwrap();
         match channel {
             "Trade" => {
-                let timestamp = obj["data"]
-                    .as_array()
-                    .unwrap()
-                    .iter()
-                    .map(|x| x[3].as_i64().unwrap())
-                    .max();
+                let timestamp =
+                    obj["data"].as_array().unwrap().iter().map(|x| x[3].as_i64().unwrap()).max();
                 if let Some(timestamp) = timestamp {
                     Ok(Some(timestamp * 1000))
                 } else {
                     Err(SimpleError::new(format!("data is empty in {}", msg)))
                 }
             }
-            "Depth" | "DepthWhole" => Ok(obj["data"]
-                .get("time")
-                .map(|x| x.as_str().unwrap().parse::<i64>().unwrap())),
+            "Depth" | "DepthWhole" => {
+                Ok(obj["data"].get("time").map(|x| x.as_str().unwrap().parse::<i64>().unwrap()))
+            }
             "Ticker" => {
                 if raw_channel == "All.Ticker" {
                     let m = obj["data"].as_object().unwrap();
@@ -64,10 +60,7 @@ pub(super) fn extract_timestamp(
                         Err(SimpleError::new(format!("data is empty in {}", msg)))
                     }
                 } else {
-                    Err(SimpleError::new(format!(
-                        "Failed to extract timestamp from {}",
-                        msg
-                    )))
+                    Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
                 }
             }
         }
@@ -85,10 +78,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<[f64; 4]>>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Vec<[f64; 4]>>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Vec<[f64; 4]>>", msg))
     })?;
     debug_assert!(ws_msg.channel.ends_with(".Trade"));
     let symbol = ws_msg.channel.split('.').next().unwrap();
@@ -116,11 +106,7 @@ pub(super) fn parse_trade(
                 quantity_base,
                 quantity_quote,
                 quantity_contract,
-                side: if raw_trade[3] < 0.0 {
-                    TradeSide::Sell
-                } else {
-                    TradeSide::Buy
-                },
+                side: if raw_trade[3] < 0.0 { TradeSide::Sell } else { TradeSide::Buy },
                 trade_id: timestamp.to_string(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }
@@ -160,10 +146,7 @@ pub(super) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Level2Msg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<Level2Msg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Level2Msg>", msg))
     })?;
     let msg_type = if ws_msg.channel.ends_with(".DepthWhole") {
         MessageType::L2TopK
@@ -190,12 +173,7 @@ pub(super) fn parse_l2(
 
         let (quantity_base, quantity_quote, quantity_contract) =
             calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract,
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract }
     };
 
     let orderbook = OrderBookMsg {
@@ -207,18 +185,8 @@ pub(super) fn parse_l2(
         timestamp,
         seq_id: None,
         prev_seq_id: None,
-        asks: ws_msg
-            .data
-            .asks
-            .iter()
-            .map(parse_order)
-            .collect::<Vec<Order>>(),
-        bids: ws_msg
-            .data
-            .bids
-            .iter()
-            .map(parse_order)
-            .collect::<Vec<Order>>(),
+        asks: ws_msg.data.asks.iter().map(parse_order).collect::<Vec<Order>>(),
+        bids: ws_msg.data.bids.iter().map(parse_order).collect::<Vec<Order>>(),
         snapshot,
         json: msg.to_string(),
     };

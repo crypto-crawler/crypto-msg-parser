@@ -33,22 +33,12 @@ impl Serialize for Order {
     where
         S: Serializer,
     {
-        let len: usize = if self.quantity_contract.is_some() {
-            4
-        } else {
-            3
-        };
+        let len: usize = if self.quantity_contract.is_some() { 4 } else { 3 };
         let mut seq = serializer.serialize_seq(Some(len))?;
         seq.serialize_element(&self.price)?;
         // limit the number of decimals to 9
-        let quantity_base = format!("{:.9}", self.quantity_base)
-            .as_str()
-            .parse::<f64>()
-            .unwrap();
-        let quantity_quote = format!("{:.9}", self.quantity_quote)
-            .as_str()
-            .parse::<f64>()
-            .unwrap();
+        let quantity_base = format!("{:.9}", self.quantity_base).as_str().parse::<f64>().unwrap();
+        let quantity_quote = format!("{:.9}", self.quantity_quote).as_str().parse::<f64>().unwrap();
         seq.serialize_element(&quantity_base)?;
         seq.serialize_element(&quantity_quote)?;
         if let Some(qc) = self.quantity_contract {

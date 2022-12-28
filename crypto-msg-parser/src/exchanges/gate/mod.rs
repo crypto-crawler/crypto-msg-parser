@@ -55,10 +55,7 @@ pub(crate) fn parse_l2(
             gate_swap::parse_l2_topk(market_type, msg)
         }
         MarketType::InverseSwap | MarketType::LinearSwap => gate_swap::parse_l2(market_type, msg),
-        _ => Err(SimpleError::new(format!(
-            "Unsupported market type: {:?}",
-            market_type
-        ))),
+        _ => Err(SimpleError::new(format!("Unsupported market type: {:?}", market_type))),
     }
 }
 

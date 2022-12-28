@@ -37,33 +37,18 @@ fn verify_spot_symbols() {
         );
 
         assert_eq!(pair.as_str(), pair_expected);
-        assert_eq!(
-            MarketType::Spot,
-            get_market_type(&market.id, EXCHANGE_NAME, Some(true))
-        );
+        assert_eq!(MarketType::Spot, get_market_type(&market.id, EXCHANGE_NAME, Some(true)));
     }
 }
 
 #[test]
 fn verify_swap_symbols() {
-    assert_eq!(
-        "BTC/USD".to_string(),
-        normalize_pair("BTC_USD", EXCHANGE_NAME).unwrap()
-    );
+    assert_eq!("BTC/USD".to_string(), normalize_pair("BTC_USD", EXCHANGE_NAME).unwrap());
 
-    assert_eq!(
-        "BTC/USDT".to_string(),
-        normalize_pair("BTC_USDT", EXCHANGE_NAME).unwrap()
-    );
+    assert_eq!("BTC/USDT".to_string(), normalize_pair("BTC_USDT", EXCHANGE_NAME).unwrap());
 
-    assert_eq!(
-        MarketType::InverseSwap,
-        get_market_type("BTC_USD", EXCHANGE_NAME, None)
-    );
-    assert_eq!(
-        MarketType::LinearSwap,
-        get_market_type("BTC_USDT", EXCHANGE_NAME, None)
-    );
+    assert_eq!(MarketType::InverseSwap, get_market_type("BTC_USD", EXCHANGE_NAME, None));
+    assert_eq!(MarketType::LinearSwap, get_market_type("BTC_USDT", EXCHANGE_NAME, None));
 }
 
 #[derive(Clone, Serialize, Deserialize)]

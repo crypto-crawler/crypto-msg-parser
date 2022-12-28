@@ -74,19 +74,12 @@ fn fetch_swap_markets_raw(product_type: &str) -> Vec<SwapMarket> {
     }
 
     let txt = http_get(
-        format!(
-            "https://api.bitget.com/api/mix/v1/market/contracts?productType={}",
-            product_type
-        )
-        .as_str(),
+        format!("https://api.bitget.com/api/mix/v1/market/contracts?productType={}", product_type)
+            .as_str(),
     )
     .unwrap();
     let resp = serde_json::from_str::<Response>(&txt).unwrap();
-    if resp.msg != "success" {
-        Vec::new()
-    } else {
-        resp.data
-    }
+    if resp.msg != "success" { Vec::new() } else { resp.data }
 }
 
 #[test]
@@ -101,10 +94,7 @@ fn verify_spot_symbols() {
         );
 
         assert_eq!(pair.as_str(), pair_expected);
-        assert_eq!(
-            MarketType::Spot,
-            get_market_type(&market.symbol, EXCHANGE_NAME, None)
-        );
+        assert_eq!(MarketType::Spot, get_market_type(&market.symbol, EXCHANGE_NAME, None));
     }
 }
 
@@ -124,11 +114,7 @@ fn verify_swap_symbols() {
             "{}/{}",
             normalize_currency(&market.baseCoin, EXCHANGE_NAME),
             normalize_currency(
-                if market.symbol.ends_with("PERP_CMCBL") {
-                    "USDC"
-                } else {
-                    &market.quoteCoin
-                },
+                if market.symbol.ends_with("PERP_CMCBL") { "USDC" } else { &market.quoteCoin },
                 EXCHANGE_NAME
             )
         );

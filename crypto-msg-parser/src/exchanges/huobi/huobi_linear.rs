@@ -58,10 +58,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<TradeTick>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<TradeTick>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<TradeTick>", msg))
     })?;
 
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
@@ -83,11 +80,7 @@ pub(crate) fn parse_trade(
             quantity_base: raw_trade.quantity,
             quantity_quote: raw_trade.trade_turnover,
             quantity_contract: Some(raw_trade.amount),
-            side: if raw_trade.direction == "sell" {
-                TradeSide::Sell
-            } else {
-                TradeSide::Buy
-            },
+            side: if raw_trade.direction == "sell" { TradeSide::Sell } else { TradeSide::Buy },
             trade_id: raw_trade.id.to_string(),
             json: serde_json::to_string(&raw_trade).unwrap(),
         })

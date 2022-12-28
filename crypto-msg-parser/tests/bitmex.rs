@@ -24,9 +24,7 @@ mod trade {
         );
         assert_eq!(
             1615514404608,
-            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(trade.price, 56927.0);
@@ -51,9 +49,7 @@ mod trade {
         );
         assert_eq!(
             1616286129258,
-            extract_timestamp(EXCHANGE_NAME, MarketType::QuantoSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::QuantoSwap, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(trade.price, 1811.6);
@@ -78,9 +74,7 @@ mod trade {
         );
         assert_eq!(
             1616289162361,
-            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(trade.price, 62695.5);
@@ -105,9 +99,7 @@ mod trade {
         );
         assert_eq!(
             1615513563886,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearFuture, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearFuture, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(trade.price, 0.03191);
@@ -132,9 +124,7 @@ mod trade {
         );
         assert_eq!(
             1615515223222,
-            extract_timestamp(EXCHANGE_NAME, MarketType::QuantoFuture, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::QuantoFuture, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(trade.price, 1892.8);
@@ -155,13 +145,9 @@ mod funding_rate {
     fn inverse_swap() {
         let raw_msg = r#"{"table":"funding","action":"partial","data":[{"timestamp":"2021-04-01T20:00:00.000Z","symbol":"XBTUSD","fundingInterval":"2000-01-01T08:00:00.000Z","fundingRate":0.000817,"fundingRateDaily":0.002451}]}"#;
         let received_at = 1615515223227;
-        let funding_rates = &parse_funding_rate(
-            EXCHANGE_NAME,
-            MarketType::InverseSwap,
-            raw_msg,
-            Some(received_at),
-        )
-        .unwrap();
+        let funding_rates =
+            &parse_funding_rate(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg, Some(received_at))
+                .unwrap();
 
         assert_eq!(funding_rates.len(), 1);
 
@@ -192,13 +178,9 @@ mod funding_rate {
     fn quanto_swap() {
         let raw_msg = r#"{"table":"funding","action":"partial","data":[{"timestamp":"2021-04-01T20:00:00.000Z","symbol":"ETHUSD","fundingInterval":"2000-01-01T08:00:00.000Z","fundingRate":0.002142,"fundingRateDaily":0.006425999999999999}]}"#;
         let received_at = 1615515223227;
-        let funding_rates = &parse_funding_rate(
-            EXCHANGE_NAME,
-            MarketType::QuantoSwap,
-            raw_msg,
-            Some(received_at),
-        )
-        .unwrap();
+        let funding_rates =
+            &parse_funding_rate(EXCHANGE_NAME, MarketType::QuantoSwap, raw_msg, Some(received_at))
+                .unwrap();
 
         assert_eq!(funding_rates.len(), 1);
 
@@ -229,13 +211,9 @@ mod funding_rate {
     fn all() {
         let raw_msg = r#"{"table":"funding","action":"partial","data":[{"timestamp":"2021-11-02T12:00:00.000Z","symbol":"AAVEUSDT","fundingInterval":"2000-01-01T08:00:00.000Z","fundingRate":0.001941,"fundingRateDaily":0.005823},{"timestamp":"2022-06-02T12:00:00.000Z","symbol":"XBTUSDT","fundingInterval":"2000-01-01T08:00:00.000Z","fundingRate":0.000075,"fundingRateDaily":0.000225}]}"#;
         let received_at = 1615515223227;
-        let funding_rates = &parse_funding_rate(
-            EXCHANGE_NAME,
-            MarketType::Unknown,
-            raw_msg,
-            Some(received_at),
-        )
-        .unwrap();
+        let funding_rates =
+            &parse_funding_rate(EXCHANGE_NAME, MarketType::Unknown, raw_msg, Some(received_at))
+                .unwrap();
 
         assert_eq!(funding_rates.len(), 2);
 
@@ -247,14 +225,8 @@ mod funding_rate {
                 raw_msg,
             );
         }
-        assert_eq!(
-            "ALL",
-            extract_symbol(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap()
-        );
-        assert_eq!(
-            None,
-            extract_timestamp(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap()
-        );
+        assert_eq!("ALL", extract_symbol(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap());
+        assert_eq!(None, extract_timestamp(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap());
 
         assert_eq!(funding_rates[0].pair, "AAVE/USDT".to_string());
         assert_eq!(funding_rates[0].funding_rate, 0.001941);
@@ -282,13 +254,8 @@ mod order_book_l2_25 {
     fn inverse_swap_snapshot() {
         let raw_msg = r#"{"table":"orderBookL2_25","action":"partial","data":[{"symbol":"XBTUSD","id":8796381000,"side":"Sell","size":49900,"price":36190},{"symbol":"XBTUSD","id":8796381050,"side":"Sell","size":125714,"price":36189.5},{"symbol":"XBTUSD","id":8796381100,"side":"Sell","size":34600,"price":36189},{"symbol":"XBTUSD","id":8796385500,"side":"Buy","size":136,"price":36145},{"symbol":"XBTUSD","id":8796385600,"side":"Buy","size":26,"price":36144},{"symbol":"XBTUSD","id":8796385800,"side":"Buy","size":18067,"price":36142}]}"#;
         let received_at = Utc::now().timestamp_millis();
-        let orderbook = &parse_l2(
-            EXCHANGE_NAME,
-            MarketType::Unknown,
-            raw_msg,
-            Some(received_at),
-        )
-        .unwrap()[0];
+        let orderbook =
+            &parse_l2(EXCHANGE_NAME, MarketType::Unknown, raw_msg, Some(received_at)).unwrap()[0];
 
         assert_eq!(orderbook.asks.len(), 3);
         assert_eq!(orderbook.bids.len(), 3);
@@ -337,12 +304,7 @@ mod order_book_l2_25 {
     fn inverse_swap_update() {
         let insert_msg = r#"{"table":"orderBookL2_25","action":"insert","data":[{"symbol":"XBTUSD","id":8796323950,"side":"Sell","size":38760,"price":36760.5}]}"#;
         let received_at = Utc::now().timestamp_millis();
-        let _ = parse_l2(
-            EXCHANGE_NAME,
-            MarketType::Unknown,
-            insert_msg,
-            Some(received_at),
-        );
+        let _ = parse_l2(EXCHANGE_NAME, MarketType::Unknown, insert_msg, Some(received_at));
         let update_msg = r#"{"table":"orderBookL2_25","action":"update","data":[{"symbol":"XBTUSD","id":8796323950,"side":"Sell","size":36760}]}"#;
         let orderbook = &parse_l2(
             EXCHANGE_NAME,
@@ -408,13 +370,8 @@ mod order_book_l2_25 {
     fn linear_future_snapshot() {
         let raw_msg = r#"{"table":"orderBookL2_25","action":"partial","data":[{"symbol":"ETHH22","id":75899993108,"side":"Sell","size":50000,"price":0.06892,"timestamp":"2022-03-01T01:55:45.088Z"},{"symbol":"ETHH22","id":75899993113,"side":"Sell","size":125000,"price":0.06887,"timestamp":"2022-03-01T01:55:45.088Z"},{"symbol":"ETHH22","id":75899993250,"side":"Buy","size":3000,"price":0.0675,"timestamp":"2022-03-01T01:55:45.088Z"},{"symbol":"ETHH22","id":75899993260,"side":"Buy","size":117000,"price":0.0674,"timestamp":"2022-03-01T01:55:45.088Z"}]}"#;
         let received_at = Utc::now().timestamp_millis();
-        let orderbook = &parse_l2(
-            EXCHANGE_NAME,
-            MarketType::Unknown,
-            raw_msg,
-            Some(received_at),
-        )
-        .unwrap()[0];
+        let orderbook =
+            &parse_l2(EXCHANGE_NAME, MarketType::Unknown, raw_msg, Some(received_at)).unwrap()[0];
 
         assert_eq!(orderbook.asks.len(), 2);
         assert_eq!(orderbook.bids.len(), 2);
@@ -431,9 +388,7 @@ mod order_book_l2_25 {
         );
         assert_eq!(
             1646099745088,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearFuture, raw_msg,)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearFuture, raw_msg,).unwrap().unwrap()
         );
 
         assert_eq!(orderbook.bids[0].price, 0.0675);
@@ -461,13 +416,8 @@ mod order_book_l2_25 {
     fn linear_future_delete() {
         let raw_msg = r#"{"table":"orderBookL2_25","action":"delete","data":[{"symbol":"ETHZ21","id":63399993018,"side":"Buy"}]}"#;
         let received_at = Utc::now().timestamp_millis();
-        let orderbook = &parse_l2(
-            EXCHANGE_NAME,
-            MarketType::Unknown,
-            raw_msg,
-            Some(received_at),
-        )
-        .unwrap()[0];
+        let orderbook =
+            &parse_l2(EXCHANGE_NAME, MarketType::Unknown, raw_msg, Some(received_at)).unwrap()[0];
 
         assert_eq!(orderbook.asks.len(), 0);
         assert_eq!(orderbook.bids.len(), 1);
@@ -503,9 +453,7 @@ mod order_book_l2_25 {
         );
         assert_eq!(
             1654385692603,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
     }
 
@@ -519,9 +467,7 @@ mod order_book_l2_25 {
         );
         assert_eq!(
             1654386380175,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
     }
 }
@@ -554,9 +500,7 @@ mod l2_topk {
         );
         assert_eq!(
             1653949188301,
-            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(orderbook.timestamp, 1653949188301);
@@ -605,9 +549,7 @@ mod l2_topk {
         );
         assert_eq!(
             1653946402996,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearFuture, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearFuture, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(orderbook.timestamp, 1653946402996);
@@ -656,9 +598,7 @@ mod l2_topk {
         );
         assert_eq!(
             1653938446586,
-            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(orderbook.timestamp, 1653938446586);
@@ -707,9 +647,7 @@ mod l2_topk {
         );
         assert_eq!(
             1653949498013,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
 
         assert_eq!(orderbook.timestamp, 1653949498013);
@@ -747,9 +685,7 @@ mod l2_topk {
         );
         assert_eq!(
             1654386523562,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
     }
 
@@ -763,9 +699,7 @@ mod l2_topk {
         );
         assert_eq!(
             1654386567444,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
     }
 }
@@ -783,9 +717,7 @@ mod bbo {
 
         assert_eq!(
             1656633607161,
-            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap().unwrap()
         );
         assert_eq!(
             "XBTUSD",
@@ -818,9 +750,7 @@ mod bbo {
 
         assert_eq!(
             1656633608859,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
         assert_eq!(
             "XBTUSDT",
@@ -860,14 +790,9 @@ mod candlestick {
 
         assert_eq!(
             1654077780000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
         );
-        assert_eq!(
-            "XBTUSD",
-            extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
-        );
+        assert_eq!("XBTUSD", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
     }
 
     #[test]
@@ -876,9 +801,7 @@ mod candlestick {
 
         assert_eq!(
             1654078200000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg)
-                .unwrap()
-                .unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
         assert_eq!(
             "XBTUSDT",

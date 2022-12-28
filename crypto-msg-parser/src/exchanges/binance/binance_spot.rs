@@ -35,19 +35,10 @@ pub(super) fn parse_l2_topk(
     received_at: Option<i64>,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawL2TopKMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawL2TopKMsg>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawL2TopKMsg>", msg))
     })?;
     debug_assert!(!ws_msg.stream.starts_with('!'));
-    let symbol = ws_msg
-        .stream
-        .as_str()
-        .split('@')
-        .next()
-        .unwrap()
-        .to_uppercase();
+    let symbol = ws_msg.stream.as_str().split('@').next().unwrap().to_uppercase();
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
         .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", &symbol, msg)))?;
     let timestamp = received_at.expect("Binance spot L2TopK doesn't have timestamp");

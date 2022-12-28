@@ -38,17 +38,8 @@ mod tests {
 
     #[test]
     fn test_get_market_type() {
-        assert_eq!(
-            MarketType::InverseFuture,
-            super::get_market_type("BTC-30DEC22")
-        );
-        assert_eq!(
-            MarketType::InverseSwap,
-            super::get_market_type("BTC-PERPETUAL")
-        );
-        assert_eq!(
-            MarketType::EuropeanOption,
-            super::get_market_type("BTC-17JUN22-21000-P")
-        );
+        assert_eq!(MarketType::InverseFuture, super::get_market_type("BTC-30DEC22"));
+        assert_eq!(MarketType::InverseSwap, super::get_market_type("BTC-PERPETUAL"));
+        assert_eq!(MarketType::EuropeanOption, super::get_market_type("BTC-17JUN22-21000-P"));
     }
 }

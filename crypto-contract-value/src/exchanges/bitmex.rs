@@ -121,11 +121,7 @@ pub(crate) fn get_contract_value(market_type: MarketType, pair: &str) -> Option<
         panic!("Must be a specific market type");
     }
     let key = market_type.to_string() + "." + pair;
-    if CONTRACT_VALUES.contains_key(key.as_str()) {
-        Some(CONTRACT_VALUES[&key])
-    } else {
-        Some(1.0)
-    }
+    if CONTRACT_VALUES.contains_key(key.as_str()) { Some(CONTRACT_VALUES[&key]) } else { Some(1.0) }
 }
 
 #[cfg(test)]

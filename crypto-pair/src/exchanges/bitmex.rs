@@ -5,12 +5,11 @@ use std::collections::HashSet;
 
 static FIAT_CURRENCIES: Lazy<HashSet<String>> = Lazy::new(|| {
     // offline data, in case the network is down
-    let set: HashSet<String> = vec![
-        "BRL", "CHF", "CNH", "EUR", "INR", "MXN", "NZD", "SEK", "TRY", "TRY", "USD", "ZAR",
-    ]
-    .into_iter()
-    .map(|x| x.to_string())
-    .collect();
+    let set: HashSet<String> =
+        vec!["BRL", "CHF", "CNH", "EUR", "INR", "MXN", "NZD", "SEK", "TRY", "TRY", "USD", "ZAR"]
+            .into_iter()
+            .map(|x| x.to_string())
+            .collect();
 
     set
 });
@@ -55,26 +54,14 @@ pub(crate) fn normalize_pair(mut symbol: &str) -> Option<String> {
     }
 
     let (base, quote) = if symbol.ends_with("USD") {
-        (
-            symbol.strip_suffix("USD").unwrap().to_string(),
-            "USD".to_string(),
-        )
+        (symbol.strip_suffix("USD").unwrap().to_string(), "USD".to_string())
     } else if symbol.ends_with("_USDT") {
         // spot
-        (
-            symbol.strip_suffix("_USDT").unwrap().to_string(),
-            "USDT".to_string(),
-        )
+        (symbol.strip_suffix("_USDT").unwrap().to_string(), "USDT".to_string())
     } else if symbol.ends_with("USDT") {
-        (
-            symbol.strip_suffix("USDT").unwrap().to_string(),
-            "USDT".to_string(),
-        )
+        (symbol.strip_suffix("USDT").unwrap().to_string(), "USDT".to_string())
     } else if symbol.ends_with("EUR") {
-        (
-            symbol.strip_suffix("EUR").unwrap().to_string(),
-            "EUR".to_string(),
-        )
+        (symbol.strip_suffix("EUR").unwrap().to_string(), "EUR".to_string())
     } else {
         let base_symbol = symbol;
         let quote_symbol = if base_symbol == "XBT" {
@@ -87,11 +74,7 @@ pub(crate) fn normalize_pair(mut symbol: &str) -> Option<String> {
         (base_symbol.to_string(), quote_symbol.to_string())
     };
 
-    Some(format!(
-        "{}/{}",
-        normalize_currency(&base),
-        normalize_currency(&quote)
-    ))
+    Some(format!("{}/{}", normalize_currency(&base), normalize_currency(&quote)))
 }
 
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {
@@ -173,17 +156,11 @@ mod tests {
 
         assert_eq!(MarketType::QuantoSwap, super::get_market_type("ETHUSD"));
         assert_eq!(MarketType::LinearSwap, super::get_market_type("ETHUSDT"));
-        assert_eq!(
-            MarketType::InverseFuture,
-            super::get_market_type("ETHUSDM22_ETH")
-        );
+        assert_eq!(MarketType::InverseFuture, super::get_market_type("ETHUSDM22_ETH"));
         assert_eq!(MarketType::QuantoSwap, super::get_market_type("EURUSD"));
         assert_eq!(MarketType::QuantoSwap, super::get_market_type("EURUSDT"));
 
-        assert_eq!(
-            MarketType::LinearFuture,
-            super::get_market_type("ETHPOWZ22")
-        );
+        assert_eq!(MarketType::LinearFuture, super::get_market_type("ETHPOWZ22"));
         assert_eq!(MarketType::LinearFuture, super::get_market_type("ETHZ22"));
         assert_eq!(MarketType::Unknown, super::get_market_type("ETHYLDZ22"));
     }

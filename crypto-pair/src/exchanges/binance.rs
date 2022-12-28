@@ -42,10 +42,7 @@ struct SpotMarket {
 fn fetch_spot_quotes() -> BTreeSet<String> {
     if let Ok(txt) = http_get("https://api.binance.com/api/v3/exchangeInfo") {
         let resp = serde_json::from_str::<BinanceResponse>(&txt).unwrap();
-        resp.symbols
-            .into_iter()
-            .map(|m| m.quoteAsset)
-            .collect::<BTreeSet<String>>()
+        resp.symbols.into_iter().map(|m| m.quoteAsset).collect::<BTreeSet<String>>()
     } else {
         BTreeSet::new()
     }
@@ -94,11 +91,7 @@ pub(crate) fn get_market_type(symbol: &str, is_spot: Option<bool>) -> MarketType
             MarketType::Unknown
         }
     } else if let Some(is_spot) = is_spot {
-        if is_spot {
-            MarketType::Spot
-        } else {
-            MarketType::LinearSwap
-        }
+        if is_spot { MarketType::Spot } else { MarketType::LinearSwap }
     } else {
         MarketType::LinearSwap
     }

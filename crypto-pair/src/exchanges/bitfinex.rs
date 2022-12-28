@@ -90,10 +90,7 @@ fn fetch_currency_mapping() -> BTreeMap<String, String> {
 }
 
 pub(crate) fn normalize_currency(mut currency: &str) -> String {
-    assert!(
-        !currency.trim().is_empty(),
-        "The currency must NOT be empty"
-    );
+    assert!(!currency.trim().is_empty(), "The currency must NOT be empty");
 
     if currency.ends_with("F0") {
         currency = &currency[..(currency.len() - 2)]; // Futures only
@@ -114,17 +111,10 @@ pub(crate) fn normalize_pair(mut symbol: &str) -> Option<String> {
         let v: Vec<&str> = symbol.split(':').collect();
         (v[0].to_string(), v[1].to_string())
     } else {
-        (
-            symbol[..(symbol.len() - 3)].to_string(),
-            symbol[(symbol.len() - 3)..].to_string(),
-        )
+        (symbol[..(symbol.len() - 3)].to_string(), symbol[(symbol.len() - 3)..].to_string())
     };
 
-    Some(format!(
-        "{}/{}",
-        normalize_currency(&base),
-        normalize_currency(&quote)
-    ))
+    Some(format!("{}/{}", normalize_currency(&base), normalize_currency(&quote)))
 }
 
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {

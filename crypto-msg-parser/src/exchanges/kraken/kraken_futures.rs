@@ -71,10 +71,7 @@ struct OrderbookUpdate {
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     if obj.contains_key("product_id") {
         Ok(obj.get("product_id").unwrap().as_str().unwrap().to_string())
@@ -85,10 +82,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         } else if obj.contains_key("orderBook") {
             Ok("NONE".to_string())
         } else {
-            Err(SimpleError::new(format!(
-                "Unsupported HTTP message {}",
-                msg
-            )))
+            Err(SimpleError::new(format!("Unsupported HTTP message {}", msg)))
         }
     } else {
         Err(SimpleError::new(format!("No product_id found in {}", msg)))
@@ -111,10 +105,8 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
         "trade" | "ticker" => Ok(Some(obj["time"].as_i64().unwrap())),
         "trade_snapshot" => {
             let trades = obj["trades"].as_array().unwrap();
-            let timestamp = trades
-                .iter()
-                .map(|raw_trade| raw_trade["time"].as_i64().unwrap())
-                .max();
+            let timestamp =
+                trades.iter().map(|raw_trade| raw_trade["time"].as_i64().unwrap()).max();
             if timestamp.is_none() {
                 Err(SimpleError::new(format!("trades is empty in {}", msg)))
             } else {
@@ -146,11 +138,7 @@ fn convert_trade(raw_trade: Trade) -> TradeMsg {
         quantity_base: raw_trade.qty / raw_trade.price,
         quantity_quote: raw_trade.qty,
         quantity_contract: Some(raw_trade.qty),
-        side: if raw_trade.side == "sell" {
-            TradeSide::Sell
-        } else {
-            TradeSide::Buy
-        },
+        side: if raw_trade.side == "sell" { TradeSide::Sell } else { TradeSide::Buy },
         trade_id: raw_trade.seq.to_string(),
         json: serde_json::to_string(&raw_trade).unwrap(),
     }
@@ -160,11 +148,7 @@ pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     if let Ok(trade) = serde_json::from_str::<Trade>(msg) {
         Ok(vec![convert_trade(trade)])
     } else if let Ok(trade_snapshot) = serde_json::from_str::<TradeSnapshot>(msg) {
-        Ok(trade_snapshot
-            .trades
-            .into_iter()
-            .map(convert_trade)
-            .collect())
+        Ok(trade_snapshot.trades.into_iter().map(convert_trade).collect())
     } else {
         Err(SimpleError::new(format!("Failed to parse {}", msg)))
     }
@@ -236,12 +220,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
                 raw_order.price,
                 raw_order.qty,
             );
-            Order {
-                price: raw_order.price,
-                quantity_base,
-                quantity_quote,
-                quantity_contract,
-            }
+            Order { price: raw_order.price, quantity_base, quantity_quote, quantity_contract }
         };
 
         let orderbook = OrderBookMsg {

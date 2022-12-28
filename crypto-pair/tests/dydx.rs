@@ -51,9 +51,6 @@ fn verify_linear_swap_symbols() {
         );
 
         assert_eq!(pair, pair_expected);
-        assert_eq!(
-            MarketType::LinearSwap,
-            get_market_type(&market.market, EXCHANGE_NAME, None)
-        );
+        assert_eq!(MarketType::LinearSwap, get_market_type(&market.market, EXCHANGE_NAME, None));
     }
 }

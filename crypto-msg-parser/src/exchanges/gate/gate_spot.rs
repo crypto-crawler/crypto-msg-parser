@@ -7,10 +7,7 @@ use super::{gate_spot_20210916, gate_spot_current};
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     if json_obj.contains_key("params") {
         gate_spot_20210916::extract_symbol(msg)
@@ -21,10 +18,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
 
 pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     if json_obj.contains_key("params") {
         #[allow(deprecated)]
@@ -36,10 +30,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
 
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     if json_obj.contains_key("params") {
         #[allow(deprecated)]
@@ -53,10 +44,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 
 pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     if json_obj.contains_key("params") {
         #[allow(deprecated)]
@@ -70,10 +58,7 @@ pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, S
 
 pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     if json_obj.contains_key("params") {
         #[allow(deprecated)]
@@ -87,10 +72,7 @@ pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError>
 
 pub(super) fn parse_bbo(msg: &str) -> Result<Vec<BboMsg>, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to HashMap<String, Value>",
-            msg
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
     })?;
     if json_obj.contains_key("params") {
         #[allow(deprecated)]

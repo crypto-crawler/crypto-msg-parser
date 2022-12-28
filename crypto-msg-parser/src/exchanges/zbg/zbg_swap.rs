@@ -57,11 +57,7 @@ struct SwapContractInfo {
 
 impl SwapContractInfo {
     fn new(t: (i64, &str, f64)) -> Self {
-        Self {
-            contract_id: t.0,
-            symbol: t.1.to_string(),
-            contract_unit: t.2,
-        }
+        Self { contract_id: t.0, symbol: t.1.to_string(), contract_unit: t.2 }
     }
 }
 
@@ -157,11 +153,7 @@ pub(super) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
     let contract_id = if ws_msg[1]["contractId"].is_i64() {
         ws_msg[1]["contractId"].as_i64().unwrap()
     } else {
-        ws_msg[1]["contractId"]
-            .as_str()
-            .unwrap()
-            .parse::<i64>()
-            .unwrap()
+        ws_msg[1]["contractId"].as_str().unwrap().parse::<i64>().unwrap()
     };
     let contract_info = SWAP_CONTRACT_MAP.get(&contract_id).unwrap();
     let symbol = contract_info.symbol.as_str();
@@ -194,18 +186,12 @@ pub(super) fn extract_timestamp(
         }
         "future_kline" => {
             let lines = ws_msg[1]["lines"].as_array().unwrap();
-            let timestamp = lines
-                .iter()
-                .map(|line| convert_timestamp(&line[0]).unwrap())
-                .max();
+            let timestamp = lines.iter().map(|line| convert_timestamp(&line[0]).unwrap()).max();
             Ok(timestamp)
         }
         "future_snapshot_depth" => Ok(convert_timestamp(&ws_msg[1]["time"])),
         "future_snapshot_indicator" => Ok(convert_timestamp(&ws_msg[1]["te"])),
-        _ => Err(SimpleError::new(format!(
-            "Unknown channel {} in  {}",
-            channel, msg
-        ))),
+        _ => Err(SimpleError::new(format!("Unknown channel {} in  {}", channel, msg))),
     }
 }
 
@@ -240,10 +226,7 @@ pub(super) fn parse_trade(
         .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
     assert_eq!(ws_msg[0].as_str().unwrap(), "future_tick");
     let raw_trade: RawTradeMsg = serde_json::from_value(ws_msg[1].clone()).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {} to RawTradeMsg",
-            ws_msg[1]
-        ))
+        SimpleError::new(format!("Failed to deserialize {} to RawTradeMsg", ws_msg[1]))
     })?;
 
     let contract_info = SWAP_CONTRACT_MAP.get(&raw_trade.contractId).unwrap();
@@ -251,21 +234,10 @@ pub(super) fn parse_trade(
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
 
     let timestamp = raw_trade.trades[0].as_i64().unwrap();
-    let price = raw_trade.trades[1]
-        .as_str()
-        .unwrap()
-        .parse::<f64>()
-        .unwrap();
-    let size = raw_trade.trades[2]
-        .as_str()
-        .unwrap()
-        .parse::<f64>()
-        .unwrap();
-    let side = if raw_trade.trades[3].as_i64().unwrap() == -1 {
-        TradeSide::Sell
-    } else {
-        TradeSide::Buy
-    };
+    let price = raw_trade.trades[1].as_str().unwrap().parse::<f64>().unwrap();
+    let size = raw_trade.trades[2].as_str().unwrap().parse::<f64>().unwrap();
+    let side =
+        if raw_trade.trades[3].as_i64().unwrap() == -1 { TradeSide::Sell } else { TradeSide::Buy };
 
     let (quantity_base, quantity_quote) =
         calc_quantity_and_volume(market_type, contract_info.contract_id, price, size);
@@ -298,10 +270,7 @@ pub(crate) fn parse_l2(
     assert_eq!(ws_msg[0].as_str().unwrap(), "future_snapshot_depth");
     let raw_orderbook: RawOrderbookMsg =
         serde_json::from_value(ws_msg[1].clone()).map_err(|_e| {
-            SimpleError::new(format!(
-                "Failed to deserialize {} to RawOrderbookMsg",
-                ws_msg[1]
-            ))
+            SimpleError::new(format!("Failed to deserialize {} to RawOrderbookMsg", ws_msg[1]))
         })?;
 
     let contract_info = SWAP_CONTRACT_MAP.get(&raw_orderbook.contractId).unwrap();
@@ -314,12 +283,7 @@ pub(crate) fn parse_l2(
         let (quantity_base, quantity_quote) =
             calc_quantity_and_volume(market_type, contract_info.contract_id, price, quantity);
 
-        Order {
-            price,
-            quantity_base,
-            quantity_quote,
-            quantity_contract: Some(quantity),
-        }
+        Order { price, quantity_base, quantity_quote, quantity_contract: Some(quantity) }
     };
 
     let orderbook = OrderBookMsg {
@@ -331,16 +295,8 @@ pub(crate) fn parse_l2(
         timestamp: raw_orderbook.time / 1000,
         seq_id: None,
         prev_seq_id: None,
-        asks: raw_orderbook
-            .asks
-            .iter()
-            .map(|x| parse_order(x))
-            .collect::<Vec<Order>>(),
-        bids: raw_orderbook
-            .bids
-            .iter()
-            .map(|x| parse_order(x))
-            .collect::<Vec<Order>>(),
+        asks: raw_orderbook.asks.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
+        bids: raw_orderbook.bids.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
         snapshot: false,
         json: msg.to_string(),
     };
