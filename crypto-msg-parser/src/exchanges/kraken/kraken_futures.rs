@@ -71,27 +71,27 @@ struct OrderbookUpdate {
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to HashMap<String, Value>"))
     })?;
     if obj.contains_key("product_id") {
         Ok(obj.get("product_id").unwrap().as_str().unwrap().to_string())
     } else if obj.contains_key("serverTime") && obj.contains_key("result") {
         // RESTful API
         if obj["result"].as_str().unwrap() != "success" {
-            Err(SimpleError::new(format!("Error HTTP response {}", msg)))
+            Err(SimpleError::new(format!("Error HTTP response {msg}")))
         } else if obj.contains_key("orderBook") {
             Ok("NONE".to_string())
         } else {
-            Err(SimpleError::new(format!("Unsupported HTTP message {}", msg)))
+            Err(SimpleError::new(format!("Unsupported HTTP message {msg}")))
         }
     } else {
-        Err(SimpleError::new(format!("No product_id found in {}", msg)))
+        Err(SimpleError::new(format!("No product_id found in {msg}")))
     }
 }
 
 pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     if obj.contains_key("serverTime") && obj.contains_key("result") {
         // RESTful API
         return Ok(Some(
@@ -108,13 +108,13 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             let timestamp =
                 trades.iter().map(|raw_trade| raw_trade["time"].as_i64().unwrap()).max();
             if timestamp.is_none() {
-                Err(SimpleError::new(format!("trades is empty in {}", msg)))
+                Err(SimpleError::new(format!("trades is empty in {msg}")))
             } else {
                 Ok(timestamp)
             }
         }
         "book" | "book_snapshot" => Ok(Some(obj["timestamp"].as_i64().unwrap())),
-        _ => Err(SimpleError::new(format!("Unknown feed in {}", msg))),
+        _ => Err(SimpleError::new(format!("Unknown feed in {msg}"))),
     }
 }
 
@@ -150,7 +150,7 @@ pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     } else if let Ok(trade_snapshot) = serde_json::from_str::<TradeSnapshot>(msg) {
         Ok(trade_snapshot.trades.into_iter().map(convert_trade).collect())
     } else {
-        Err(SimpleError::new(format!("Failed to parse {}", msg)))
+        Err(SimpleError::new(format!("Failed to parse {msg}")))
     }
 }
 
@@ -247,6 +247,6 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
         };
         Ok(vec![orderbook])
     } else {
-        Err(SimpleError::new(format!("Failed to parse {}", msg)))
+        Err(SimpleError::new(format!("Failed to parse {msg}")))
     }
 }

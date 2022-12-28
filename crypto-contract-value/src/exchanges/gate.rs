@@ -33,7 +33,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("ZRX/USD", 0.001_f64),
         ]
         .into_iter()
-        .map(|x| (x.0.to_string(), x.1 as f64))
+        .map(|x| (x.0.to_string(), x.1))
         .collect();
 
         let from_online = fetch_quanto_multipliers(INVERSE_SWAP_URL);
@@ -344,7 +344,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
     let linear_future: HashMap<String, f64> = {
         let mut m: HashMap<String, f64> = vec![("BTC/USDT", 0.0001), ("ETH/USDT", 0.01)]
             .into_iter()
-            .map(|x| (x.0.to_string(), x.1 as f64))
+            .map(|x| (x.0.to_string(), x.1))
             .collect();
 
         let from_online = fetch_quanto_multipliers(LINEAR_FUTURE_URL);

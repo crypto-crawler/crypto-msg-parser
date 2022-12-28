@@ -280,13 +280,13 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     } else if let Ok(arr) = serde_json::from_str::<Vec<Value>>(msg) {
         arr
     } else {
-        return Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)));
+        return Err(SimpleError::new(format!("Failed to extract symbol from {msg}")));
     };
     let msg_type = arr[0].as_str().unwrap();
     match msg_type {
         "T" | "E" => Ok(arr[3].as_str().unwrap().to_lowercase()),
         "K" | "AE" => Ok(arr[2].as_str().unwrap().to_lowercase()),
-        _ => Err(SimpleError::new(format!("Unsupported msg_type {} in {}", msg_type, msg))),
+        _ => Err(SimpleError::new(format!("Unsupported msg_type {msg_type} in {msg}"))),
     }
 }
 
@@ -310,7 +310,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     } else if let Ok(list) = serde_json::from_str::<Vec<Value>>(msg) {
         vec![list]
     } else {
-        return Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)));
+        return Err(SimpleError::new(format!("Failed to extract symbol from {msg}")));
     };
 
     let timestamp = arr_2d
@@ -328,7 +328,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             match msg_type {
                 "T" | "E" => convert_timestamp(&arr[2]).unwrap(),
                 "K" | "AE" => convert_timestamp(&arr[3]).unwrap(),
-                _ => panic!("Not possible {}", msg),
+                _ => panic!("Not possible {msg}"),
             }
         })
         .max();
@@ -342,15 +342,15 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let arr = if msg.starts_with(r#"[["T","#) {
         serde_json::from_str::<Vec<Vec<String>>>(msg).map_err(|_e| {
-            SimpleError::new(format!("Failed to deserialize {} to Vec<Vec<String>>", msg))
+            SimpleError::new(format!("Failed to deserialize {msg} to Vec<Vec<String>>"))
         })?
     } else if msg.starts_with(r#"["T","#) {
         let tmp = serde_json::from_str::<Vec<String>>(msg).map_err(|_e| {
-            SimpleError::new(format!("Failed to deserialize {} to Vec<String>", msg))
+            SimpleError::new(format!("Failed to deserialize {msg} to Vec<String>"))
         })?;
         vec![tmp]
     } else {
-        return Err(SimpleError::new(format!("Invalid trade msg {}", msg)));
+        return Err(SimpleError::new(format!("Invalid trade msg {msg}")));
     };
 
     let mut trades: Vec<TradeMsg> = arr
@@ -403,7 +403,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
 
     let orderbooks = if snapshot {
         let arr = serde_json::from_str::<Vec<Vec<Value>>>(msg).map_err(|_e| {
-            SimpleError::new(format!("Failed to deserialize {} to Vec<Vec<Value>>", msg))
+            SimpleError::new(format!("Failed to deserialize {msg} to Vec<Vec<Value>>"))
         })?;
 
         let parse_order = |raw_order: &[Value; 2]| -> Order {
@@ -412,7 +412,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
             } else if raw_order[0].is_f64() || raw_order[0].is_i64() || raw_order[0].is_u64() {
                 raw_order[0].as_f64().unwrap()
             } else {
-                panic!("Unknown format {}", msg);
+                panic!("Unknown format {msg}");
             };
 
             let quantity_base: f64 = if raw_order[1].is_string() {
@@ -420,7 +420,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
             } else if raw_order[1].is_f64() || raw_order[1].is_i64() || raw_order[1].is_u64() {
                 raw_order[1].as_f64().unwrap()
             } else {
-                panic!("Unknown format {}", msg);
+                panic!("Unknown format {msg}");
             };
 
             Order {
@@ -477,11 +477,11 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
         v
     } else {
         let arr = serde_json::from_str::<Vec<String>>(msg).map_err(|_e| {
-            SimpleError::new(format!("Failed to deserialize {} to Vec<String>", msg))
+            SimpleError::new(format!("Failed to deserialize {msg} to Vec<String>"))
         })?;
         let symbol = arr[3].to_lowercase();
         let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg))
+            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
         })?;
         let timestamp = arr[2].parse::<i64>().unwrap() * 1000;
 
@@ -540,7 +540,7 @@ mod tests {
             }
         }
         for (symbol_id, symbol) in mapping {
-            println!("({}, \"{}\"),", symbol_id, symbol,);
+            println!("({symbol_id}, \"{symbol}\"),",);
         }
     }
 }

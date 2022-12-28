@@ -190,7 +190,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
     let linear_option: HashMap<String, f64> = {
         let m: HashMap<String, f64> = vec![("BTC/USDT", 0.001), ("ETH/USDT", 0.01)]
             .into_iter()
-            .map(|x| (x.0.to_string(), x.1 as f64))
+            .map(|x| (x.0.to_string(), x.1))
             .collect();
 
         debug_assert!(!LINEAR_OPTION_URL.is_empty());

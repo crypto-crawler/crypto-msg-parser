@@ -95,7 +95,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         Ok(ws_msg.arg.instId)
     } else if let Ok(rest_msg) = serde_json::from_str::<RestfulMsg<HashMap<String, Value>>>(msg) {
         if rest_msg.code != "0" {
-            return Err(SimpleError::new(format!("Error HTTP response {}", msg)));
+            return Err(SimpleError::new(format!("Error HTTP response {msg}")));
         }
         #[allow(clippy::comparison_chain)]
         if rest_msg.data.len() > 1 {
@@ -111,7 +111,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
             Ok("NONE".to_string())
         }
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -128,14 +128,14 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 ws_msg.data.iter().map(|x| x["ts"].as_str().unwrap().parse::<i64>().unwrap()).max();
 
             if timestamp.is_none() {
-                Err(SimpleError::new(format!("data is empty in {}", msg)))
+                Err(SimpleError::new(format!("data is empty in {msg}")))
             } else {
                 Ok(timestamp)
             }
         }
     } else if let Ok(rest_msg) = serde_json::from_str::<RestfulMsg<HashMap<String, Value>>>(msg) {
         if rest_msg.code != "0" {
-            return Err(SimpleError::new(format!("Error HTTP response {}", msg)));
+            return Err(SimpleError::new(format!("Error HTTP response {msg}")));
         }
         let timestamp = rest_msg
             .data
@@ -144,7 +144,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             .max();
         Ok(timestamp)
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -176,7 +176,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradeMsg>"))
     })?;
 
     let mut trades: Vec<Result<TradeMsg, SimpleError>> = ws_msg
@@ -223,8 +223,7 @@ pub(super) fn parse_funding_rate(
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawFundingRateMsg>>(msg).map_err(|_e| {
         SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawFundingRateMsg>",
-            msg
+            "Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"
         ))
     })?;
 
@@ -268,7 +267,7 @@ pub(super) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrderbookMsg>"))
     })?;
 
     let channel = ws_msg.arg.channel.as_str();
@@ -320,7 +319,7 @@ pub(super) fn parse_l2(
 
 pub(crate) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrderbookMsg>"))
     })?;
 
     let channel = ws_msg.arg.channel.as_str();
@@ -401,8 +400,7 @@ pub(super) fn parse_candlestick(
         }
         MarketType::LinearFuture | MarketType::LinearSwap => (obj.volCcy.parse().unwrap(), None),
         _ => Err(SimpleError::new(format!(
-            "Unknown market type: {} of {}",
-            market_type, EXCHANGE_NAME
+            "Unknown market type: {market_type} of {EXCHANGE_NAME}"
         )))?,
     };
 

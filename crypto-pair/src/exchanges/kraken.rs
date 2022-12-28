@@ -98,7 +98,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         } else if let Some(pos) = symbol.find("USD") {
             pos
         } else {
-            panic!("Can not find usd or USD in symbol: {}", symbol);
+            panic!("Can not find usd or USD in symbol: {symbol}");
         };
         let base = symbol[3..pos].to_uppercase();
         Some(format!("{}/USD", normalize_currency(&base),))
@@ -134,7 +134,7 @@ mod tests {
         let map = fetch_spot_quotes();
         for quote in map {
             if !SPOT_QUOTES.contains(&quote) {
-                println!("\"{}\",", quote);
+                println!("\"{quote}\",");
             }
         }
     }

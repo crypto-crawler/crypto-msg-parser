@@ -20,7 +20,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
             // RESTful
             let code = json_obj["code"].as_i64().unwrap();
             if code != 0 && code != 200 {
-                return Err(SimpleError::new(format!("Error HTTP response {}", msg)));
+                return Err(SimpleError::new(format!("Error HTTP response {msg}")));
             }
             let data = json_obj["data"].as_object().unwrap();
             if let Some(symbol) = data.get("symbol") {
@@ -31,10 +31,10 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         } else if let Some(symbol) = json_obj.get("symbol") {
             Ok(symbol.as_str().unwrap().to_string())
         } else {
-            Err(SimpleError::new(format!("Unknown message format {}", msg)))
+            Err(SimpleError::new(format!("Unknown message format {msg}")))
         }
     } else {
-        Err(SimpleError::new(format!("Unknown message format {}", msg)))
+        Err(SimpleError::new(format!("Unknown message format {msg}")))
     }
 }
 
@@ -50,7 +50,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                         raw_trades.iter().map(|raw_trade| raw_trade["t"].as_i64().unwrap()).max();
 
                     if timestamp.is_none() {
-                        Err(SimpleError::new(format!("deals is empty in {}", msg)))
+                        Err(SimpleError::new(format!("deals is empty in {msg}")))
                     } else {
                         Ok(timestamp)
                     }
@@ -63,14 +63,14 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 let t = data["t"].as_i64().unwrap();
                 Ok(Some(t * 1000))
             }
-            _ => Err(SimpleError::new(format!("Unknown channel {} in {}", channel, msg))),
+            _ => Err(SimpleError::new(format!("Unknown channel {channel} in {msg}"))),
         }
     } else if let Ok(json_obj) = serde_json::from_str::<HashMap<String, Value>>(msg) {
         if json_obj.contains_key("code") && json_obj.contains_key("data") {
             // RESTful
             let code = json_obj["code"].as_i64().unwrap();
             if code != 0 && code != 200 {
-                return Err(SimpleError::new(format!("Error HTTP response {}", msg)));
+                return Err(SimpleError::new(format!("Error HTTP response {msg}")));
             }
             let data = json_obj["data"].as_object().unwrap();
             Ok(data.get("timestamp").map(|x| x.as_i64().unwrap()))
@@ -94,7 +94,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                     .map(|raw_trade| raw_trade["t"].as_i64().unwrap())
                     .max();
                 if timestamp.is_none() {
-                    Err(SimpleError::new(format!("deals is empty in {}", msg)))
+                    Err(SimpleError::new(format!("deals is empty in {msg}")))
                 } else {
                     Ok(timestamp)
                 }
@@ -103,7 +103,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             }
         }
     } else {
-        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract symbol from {msg}")))
     }
 }
 

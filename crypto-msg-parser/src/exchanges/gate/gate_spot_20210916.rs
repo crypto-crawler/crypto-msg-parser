@@ -42,20 +42,20 @@ struct SpotWebsocketMsg {
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let ws_msg = serde_json::from_str::<SpotWebsocketMsg>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to SpotWebsocketMsg", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to SpotWebsocketMsg"))
     })?;
     if ws_msg.method == "trades.update" || ws_msg.method == "ticker.update" {
         Ok(ws_msg.params[0].as_str().unwrap().to_string())
     } else if ws_msg.method == "depth.update" {
         Ok(ws_msg.params[2].as_str().unwrap().to_string())
     } else {
-        Err(SimpleError::new(format!("Unknown message format: {}", msg)))
+        Err(SimpleError::new(format!("Unknown message format: {msg}")))
     }
 }
 
 pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let ws_msg = serde_json::from_str::<SpotWebsocketMsg>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to SpotWebsocketMsg", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to SpotWebsocketMsg"))
     })?;
     if ws_msg.method == "trades.update" {
         let raw_trades = ws_msg.params[1].as_array().unwrap();
@@ -64,25 +64,25 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             .map(|raw_trade| (raw_trade.get("time").unwrap().as_f64().unwrap() * 1000.0) as i64)
             .max();
         if timestamp.is_none() {
-            Err(SimpleError::new(format!("as and bs are empty in {}", msg)))
+            Err(SimpleError::new(format!("as and bs are empty in {msg}")))
         } else {
             Ok(timestamp)
         }
     } else if ws_msg.method == "depth.update" || ws_msg.method == "ticker.update" {
         Ok(None)
     } else {
-        Err(SimpleError::new(format!("Unknown message format: {}", msg)))
+        Err(SimpleError::new(format!("Unknown message format: {msg}")))
     }
 }
 
 #[deprecated(since = "1.3.7", note = "Gate has new data format since 2021-09-16")]
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<SpotWebsocketMsg>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to SpotWebsocketMsg", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to SpotWebsocketMsg"))
     })?;
     let symbol = ws_msg.params[0].as_str().unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let raw_trades: Vec<SpotTradeMsg> =
         serde_json::from_value(ws_msg.params[1].clone()).map_err(|_e| {
             SimpleError::new(format!(
@@ -124,13 +124,13 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 #[deprecated(since = "1.3.7", note = "Gate has new data format since 2021-09-16")]
 pub(crate) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<SpotWebsocketMsg>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to SpotWebsocketMsg", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to SpotWebsocketMsg"))
     })?;
     debug_assert_eq!(ws_msg.params.len(), 3);
     let snapshot = ws_msg.params[0].as_bool().unwrap();
     let symbol = ws_msg.params[2].as_str().unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let raw_orderbook = serde_json::from_value::<SpotOrderbookMsg>(ws_msg.params[1].clone())
         .map_err(|_e| {
             SimpleError::new(format!(

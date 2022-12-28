@@ -35,7 +35,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         let v: Vec<&str> = symbol.split('-').collect();
         (v[0].to_string(), v[1].to_string())
     } else {
-        panic!("Unknown symbol {}", symbol);
+        panic!("Unknown symbol {symbol}");
     };
 
     Some(format!("{}/{}", normalize_currency(&base), normalize_currency(&quote)))

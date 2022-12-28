@@ -60,7 +60,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
             let v: Vec<&str> = symbol.split('-').collect();
             (v[0].to_uppercase(), v[1].to_uppercase())
         };
-        Some(format!("{}/{}", base, quote))
+        Some(format!("{base}/{quote}"))
     } else if symbol.ends_with("_CW")
         || symbol.ends_with("_NW")
         || symbol.ends_with("_CQ")
@@ -68,7 +68,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
     {
         // inverse future
         let base = &symbol[..symbol.len() - 3];
-        Some(format!("{}/USD", base))
+        Some(format!("{base}/USD"))
     } else {
         // spot
         let quotes = &(*SPOT_QUOTES);
@@ -102,7 +102,7 @@ mod tests {
     fn spot_quotes() {
         let map = fetch_spot_quotes();
         for quote in map {
-            println!("\"{}\",", quote);
+            println!("\"{quote}\",");
         }
     }
 

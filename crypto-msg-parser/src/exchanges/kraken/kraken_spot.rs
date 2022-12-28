@@ -61,7 +61,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     if let Ok(rest_resp) = serde_json::from_str::<RestResp>(msg) {
         // RESTful API
         if !rest_resp.error.is_empty() {
-            Err(SimpleError::new(format!("Error http response {}", msg)))
+            Err(SimpleError::new(format!("Error http response {msg}")))
         } else if rest_resp.result.len() > 1 {
             Ok("ALL".to_string())
         } else {
@@ -70,7 +70,7 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     } else {
         // websocket
         let arr = serde_json::from_str::<Vec<Value>>(msg).map_err(|_e| {
-            SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg))
+            SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>"))
         })?;
         let symbol = arr[arr.len() - 1].as_str().unwrap();
         Ok(symbol.to_string())
@@ -83,7 +83,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
         return Ok(None);
     }
     let arr = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     debug_assert_eq!(arr.len(), 4);
     let channel = arr[arr.len() - 2].as_str().unwrap();
     if channel == "trade" {
@@ -182,28 +182,28 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                     })?;
                 process_update(update);
             } else {
-                return Err(SimpleError::new(format!("Unknown message format {}", msg)));
+                return Err(SimpleError::new(format!("Unknown message format {msg}")));
             };
 
             if timestamp == std::i64::MIN {
-                Err(SimpleError::new(format!("Neither a nor b exists in {}", msg)))
+                Err(SimpleError::new(format!("Neither a nor b exists in {msg}")))
             } else {
                 Ok(Some(timestamp))
             }
         }
     } else {
-        Err(SimpleError::new(format!("Unknown channel: {}", channel)))
+        Err(SimpleError::new(format!("Unknown channel: {channel}")))
     }
 }
 
 pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let arr = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     debug_assert_eq!(arr[2].as_str().unwrap(), "trade");
     debug_assert_eq!(arr.len(), 4);
     let symbol = arr[arr.len() - 1].as_str().unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let raw_trades: Vec<Vec<String>> = serde_json::from_value(arr[1].clone()).map_err(|_e| {
         SimpleError::new(format!("Failed to deserialize {} to Vec<Vec<String>>", arr[1]))
     })?;
@@ -242,11 +242,11 @@ pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 
 pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let arr = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     debug_assert_eq!(arr[arr.len() - 2].as_str().unwrap(), "book-25");
     let symbol = arr[arr.len() - 1].as_str().unwrap().to_string();
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let snapshot = {
         let obj = arr[1].as_object().unwrap();
         obj.contains_key("as") || obj.contains_key("bs")
@@ -346,7 +346,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
                 })?;
             process_update(update);
         } else {
-            return Err(SimpleError::new(format!("Unknown message format {}", msg)));
+            return Err(SimpleError::new(format!("Unknown message format {msg}")));
         };
 
         let timestamp = if timestamps.is_empty() {

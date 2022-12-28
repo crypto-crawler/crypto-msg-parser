@@ -37,25 +37,25 @@ struct RawOrderBook {
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let obj = serde_json::from_str::<WebsocketMsg<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     let inst_type = obj.arg.instType.as_str();
     let symbol = obj.arg.instId.as_str();
     match inst_type {
-        "sp" => Ok(format!("{}_SPBL", symbol)),
+        "sp" => Ok(format!("{symbol}_SPBL")),
         "mc" => {
             if symbol.ends_with("USDT") {
-                Ok(format!("{}_UMCBL", symbol))
+                Ok(format!("{symbol}_UMCBL"))
             } else {
-                Ok(format!("{}_DMCBL", symbol))
+                Ok(format!("{symbol}_DMCBL"))
             }
         }
-        _ => Err(SimpleError::new(format!("Unsupported instType {} in {}", inst_type, msg))),
+        _ => Err(SimpleError::new(format!("Unsupported instType {inst_type} in {msg}"))),
     }
 }
 
 pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let obj = serde_json::from_str::<WebsocketMsg<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     let timestamp = obj
         .data
         .iter()
@@ -69,7 +69,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 } else if obj.contains_key("systemTime") {
                     obj["systemTime"].clone()
                 } else {
-                    panic!("Can not find timestamp related fields in {}", msg);
+                    panic!("Can not find timestamp related fields in {msg}");
                 }
             };
             if v.is_string() {
@@ -77,7 +77,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             } else if v.is_i64() {
                 v.as_i64().unwrap()
             } else {
-                panic!("Unsupported data format {}", msg);
+                panic!("Unsupported data format {msg}");
             }
         })
         .max();
@@ -89,7 +89,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
 /// * https://bitgetlimited.github.io/apidoc/en/mix/#trades-channel
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<[String; 4]>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     debug_assert_eq!("trade", ws_msg.arg.channel.as_str());
     let (market_type, symbol) = match ws_msg.arg.instType.as_str() {
         "sp" => (MarketType::Spot, format!("{}_SPBL", ws_msg.arg.instId)),
@@ -149,7 +149,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 /// * https://bitgetlimited.github.io/apidoc/en/mix/#order-book-channel
 pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderBook>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     let snapshot = ws_msg.action == "snapshot";
     let (market_type, symbol) = match ws_msg.arg.instType.as_str() {
         "sp" => (MarketType::Spot, format!("{}_SPBL", ws_msg.arg.instId)),

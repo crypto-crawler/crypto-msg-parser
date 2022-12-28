@@ -42,18 +42,18 @@ struct WebsocketMsg<T: Sized> {
 
 pub(crate) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("{} is not a JSON object", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("{msg} is not a JSON object")))?;
     let data = obj
         .get("data")
-        .ok_or_else(|| SimpleError::new(format!("There is no data field in {}", msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("There is no data field in {msg}")))?;
     let event_type = data["e"].as_str().ok_or_else(|| {
-        SimpleError::new(format!("There is no e field in the data field of {}", msg))
+        SimpleError::new(format!("There is no e field in the data field of {msg}"))
     })?;
 
     assert_eq!(event_type, "trade_all");
 
     let all_trades: OptionTradeAllMsg = serde_json::from_value(data.clone()).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to OptionTradeAllMsg", data))
+        SimpleError::new(format!("Failed to deserialize {data} to OptionTradeAllMsg"))
     })?;
     let trades: Vec<TradeMsg> = all_trades
         .t

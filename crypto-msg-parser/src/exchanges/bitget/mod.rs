@@ -16,9 +16,9 @@ const EXCHANGE_NAME: &str = "bitget";
 
 pub(crate) fn extract_symbol(market_type: MarketType, msg: &str) -> Result<String, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     if !obj.contains_key("data") {
-        return Err(SimpleError::new(format!("No data field in {}", msg)));
+        return Err(SimpleError::new(format!("No data field in {msg}")));
     }
     if obj.contains_key("table") {
         before20220429::extract_symbol(market_type, msg)
@@ -31,10 +31,10 @@ pub(crate) fn extract_symbol(market_type: MarketType, msg: &str) -> Result<Strin
             let symbol = obj["data"].get("symbol").map(|x| x.as_str().unwrap());
             if let Some(symbol) = symbol { Ok(symbol.to_string()) } else { Ok("NONE".to_string()) }
         } else {
-            Err(SimpleError::new(format!("This is a failed HTTP response {}", msg)))
+            Err(SimpleError::new(format!("This is a failed HTTP response {msg}")))
         }
     } else {
-        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract symbol from {msg}")))
     }
 }
 
@@ -43,9 +43,9 @@ pub(crate) fn extract_timestamp(
     msg: &str,
 ) -> Result<Option<i64>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     if !obj.contains_key("data") {
-        return Err(SimpleError::new(format!("No data field in {}", msg)));
+        return Err(SimpleError::new(format!("No data field in {msg}")));
     }
     if obj.contains_key("table") {
         before20220429::extract_timestamp(market_type, msg)
@@ -59,16 +59,16 @@ pub(crate) fn extract_timestamp(
                 obj["data"].get("timestamp").map(|x| x.as_str().unwrap().parse::<i64>().unwrap());
             Ok(timestamp)
         } else {
-            Err(SimpleError::new(format!("This is a failed HTTP response {}", msg)))
+            Err(SimpleError::new(format!("This is a failed HTTP response {msg}")))
         }
     } else {
-        Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
     }
 }
 
 pub(crate) fn get_msg_type(msg: &str) -> MessageType {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))
         .unwrap();
     if obj.contains_key("data") && obj.contains_key("table") {
         before20220429::get_msg_type(msg)
@@ -114,13 +114,13 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     if obj.contains_key("data") && obj.contains_key("table") {
         before20220429::parse_trade(market_type, msg)
     } else if obj.contains_key("data") && obj.contains_key("arg") {
         bitget_mix::parse_trade(msg)
     } else {
-        Err(SimpleError::new(format!("Unsupported Trade message {}", msg)))
+        Err(SimpleError::new(format!("Unsupported Trade message {msg}")))
     }
 }
 
@@ -129,13 +129,13 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     if obj.contains_key("data") && obj.contains_key("table") {
         before20220429::parse_l2(market_type, msg)
     } else if obj.contains_key("data") && obj.contains_key("arg") {
         bitget_mix::parse_l2(msg)
     } else {
-        Err(SimpleError::new(format!("Unsupported L2Event message {}", msg)))
+        Err(SimpleError::new(format!("Unsupported L2Event message {msg}")))
     }
 }
 
@@ -160,12 +160,12 @@ pub(crate) fn parse_funding_rate(
     msg: &str,
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     if obj.contains_key("data") && obj.contains_key("table") {
         before20220429::parse_funding_rate(market_type, msg)
     } else if obj.contains_key("data") && obj.contains_key("arg") {
         Err(SimpleError::new("Not implemented"))
     } else {
-        Err(SimpleError::new(format!("Unsupported FundingRate message {}", msg)))
+        Err(SimpleError::new(format!("Unsupported FundingRate message {msg}")))
     }
 }

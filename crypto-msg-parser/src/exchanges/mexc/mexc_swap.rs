@@ -47,11 +47,11 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradeMsg>"))
     })?;
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let raw_trade = ws_msg.data;
 
     let (quantity_base, quantity_quote, _) = calc_quantity_and_volume(
@@ -86,11 +86,11 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrderbookMsg>"))
     })?;
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let msg_type = match ws_msg.channel.as_str() {
         "push.depth.full" => MessageType::L2TopK,

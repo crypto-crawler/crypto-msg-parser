@@ -43,7 +43,7 @@ struct WebsocketMsg<T: Sized> {
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Value>"))
     })?;
     if ws_msg.data.is_array() {
         let instrument_ids = ws_msg
@@ -54,20 +54,20 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
             .map(|v| v["instrument_id"].as_str().unwrap())
             .collect::<Vec<&str>>();
         if instrument_ids.is_empty() {
-            Err(SimpleError::new(format!("data is empty {}", msg)))
+            Err(SimpleError::new(format!("data is empty {msg}")))
         } else {
             Ok(instrument_ids[0].to_string())
         }
     } else if ws_msg.data.is_object() && ws_msg.data.get("instrument_id").is_some() {
         Ok(ws_msg.data["instrument_id"].as_str().unwrap().to_string())
     } else {
-        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract symbol from {msg}")))
     }
 }
 
 pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Value>"))
     })?;
     let table = ws_msg.table.as_str();
     let timestamp = if table.starts_with("swap/candle") {
@@ -82,7 +82,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             .max()
     };
     if timestamp.is_none() {
-        Err(SimpleError::new(format!("data is empty in {}", msg)))
+        Err(SimpleError::new(format!("data is empty in {msg}")))
     } else {
         Ok(timestamp)
     }
@@ -120,7 +120,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<SwapTradeMsg>>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SwapTradeMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<SwapTradeMsg>"))
     })?;
     let mut trades: Vec<TradeMsg> = ws_msg
         .data
@@ -174,8 +174,7 @@ pub(super) fn parse_funding_rate(
     let ws_msg =
         serde_json::from_str::<WebsocketMsg<Vec<RawFundingRateMsg>>>(msg).map_err(|_e| {
             SimpleError::new(format!(
-                "Failed to deserialize {} to WebsocketMsg<RawFundingRateMsg>",
-                msg
+                "Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"
             ))
         })?;
 
@@ -208,8 +207,7 @@ pub(super) fn parse_l2(
     let ws_msg =
         serde_json::from_str::<WebsocketMsg<Vec<SwapOrderbookMsg>>>(msg).map_err(|_e| {
             SimpleError::new(format!(
-                "Failed to deserialize {} to WebsocketMsg<SwapOrderbookMsg>",
-                msg
+                "Failed to deserialize {msg} to WebsocketMsg<SwapOrderbookMsg>"
             ))
         })?;
     let table = ws_msg.table.as_str();
@@ -231,7 +229,7 @@ pub(super) fn parse_l2(
     for raw_orderbook in ws_msg.data.iter() {
         let symbol = raw_orderbook.instrument_id.as_str();
         let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg))
+            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
         })?;
         let timestamp = raw_orderbook.timestamp.parse::<i64>().unwrap();
 

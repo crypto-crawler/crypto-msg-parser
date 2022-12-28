@@ -74,7 +74,7 @@ fn fetch_swap_markets_raw(product_type: &str) -> Vec<SwapMarket> {
     }
 
     let txt = http_get(
-        format!("https://api.bitget.com/api/mix/v1/market/contracts?productType={}", product_type)
+        format!("https://api.bitget.com/api/mix/v1/market/contracts?productType={product_type}")
             .as_str(),
     )
     .unwrap();

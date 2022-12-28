@@ -68,8 +68,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 let ws_msg =
                     serde_json::from_str::<WebsocketMsg<RawTradesMsg>>(msg).map_err(|_e| {
                         SimpleError::new(format!(
-                            "Failed to deserialize {} to WebsocketMsg<RawTradesMsg>",
-                            msg
+                            "Failed to deserialize {msg} to WebsocketMsg<RawTradesMsg>"
                         ))
                     })?;
                 let timestamp = ws_msg
@@ -85,7 +84,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 Ok(timestamp) // contents.trades can be an empty array sometimes
             }
             "v3_orderbook" => Ok(None),
-            _ => Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg))),
+            _ => Err(SimpleError::new(format!("Failed to extract timestamp from {msg}"))),
         }
     } else if msg.starts_with(r#"{"markets":"#)
         || serde_json::from_str::<L2SnapshotRawMsg>(msg).is_ok()
@@ -93,7 +92,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
         // e.g., https://api.dydx.exchange/v3/markets
         Ok(None)
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -102,11 +101,11 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradesMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradesMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradesMsg>"))
     })?;
     let symbol = ws_msg.id;
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     debug_assert_eq!("v3_trades", ws_msg.channel);
 
     let mut trades: Vec<TradeMsg> = ws_msg
@@ -172,10 +171,10 @@ pub(crate) fn parse_l2(
     timestamp: i64,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg")))?;
     let symbol = ws_msg.id;
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let snapshot = ws_msg.type_ == "subscribed";
     debug_assert_eq!("v3_orderbook", ws_msg.channel);
 
@@ -183,8 +182,7 @@ pub(crate) fn parse_l2(
         let ws_msg =
             serde_json::from_str::<WebsocketMsg<RawOrderBookSnapshotMsg>>(msg).map_err(|_e| {
                 SimpleError::new(format!(
-                    "Failed to deserialize {} to WebsocketMsg<RawOrderBookSnapshotMsg>",
-                    msg
+                    "Failed to deserialize {msg} to WebsocketMsg<RawOrderBookSnapshotMsg>"
                 ))
             })?;
         (
@@ -195,8 +193,7 @@ pub(crate) fn parse_l2(
         let ws_msg =
             serde_json::from_str::<WebsocketMsg<RawOrderBookUpdateMsg>>(msg).map_err(|_e| {
                 SimpleError::new(format!(
-                    "Failed to deserialize {} to WebsocketMsg<RawOrderBookUpdateMsg>",
-                    msg
+                    "Failed to deserialize {msg} to WebsocketMsg<RawOrderBookUpdateMsg>"
                 ))
             })?;
         (

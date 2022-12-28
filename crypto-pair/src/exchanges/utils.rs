@@ -23,7 +23,7 @@ pub(super) fn normalize_pair_with_quotes(symbol: &str, quotes: &HashSet<String>)
     for quote in quotes.iter() {
         if symbol.ends_with(quote) {
             let base = symbol.strip_suffix(quote).unwrap();
-            return Some(format!("{}/{}", base, quote).to_uppercase());
+            return Some(format!("{base}/{quote}").to_uppercase());
         }
     }
 

@@ -61,7 +61,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
         } else if let Ok(ws_msg) = serde_json::from_str::<WebsocketMsg<PushSymbolData>>(msg) {
             ws_msg
         } else {
-            return Err(SimpleError::new(format!("Failed to parse {}", msg)));
+            return Err(SimpleError::new(format!("Failed to parse {msg}")));
         };
     if ws_msg.data.deals.is_none() {
         return Ok(Vec::new());
@@ -70,7 +70,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let raw_trades = ws_msg.data.deals.unwrap();
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let mut trades: Vec<TradeMsg> = raw_trades
         .into_iter()
@@ -123,7 +123,7 @@ pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, S
         } else if let Ok(ws_msg) = serde_json::from_str::<WebsocketMsg<PushSymbolData>>(msg) {
             ws_msg
         } else {
-            return Err(SimpleError::new(format!("Failed to parse {}", msg)));
+            return Err(SimpleError::new(format!("Failed to parse {msg}")));
         };
     if ws_msg.data.asks.is_none() && ws_msg.data.bids.is_none() {
         return Ok(Vec::new());
@@ -131,7 +131,7 @@ pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, S
 
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let orderbook = OrderBookMsg {
         exchange: super::EXCHANGE_NAME.to_string(),
@@ -173,7 +173,7 @@ pub(super) fn parse_l2_topk(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMs
 
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let parse_order = |raw_order: &[String; 2]| -> Order {
         let price = raw_order[0].parse::<f64>().unwrap();

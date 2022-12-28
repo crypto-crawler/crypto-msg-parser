@@ -43,8 +43,7 @@ fn fetch_raw_markets_raw(inst_type: &str) -> Vec<RawMarket> {
         let mut markets = Vec::<RawMarket>::new();
         for underlying in underlying_indexes.iter() {
             let url = format!(
-                "https://www.okx.com/api/v5/public/instruments?instType=OPTION&uly={}",
-                underlying
+                "https://www.okx.com/api/v5/public/instruments?instType=OPTION&uly={underlying}"
             );
             let txt = {
                 let txt = http_get(url.as_str()).unwrap();
@@ -57,7 +56,7 @@ fn fetch_raw_markets_raw(inst_type: &str) -> Vec<RawMarket> {
 
         markets
     } else {
-        let url = format!("https://www.okx.com/api/v5/public/instruments?instType={}", inst_type);
+        let url = format!("https://www.okx.com/api/v5/public/instruments?instType={inst_type}");
         let txt = {
             let txt = http_get(url.as_str()).unwrap();
             let json_obj = serde_json::from_str::<HashMap<String, Value>>(&txt).unwrap();

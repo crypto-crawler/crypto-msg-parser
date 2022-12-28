@@ -15,7 +15,7 @@ pub(crate) fn extract_symbol(market_type: MarketType, msg: &str) -> Result<Strin
     match market_type {
         MarketType::Spot => kraken_spot::extract_symbol(msg),
         MarketType::InverseFuture | MarketType::InverseSwap => kraken_futures::extract_symbol(msg),
-        _ => panic!("Kraken unknown market_type: {}", market_type),
+        _ => panic!("Kraken unknown market_type: {market_type}"),
     }
 }
 
@@ -28,7 +28,7 @@ pub(crate) fn extract_timestamp(
         MarketType::InverseFuture | MarketType::InverseSwap => {
             kraken_futures::extract_timestamp(msg)
         }
-        _ => panic!("Kraken unknown market_type: {}", market_type),
+        _ => panic!("Kraken unknown market_type: {market_type}"),
     }
 }
 
@@ -73,7 +73,7 @@ pub(crate) fn parse_trade(
     match market_type {
         MarketType::Spot => kraken_spot::parse_trade(msg),
         MarketType::InverseFuture | MarketType::InverseSwap => kraken_futures::parse_trade(msg),
-        _ => panic!("Kraken unknown market_type: {}", market_type),
+        _ => panic!("Kraken unknown market_type: {market_type}"),
     }
 }
 
@@ -84,7 +84,7 @@ pub(crate) fn parse_l2(
     match market_type {
         MarketType::Spot => kraken_spot::parse_l2(msg),
         MarketType::InverseFuture | MarketType::InverseSwap => kraken_futures::parse_l2(msg),
-        _ => panic!("Kraken unknown market_type: {}", market_type),
+        _ => panic!("Kraken unknown market_type: {market_type}"),
     }
 }
 

@@ -35,7 +35,7 @@ pub(super) fn parse_l2_topk(
     received_at: Option<i64>,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawL2TopKMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawL2TopKMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawL2TopKMsg>"))
     })?;
     debug_assert!(!ws_msg.stream.starts_with('!'));
     let symbol = ws_msg.stream.as_str().split('@').next().unwrap().to_uppercase();

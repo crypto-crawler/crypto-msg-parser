@@ -70,13 +70,13 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
         Ok(ws_msg.market)
     } else if let Ok(rest_msg) = serde_json::from_str::<RestMsg<Value>>(msg) {
         if !rest_msg.success {
-            return Err(SimpleError::new(format!("Error http response {}", msg)));
+            return Err(SimpleError::new(format!("Error http response {msg}")));
         }
         if let Some(result) = rest_msg.result.as_object() {
             if result.contains_key("asks") && result.contains_key("bids") {
                 Ok("NONE".to_string())
             } else {
-                Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+                Err(SimpleError::new(format!("Unsupported message format {msg}")))
             }
         } else if let Some(result) = rest_msg.result.as_array() {
             #[allow(clippy::comparison_chain)]
@@ -88,10 +88,10 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
                 Ok("NONE".to_string())
             }
         } else {
-            Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+            Err(SimpleError::new(format!("Unsupported message format {msg}")))
         }
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -116,7 +116,7 @@ pub(crate) fn extract_timestamp(
                     .max();
 
                 if timestamp.is_none() {
-                    Err(SimpleError::new(format!("data is empty in {}", msg)))
+                    Err(SimpleError::new(format!("data is empty in {msg}")))
                 } else {
                     Ok(timestamp)
                 }
@@ -124,16 +124,16 @@ pub(crate) fn extract_timestamp(
             "orderbook" | "ticker" => {
                 Ok(Some((ws_msg.data["time"].as_f64().unwrap() * 1000.0) as i64))
             }
-            _ => Err(SimpleError::new(format!("unknown channel {} in {}", channel, msg))),
+            _ => Err(SimpleError::new(format!("unknown channel {channel} in {msg}"))),
         }
     } else if let Ok(rest_msg) = serde_json::from_str::<RestMsg<Value>>(msg) {
         if !rest_msg.success {
-            Err(SimpleError::new(format!("Error http response {}", msg)))
+            Err(SimpleError::new(format!("Error http response {msg}")))
         } else {
             Ok(None)
         }
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -159,11 +159,11 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<RawTradeMsg>>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Vec<RawTradeMsg>>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Vec<RawTradeMsg>>"))
     })?;
     let symbol = ws_msg.market.as_str();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let mut trades: Vec<TradeMsg> = ws_msg
         .data
@@ -206,12 +206,12 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrderbookMsg>"))
     })?;
     debug_assert_eq!(ws_msg.channel, "orderbook");
     let symbol = ws_msg.market.as_str();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let snapshot = ws_msg.data.action == "partial";
     let timestamp = (ws_msg.data.time * 1000.0) as i64;
 

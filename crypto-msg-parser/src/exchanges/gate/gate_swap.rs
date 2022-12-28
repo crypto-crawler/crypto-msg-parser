@@ -110,14 +110,14 @@ pub(super) fn extract_symbol(_market_type_: MarketType, msg: &str) -> Result<Str
         } else if v.contains_key("c") && v["c"].is_string() {
             Ok(v["c"].as_str().unwrap().to_string())
         } else {
-            Err(SimpleError::new(format!("Unsupported websocket message format  {}", msg)))
+            Err(SimpleError::new(format!("Unsupported websocket message format  {msg}")))
         }
     } else if msg.contains("open_interest")
         || serde_json::from_str::<SwapRestL2SnapshotMsg>(msg).is_ok()
     {
         Ok("NONE".to_string())
     } else {
-        Err(SimpleError::new(format!("Unsupported message format  {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format  {msg}")))
     }
 }
 
@@ -140,7 +140,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 .max();
 
             if timestamp.is_none() {
-                Err(SimpleError::new(format!("result is empty in {}", msg)))
+                Err(SimpleError::new(format!("result is empty in {msg}")))
             } else {
                 Ok(timestamp)
             }
@@ -162,7 +162,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     } else if msg.contains("open_interest") {
         Ok(None)
     } else {
-        Err(SimpleError::new(format!("Unsupported message format  {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format  {msg}")))
     }
 }
 
@@ -261,7 +261,7 @@ pub(super) fn parse_trade(
             }
             Ok(trades)
         }
-        _ => Err(SimpleError::new(format!("Unknown gate market type {}", market_type))),
+        _ => Err(SimpleError::new(format!("Unknown gate market type {market_type}"))),
     }
 }
 
@@ -275,7 +275,7 @@ pub(super) fn parse_l2_topk(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Value>"))
     })?;
     debug_assert_eq!(ws_msg.channel, "futures.order_book");
     let snapshot = ws_msg.event == "all";
@@ -290,7 +290,7 @@ pub(super) fn parse_l2_topk(
         })?;
         let symbol = raw_orderbook.contract;
         let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg))
+            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
         })?;
         let timestamp = if market_type != MarketType::LinearFuture {
             raw_orderbook.t.unwrap()
@@ -341,7 +341,7 @@ pub(super) fn parse_l2_topk(
             raw_orderbook[0].contract.clone().unwrap()
         };
         let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg))
+            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
         })?;
         let timestamp = ws_msg.time * 1000;
 
@@ -450,15 +450,14 @@ pub(super) fn parse_l2(
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<OrderbookUpdateMsg>>(msg).map_err(|_e| {
         SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<OrderbookUpdateMsg>",
-            msg
+            "Failed to deserialize {msg} to WebsocketMsg<OrderbookUpdateMsg>"
         ))
     })?;
     debug_assert_eq!(ws_msg.channel, "futures.order_book_update");
     let result = ws_msg.result;
     let symbol = result.s;
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let orderbook = OrderBookMsg {
         exchange: EXCHANGE_NAME.to_string(),

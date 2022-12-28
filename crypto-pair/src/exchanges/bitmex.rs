@@ -139,7 +139,7 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
             }
         }
         3 => MarketType::Unknown,
-        _ => panic!("Impossible {}", symbol),
+        _ => panic!("Impossible {symbol}"),
     }
 }
 

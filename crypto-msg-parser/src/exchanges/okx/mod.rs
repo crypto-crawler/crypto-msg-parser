@@ -76,7 +76,7 @@ pub(crate) fn parse_trade(
     } else if obj.contains_key("table") && obj.contains_key("data") {
         okx_v3::parse_trade(market_type, msg)
     } else {
-        panic!("Unknown msg format {}", msg)
+        panic!("Unknown msg format {msg}")
     }
 }
 
@@ -91,7 +91,7 @@ pub(crate) fn parse_l2(
     } else if obj.contains_key("table") && obj.contains_key("data") {
         okx_v3::parse_l2(market_type, msg)
     } else {
-        panic!("Unknown msg format {}", msg)
+        panic!("Unknown msg format {msg}")
     }
 }
 
@@ -113,7 +113,7 @@ pub(crate) fn parse_funding_rate(
     } else if obj.contains_key("table") && obj.contains_key("data") {
         okx_v3::parse_funding_rate(market_type, msg, received_at)
     } else {
-        panic!("Unknown msg format {}", msg)
+        panic!("Unknown msg format {msg}")
     }
 }
 
@@ -124,7 +124,7 @@ pub(crate) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
     } else if obj.contains_key("table") && obj.contains_key("data") {
         okx_v3::parse_bbo(market_type, msg)
     } else {
-        panic!("Unknown msg format {}", msg)
+        panic!("Unknown msg format {msg}")
     }
 }
 
@@ -139,6 +139,6 @@ pub(crate) fn parse_candlestick(
     } else if obj.contains_key("table") && obj.contains_key("data") {
         okx_v3::parse_candlestick(market_type, msg)
     } else {
-        panic!("Unknown msg format {}", msg)
+        panic!("Unknown msg format {msg}")
     }
 }

@@ -92,13 +92,13 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 let arr = candle.as_array().unwrap();
                 DateTime::parse_from_rfc3339(arr[0].as_str().unwrap()).unwrap().timestamp_millis()
             } else {
-                panic!("Unknown message format: {}", msg);
+                panic!("Unknown message format: {msg}");
             }
         })
         .max();
 
     if timestamp.is_none() {
-        Err(SimpleError::new(format!("data is empty in {}", msg)))
+        Err(SimpleError::new(format!("data is empty in {msg}")))
     } else {
         Ok(timestamp)
     }
@@ -136,7 +136,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradeMsg>"))
     })?;
     let mut trades: Vec<Result<TradeMsg, SimpleError>> = ws_msg
         .data
@@ -190,8 +190,7 @@ pub(super) fn parse_funding_rate(
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawFundingRateMsg>>(msg).map_err(|_e| {
         SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawFundingRateMsg>",
-            msg
+            "Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"
         ))
     })?;
 
@@ -226,7 +225,7 @@ pub(super) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrderbookMsg>"))
     })?;
     debug_assert_eq!(ws_msg.data.len(), 1);
 

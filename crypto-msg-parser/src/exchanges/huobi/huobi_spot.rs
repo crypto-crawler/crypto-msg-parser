@@ -79,12 +79,12 @@ struct RawCandlestickMsg {
 
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<TradeTick>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<TradeTick>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<TradeTick>"))
     })?;
 
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let mut trades: Vec<TradeMsg> = ws_msg
         .tick
@@ -115,11 +115,11 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 
 pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<SpotOrderbookMsg>"))
     })?;
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let timestamp = ws_msg.ts;
 
     let parse_order = |raw_order: &[f64; 2]| -> Order {
@@ -165,7 +165,7 @@ pub(super) fn parse_bbo(msg: &str) -> Result<Vec<BboMsg>, SimpleError> {
 
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let bbo_msg = BboMsg {
         exchange: EXCHANGE_NAME.to_string(),

@@ -492,8 +492,7 @@ fn fetch_tick_sizes() -> BTreeMap<String, (usize, f64)> {
     let mut start = 0_usize;
     loop {
         let url = format!(
-            "https://www.bitmex.com/api/v1/instrument?columns=symbol,tickSize&start={}&count=500",
-            start
+            "https://www.bitmex.com/api/v1/instrument?columns=symbol,tickSize&start={start}&count=500"
         );
         if let Ok(txt) = http_get(url.as_str()) {
             if let Ok(tick_sizes) = serde_json::from_str::<Vec<TickSize>>(&txt) {
@@ -581,7 +580,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
         return Ok(symbol.to_string());
     }
     let ws_msg = serde_json::from_str::<WebsocketMsg<Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Value>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Value>"))
     })?;
     if ws_msg.table == "funding" && ws_msg.data.len() > 1 {
         return Ok("ALL".to_string());
@@ -603,7 +602,7 @@ pub(crate) fn extract_timestamp(
         return Ok(None);
     }
     let ws_msg = serde_json::from_str::<WebsocketMsg<HashMap<String, Value>>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     if ws_msg.table == "funding" {
         return Ok(None);
     }
@@ -642,7 +641,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradeMsg>"))
     })?;
     debug_assert_eq!("trade", ws_msg.table);
     let raw_trades = ws_msg.data;
@@ -687,8 +686,7 @@ pub(crate) fn parse_funding_rate(
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawFundingRateMsg>>(msg).map_err(|_e| {
         SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<RawFundingRateMsg>",
-            msg
+            "Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"
         ))
     })?;
     debug_assert_eq!("funding", ws_msg.table);
@@ -747,7 +745,7 @@ pub(crate) fn parse_l2(
     received_at: i64,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrder>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrder>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrder>"))
     })?;
     debug_assert!(ws_msg.table.starts_with("orderBookL2")); // orderBookL2, orderBookL2_25
     let snapshot = ws_msg.action == "partial";
@@ -756,7 +754,7 @@ pub(crate) fn parse_l2(
     }
     let symbol = ws_msg.data[0].symbol.clone();
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let market_type = if market_type == MarketType::Unknown {
         get_market_type(&symbol, EXCHANGE_NAME, None)
     } else {
@@ -834,7 +832,7 @@ pub(crate) fn parse_l2_topk(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<OrderBook10Msg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrder>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrder>"))
     })?;
     debug_assert_eq!("orderBook10", ws_msg.table);
     if ws_msg.data.is_empty() {

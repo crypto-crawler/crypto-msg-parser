@@ -51,23 +51,23 @@ fn fetch_spot_quotes() -> BTreeSet<String> {
 pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
     if let Some(base) = symbol.strip_suffix("USD_PERP") {
         // inverse swap
-        Some(format!("{}/USD", base))
+        Some(format!("{base}/USD"))
     } else if symbol.ends_with("-P") || symbol.ends_with("-C") {
         // option
         let pos = symbol.find('-').unwrap();
         let base = &symbol[..pos];
-        Some(format!("{}/USDT", base))
+        Some(format!("{base}/USDT"))
     } else if symbol.len() > 7 && (symbol[(symbol.len() - 6)..]).parse::<i64>().is_ok() {
         // linear and inverse future
         let remove_date = &symbol[..symbol.len() - 7];
         if remove_date.ends_with("USDT") {
             let base = remove_date.strip_suffix("USDT").unwrap();
-            Some(format!("{}/USDT", base))
+            Some(format!("{base}/USDT"))
         } else if remove_date.ends_with("USD") {
             let base = remove_date.strip_suffix("USD").unwrap();
-            Some(format!("{}/USD", base))
+            Some(format!("{base}/USD"))
         } else {
-            panic!("Unsupported symbol {}", symbol);
+            panic!("Unsupported symbol {symbol}");
         }
     } else {
         let quotes = &(*SPOT_QUOTES);
@@ -108,7 +108,7 @@ mod tests {
             map.insert(coin.clone());
         }
         for quote in map.iter() {
-            println!("\"{}\",", quote);
+            println!("\"{quote}\",");
         }
     }
 

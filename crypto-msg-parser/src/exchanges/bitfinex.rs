@@ -12,7 +12,7 @@ const EXCHANGE_NAME: &str = "bitfinex";
 
 pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let arr = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     if arr.is_empty() {
         return Ok("NONE".to_string());
     }
@@ -28,13 +28,13 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         let pos = key.find(':').unwrap();
         Ok(key[pos + 1..].to_string())
     } else {
-        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract symbol from {msg}")))
     }
 }
 
 pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let arr = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     if arr.is_empty() {
         return Ok(None);
     }
@@ -50,7 +50,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 if let Some(timestamp) = arr[2].as_array().unwrap()[1].as_i64() {
                     Ok(Some(timestamp))
                 } else {
-                    Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+                    Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
                 }
             } else if arr[1].is_array() {
                 // snapshot
@@ -58,7 +58,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 let timestamp = raw_trades.iter().map(|raw_trade| raw_trade[1] as i64).max();
                 Ok(timestamp) // Sometimes data can be empty, for example: [{"channel":"trades","symbol":"tBTC:CNHT"}, []]
             } else {
-                Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+                Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
             }
         }
         "candles" => {
@@ -71,7 +71,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             }
         }
         "book" | "ticker" => Ok(None),
-        _ => Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg))),
+        _ => Err(SimpleError::new(format!("Failed to extract timestamp from {msg}"))),
     }
 }
 
@@ -109,12 +109,12 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let arr = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     let obj = arr[0].as_object().unwrap();
     let symbol = if let Some(symbol) = obj.get("symbol") {
         symbol.as_str().unwrap()
     } else {
-        return Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)));
+        return Err(SimpleError::new(format!("Failed to extract symbol from {msg}")));
     };
 
     // see https://docs.bitfinex.com/reference#ws-public-trades
@@ -146,11 +146,11 @@ pub(crate) fn parse_l2(
     timestamp: i64,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
 
     let symbol = ws_msg[0].as_object().unwrap()["symbol"].as_str().unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let data = ws_msg[1].clone();
     if data.as_array().unwrap().is_empty() {

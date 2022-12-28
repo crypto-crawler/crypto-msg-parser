@@ -3,7 +3,7 @@ use crypto_market_type::MarketType;
 pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
     if symbol.ends_with("_USD-R") {
         let base = symbol.strip_suffix("_USD-R").unwrap();
-        Some(format!("{}/USD", base))
+        Some(format!("{base}/USD"))
     } else {
         Some(symbol.replace('_', "/").to_uppercase())
     }

@@ -1143,7 +1143,7 @@ mod candlestick {
         assert_eq!(31565.04, candlestick_msg.high);
         assert_eq!(31565.04, candlestick_msg.low);
         assert_eq!(31565.04, candlestick_msg.close);
-        assert_eq!(0.0063361237622382230467631278148229814, candlestick_msg.volume);
+        assert_eq!(0.006_336_123_762_238_223, candlestick_msg.volume);
         assert_eq!(Some(200.0), candlestick_msg.quote_volume);
     }
 

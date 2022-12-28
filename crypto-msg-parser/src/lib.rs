@@ -37,7 +37,7 @@ pub fn extract_symbol(
         "okex" | "okx" => exchanges::okx::extract_symbol(market_type, msg),
         "zb" => exchanges::zb::extract_symbol(market_type, msg),
         "zbg" => exchanges::zbg::extract_symbol(market_type, msg),
-        _ => Err(SimpleError::new(format!("Unknown exchange {}", exchange))),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     }
 }
 
@@ -68,7 +68,7 @@ pub fn extract_timestamp(
         "okex" | "okx" => exchanges::okx::extract_timestamp(market_type, msg),
         "zb" => exchanges::zb::extract_timestamp(market_type, msg),
         "zbg" => exchanges::zbg::extract_timestamp(market_type, msg),
-        _ => Err(SimpleError::new(format!("Unknown exchange {}", exchange))),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     }
 }
 
@@ -99,7 +99,7 @@ pub fn parse_trade(
         "okex" | "okx" => exchanges::okx::parse_trade(market_type, msg),
         "zb" => exchanges::zb::parse_trade(market_type, msg),
         "zbg" => exchanges::zbg::parse_trade(market_type, msg),
-        _ => Err(SimpleError::new(format!("Unknown exchange {}", exchange))),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     }
 }
 
@@ -143,7 +143,7 @@ pub fn parse_l2(
         "okex" | "okx" => exchanges::okx::parse_l2(market_type, msg),
         "zb" => exchanges::zb::parse_l2(market_type, msg),
         "zbg" => exchanges::zbg::parse_l2(market_type, msg),
-        _ => Err(SimpleError::new(format!("Unknown exchange {}", exchange))),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     };
     match ret {
         Ok(mut orderbooks) => {
@@ -180,7 +180,7 @@ pub fn parse_l2_topk(
         "mexc" => exchanges::mexc::parse_l2_topk(market_type, msg, received_at),
         "okx" => exchanges::okx::parse_l2_topk(market_type, msg),
         "zb" => exchanges::zb::parse_l2_topk(market_type, msg),
-        _ => Err(SimpleError::new(format!("Unknown exchange {}", exchange))),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     };
     match ret {
         Ok(mut orderbooks) => {
@@ -215,7 +215,7 @@ pub fn parse_bbo(
         "kraken" => exchanges::kraken::parse_bbo(market_type, msg, received_at),
         "kucoin" => exchanges::kucoin::parse_bbo(market_type, msg),
         "okx" => exchanges::okx::parse_bbo(market_type, msg),
-        _ => Err(SimpleError::new(format!("Unknown exchange {}", exchange))),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     }
 }
 
@@ -249,7 +249,7 @@ pub fn parse_funding_rate(
             msg,
             received_at.expect("OKX funding rate messages don't have timestamp"),
         ),
-        _ => Err(SimpleError::new(format!("{} does NOT have perpetual swap market", exchange))),
+        _ => Err(SimpleError::new(format!("{exchange} does NOT have perpetual swap market"))),
     }
 }
 
@@ -271,7 +271,7 @@ pub fn parse_candlestick(
             msg,
             received_at.expect("OKX candlestick messages don't have timestamp"),
         ),
-        _ => Err(SimpleError::new(format!("Unknown exchange {}", exchange))),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     }
 }
 

@@ -58,12 +58,12 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<TradeTick>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<TradeTick>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<TradeTick>"))
     })?;
 
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let mut trades: Vec<TradeMsg> = ws_msg
         .tick

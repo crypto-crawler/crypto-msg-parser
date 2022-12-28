@@ -123,7 +123,7 @@ pub(crate) struct RawCandlestickMsgV2 {
 
 pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<String, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     if json_obj.contains_key("topic") && json_obj["topic"].is_string() {
         let symbol = json_obj["topic"].as_str().unwrap().split('.').last().unwrap();
         Ok(symbol.to_string())
@@ -133,12 +133,12 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
     {
         // Data from RESTful APIs
         if json_obj["ret_code"].as_i64().unwrap() != 0 {
-            return Err(SimpleError::new(format!("Error HTTP response {}", msg)));
+            return Err(SimpleError::new(format!("Error HTTP response {msg}")));
         }
         let arr = json_obj["result"].as_array().unwrap();
         Ok(arr[0]["symbol"].as_str().unwrap().to_string())
     } else {
-        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract symbol from {msg}")))
     }
 }
 
@@ -147,7 +147,7 @@ pub(crate) fn extract_timestamp(
     msg: &str,
 ) -> Result<Option<i64>, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     if json_obj.contains_key("topic") && json_obj["topic"].is_string() {
         let msg_type = json_obj["topic"].as_str().unwrap().split('.').next().unwrap();
         match msg_type {
@@ -165,7 +165,7 @@ pub(crate) fn extract_timestamp(
                     .max();
 
                 if timestamp.is_none() {
-                    Err(SimpleError::new(format!("data is empty in {}", msg)))
+                    Err(SimpleError::new(format!("data is empty in {msg}")))
                 } else {
                     Ok(timestamp)
                 }
@@ -186,13 +186,13 @@ pub(crate) fn extract_timestamp(
     {
         // Data from RESTful APIs
         if json_obj["ret_code"].as_i64().unwrap() != 0 {
-            return Err(SimpleError::new(format!("Error HTTP response {}", msg)));
+            return Err(SimpleError::new(format!("Error HTTP response {msg}")));
         }
         Ok(json_obj
             .get("time_now")
             .map(|x| (x.as_str().unwrap().parse::<f64>().unwrap() * 1000.0) as i64))
     } else {
-        Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
     }
 }
 
@@ -228,8 +228,7 @@ pub(crate) fn parse_trade(
             let ws_msg =
                 serde_json::from_str::<WebsocketMsg<InverseTradeMsg>>(msg).map_err(|_e| {
                     SimpleError::new(format!(
-                        "Failed to deserialize {} to WebsocketMsg<InverseTradeMsg>",
-                        msg
+                        "Failed to deserialize {msg} to WebsocketMsg<InverseTradeMsg>"
                     ))
                 })?;
 
@@ -264,8 +263,7 @@ pub(crate) fn parse_trade(
             let ws_msg =
                 serde_json::from_str::<WebsocketMsg<LinearTradeMsg>>(msg).map_err(|_e| {
                     SimpleError::new(format!(
-                        "Failed to deserialize {} to WebsocketMsg<LinearTradeMsg>",
-                        msg
+                        "Failed to deserialize {msg} to WebsocketMsg<LinearTradeMsg>"
                     ))
                 })?;
 
@@ -303,7 +301,7 @@ pub(crate) fn parse_trade(
             }
             Ok(trades)
         }
-        _ => Err(SimpleError::new(format!("Unknown market_type {}", market_type))),
+        _ => Err(SimpleError::new(format!("Unknown market_type {market_type}"))),
     }
 }
 
@@ -312,11 +310,11 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<RawOrderbookMsg>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to RawOrderbookMsg", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to RawOrderbookMsg"))
     })?;
     let symbol = ws_msg.topic.strip_prefix("orderBookL2_25.").unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let snapshot = ws_msg.type_ == "snapshot";
     let timestamp = if ws_msg.timestamp_e6.is_i64() {
         ws_msg.timestamp_e6.as_i64().unwrap()
@@ -399,7 +397,7 @@ pub(crate) fn parse_l2(
                 v
             }
         }
-        _ => return Err(SimpleError::new(format!("Unknown market_type {}", market_type))),
+        _ => return Err(SimpleError::new(format!("Unknown market_type {market_type}"))),
     };
 
     for raw_order in raw_orders.iter() {
@@ -423,7 +421,7 @@ pub(crate) fn parse_candlestick(
                 .map_err(SimpleError::from)?;
             let symbol = ws_msg.topic.split('.').last().unwrap();
             let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).ok_or_else(|| {
-                SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg))
+                SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
             })?;
 
             let candlestick_messages = ws_msg
@@ -456,12 +454,12 @@ pub(crate) fn parse_candlestick(
             let (period, symbol) = {
                 let arr: Vec<&str> = ws_msg.topic.split('.').collect();
                 if arr.len() != 3 {
-                    return Err(SimpleError::new(format!("Invalid topic format: {}", msg)));
+                    return Err(SimpleError::new(format!("Invalid topic format: {msg}")));
                 }
                 (arr[1], arr[2])
             };
             let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).ok_or_else(|| {
-                SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg))
+                SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
             })?;
 
             let candlestick_messages = ws_msg
@@ -487,6 +485,6 @@ pub(crate) fn parse_candlestick(
                 .collect();
             Ok(candlestick_messages)
         }
-        _ => Err(SimpleError::new(format!("Unknown market type {}", market_type))),
+        _ => Err(SimpleError::new(format!("Unknown market type {market_type}"))),
     }
 }

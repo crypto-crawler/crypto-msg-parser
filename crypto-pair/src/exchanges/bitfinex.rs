@@ -133,7 +133,7 @@ mod tests {
     fn test_currency_mapping() {
         let map = fetch_currency_mapping();
         for (name, new_name) in map {
-            println!("(\"{}\", \"{}\"),", name, new_name);
+            println!("(\"{name}\", \"{new_name}\"),");
         }
     }
 }

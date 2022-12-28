@@ -10,7 +10,7 @@ use serde::{Deserialize, Serialize};
 
 pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     if let Some(raw_channel) = obj.get("channel") {
         // websocket
         let raw_channel = raw_channel.as_str().unwrap();
@@ -28,7 +28,7 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                 if let Some(timestamp) = timestamp {
                     Ok(Some(timestamp * 1000))
                 } else {
-                    Err(SimpleError::new(format!("data is empty in {}", msg)))
+                    Err(SimpleError::new(format!("data is empty in {msg}")))
                 }
             }
             "kline" => {
@@ -39,12 +39,12 @@ pub(super) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
                     .map(|x| x[0].as_i64().unwrap())
                     .max();
                 if timestamp.is_none() {
-                    Err(SimpleError::new(format!("data is empty in {}", msg)))
+                    Err(SimpleError::new(format!("data is empty in {msg}")))
                 } else {
                     Ok(timestamp)
                 }
             }
-            _ => Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg))),
+            _ => Err(SimpleError::new(format!("Failed to extract timestamp from {msg}"))),
         }
     } else {
         // RESTful
@@ -90,7 +90,7 @@ struct L2TopKMsg {
 
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawTradeMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradeMsg>"))
     })?;
     debug_assert_eq!("trades", ws_msg.dataType);
     debug_assert!(ws_msg.channel.ends_with("_trades"));
@@ -130,7 +130,7 @@ pub(super) fn parse_l2(_msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
 
 pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<L2TopKMsg>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to L2TopKMsg", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to L2TopKMsg")))?;
     debug_assert_eq!("depth", ws_msg.dataType);
     debug_assert!(ws_msg.channel.ends_with("_depth"));
     let symbol = ws_msg.channel.split('_').next().unwrap();

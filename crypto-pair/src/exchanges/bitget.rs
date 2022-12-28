@@ -19,7 +19,7 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         } else if pair.ends_with("BTC") {
             Some(format!("{}/BTC", pair.strip_suffix("BTC").unwrap()))
         } else {
-            panic!("Failed to parse {}", symbol);
+            panic!("Failed to parse {symbol}");
         }
     } else {
         #[allow(clippy::collapsible_else_if)]
@@ -27,14 +27,14 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
             // linear swap
             assert!(symbol.ends_with("usdt"));
             let base = &symbol[4..symbol.len() - 4];
-            Some(format!("{}/usdt", base).to_uppercase())
+            Some(format!("{base}/usdt").to_uppercase())
         } else if symbol.contains('_') {
             // spot
             Some(symbol.replace('_', "/").to_uppercase())
         } else if symbol.ends_with("usd") {
             // inverse swap
             let base = symbol.strip_suffix("usd").unwrap();
-            Some(format!("{}/usd", base).to_uppercase())
+            Some(format!("{base}/usd").to_uppercase())
         } else {
             None
         }

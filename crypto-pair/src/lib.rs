@@ -57,7 +57,7 @@ pub fn normalize_pair(symbol: &str, exchange: &str) -> Option<String> {
                 (v[0].to_string(), v[1].to_string())
             };
 
-            Some(format!("{}/{}", base, quote))
+            Some(format!("{base}/{quote}"))
         }
         "huobi" => exchanges::huobi::normalize_pair(symbol),
         "kraken" => exchanges::kraken::normalize_pair(symbol),
@@ -71,7 +71,7 @@ pub fn normalize_pair(symbol: &str, exchange: &str) -> Option<String> {
         "Upbit" => Some(symbol.replace('-', "/")),
         "zb" => exchanges::zb::normalize_pair(symbol),
         "zbg" => exchanges::zbg::normalize_pair(symbol),
-        _ => panic!("Unknown exchange {}", exchange),
+        _ => panic!("Unknown exchange {exchange}"),
     }
 }
 

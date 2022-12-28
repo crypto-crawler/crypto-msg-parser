@@ -5,5 +5,5 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         (symbol[..(symbol.len() - 3)].to_string(), symbol[(symbol.len() - 3)..].to_string())
     };
 
-    Some(format!("{}/{}", base, quote).to_uppercase())
+    Some(format!("{base}/{quote}").to_uppercase())
 }

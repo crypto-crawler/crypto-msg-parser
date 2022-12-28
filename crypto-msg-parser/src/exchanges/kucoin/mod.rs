@@ -32,7 +32,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     } else if let Ok(rest_msg) = serde_json::from_str::<RestfulMsg<HashMap<String, Value>>>(msg) {
         // RESTful
         if rest_msg.code != "200000" {
-            Err(SimpleError::new(format!("Error HTTP response {}", msg)))
+            Err(SimpleError::new(format!("Error HTTP response {msg}")))
         } else if let Some(symbol) = rest_msg.data.get("symbol") {
             Ok(symbol.as_str().unwrap().to_string())
         } else {
@@ -41,7 +41,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     } else if let Ok(rest_msg) = serde_json::from_str::<RestfulMsg<Vec<Value>>>(msg) {
         // RESTful
         if rest_msg.code != "200000" {
-            return Err(SimpleError::new(format!("Error HTTP response {}", msg)));
+            return Err(SimpleError::new(format!("Error HTTP response {msg}")));
         }
         #[allow(clippy::comparison_chain)]
         if rest_msg.data.len() > 1 {
@@ -52,7 +52,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
             Ok("NONE".to_string())
         }
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -76,35 +76,35 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
             } else if topic.starts_with("/market/level2:") {
                 Ok(Some(t.as_i64().unwrap()))
             } else {
-                Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+                Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
             }
         } else if topic.starts_with("/market/level2:") {
             Ok(None)
         } else if topic.starts_with("/market/snapshot:") {
             Ok(Some(ws_msg.data["data"]["datetime"].as_i64().unwrap()))
         } else {
-            Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+            Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
         }
     } else if let Ok(rest_msg) = serde_json::from_str::<RestfulMsg<HashMap<String, Value>>>(msg) {
         // RESTful
         if rest_msg.code != "200000" {
-            Err(SimpleError::new(format!("Error HTTP response {}", msg)))
+            Err(SimpleError::new(format!("Error HTTP response {msg}")))
         } else if let Some(t) = rest_msg.data.get("time") {
             Ok(Some(t.as_i64().unwrap()))
         } else if let Some(t) = rest_msg.data.get("ts") {
             Ok(Some(t.as_i64().unwrap() / 1000000))
         } else {
-            Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+            Err(SimpleError::new(format!("Unsupported message format {msg}")))
         }
     } else if let Ok(rest_msg) = serde_json::from_str::<RestfulMsg<Vec<Value>>>(msg) {
         // RESTful
         if rest_msg.code != "200000" {
-            Err(SimpleError::new(format!("Error HTTP response {}", msg)))
+            Err(SimpleError::new(format!("Error HTTP response {msg}")))
         } else {
             Ok(None)
         }
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 

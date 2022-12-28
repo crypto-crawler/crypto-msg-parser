@@ -17,7 +17,7 @@ const EXCHANGE_NAME: &str = "binance";
 
 pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     let stream = if obj.contains_key("stream") && obj["stream"].is_string() {
         obj["stream"].as_str().unwrap().to_string()
     } else {
@@ -52,13 +52,13 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
     {
         Ok("NONE".to_string())
     } else {
-        Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract symbol from {msg}")))
     }
 }
 
 pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let obj = serde_json::from_str::<Value>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     let data = if let Some(data) = obj.get("data") { data } else { &obj };
     if data.is_object() {
         if let Some(e) = data.get("E") {
@@ -72,7 +72,7 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
         let timestamp = data.as_array().unwrap().iter().map(|x| x["E"].as_i64().unwrap()).max();
         Ok(timestamp)
     } else {
-        Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+        Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
     }
 }
 

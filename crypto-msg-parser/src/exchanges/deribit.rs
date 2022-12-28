@@ -94,7 +94,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
             let symbol = arr.iter().map(|v| v["instrument_name"].as_str().unwrap()).next().unwrap();
             Ok(symbol.to_string())
         } else {
-            Err(SimpleError::new(format!("Unknown websocket message format: {}", msg)))
+            Err(SimpleError::new(format!("Unknown websocket message format: {msg}")))
         }
     } else if let Ok(rest_resp) = serde_json::from_str::<RestfulResp<Value>>(msg) {
         if let Some(json_obj) = rest_resp.result.as_object() {
@@ -111,10 +111,10 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
                 Ok("NONE".to_string())
             }
         } else {
-            Err(SimpleError::new(format!("Unknown HTTP message format: {}", msg)))
+            Err(SimpleError::new(format!("Unknown HTTP message format: {msg}")))
         }
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -134,12 +134,12 @@ pub(crate) fn extract_timestamp(
             let timestamp = arr.iter().map(|x| x["timestamp"].as_i64().unwrap()).max();
 
             if timestamp.is_none() {
-                Err(SimpleError::new(format!("data is empty in {}", msg)))
+                Err(SimpleError::new(format!("data is empty in {msg}")))
             } else {
                 Ok(timestamp)
             }
         } else {
-            Err(SimpleError::new(format!("Unsupported websocket message format: {}", msg)))
+            Err(SimpleError::new(format!("Unsupported websocket message format: {msg}")))
         }
     } else if let Ok(rest_resp) = serde_json::from_str::<RestfulResp<Value>>(msg) {
         if let Some(json_obj) = rest_resp.result.as_object() {
@@ -150,10 +150,10 @@ pub(crate) fn extract_timestamp(
             let timestamp = arr.iter().map(|x| x["creation_timestamp"].as_i64().unwrap()).max();
             Ok(timestamp)
         } else {
-            Err(SimpleError::new(format!("Unknown HTTP message format: {}", msg)))
+            Err(SimpleError::new(format!("Unknown HTTP message format: {msg}")))
         }
     } else {
-        Err(SimpleError::new(format!("Unsupported message format {}", msg)))
+        Err(SimpleError::new(format!("Unsupported message format {msg}")))
     }
 }
 
@@ -190,7 +190,7 @@ pub(crate) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<RawTradeMsg>>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Vec<RawTradeMsg>>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Vec<RawTradeMsg>>"))
     })?;
     let mut trades: Vec<TradeMsg> = ws_msg
         .params
@@ -236,7 +236,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrderbookMsg>"))
     })?;
     debug_assert!(ws_msg.params.channel.starts_with("book."));
     let msg_type = if ws_msg.params.channel.matches('.').count() == 2 {
@@ -253,7 +253,7 @@ pub(crate) fn parse_l2(
     let timestamp = raw_orderbook.timestamp;
     let symbol = raw_orderbook.instrument_name;
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let parse_order = |raw_order: &[Value]| -> Order {
         let (price, quantity) = if raw_order.len() == 3 {

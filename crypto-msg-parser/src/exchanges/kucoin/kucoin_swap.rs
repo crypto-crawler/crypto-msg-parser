@@ -55,7 +55,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<ContractTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<ContractTradeMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<ContractTradeMsg>"))
     })?;
     debug_assert_eq!(ws_msg.subject, "match");
     debug_assert!(ws_msg.topic.starts_with("/contractMarket/execution:"));
@@ -94,8 +94,7 @@ pub(super) fn parse_l2(
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<ContractOrderbookMsg>>(msg).map_err(|_e| {
         SimpleError::new(format!(
-            "Failed to deserialize {} to WebsocketMsg<ContractOrderbookMsg>",
-            msg
+            "Failed to deserialize {msg} to WebsocketMsg<ContractOrderbookMsg>"
         ))
     })?;
     debug_assert_eq!(ws_msg.subject, "level2");
@@ -156,7 +155,7 @@ pub(super) fn parse_l2_topk(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SwapL2TopKMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SwapL2TopKMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<SwapL2TopKMsg>"))
     })?;
     debug_assert_eq!(ws_msg.subject, "level2");
     debug_assert!(ws_msg.topic.starts_with("/contractMarket/level2Depth"));

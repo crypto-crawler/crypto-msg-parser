@@ -191,7 +191,7 @@ pub(super) fn extract_timestamp(
         }
         "future_snapshot_depth" => Ok(convert_timestamp(&ws_msg[1]["time"])),
         "future_snapshot_indicator" => Ok(convert_timestamp(&ws_msg[1]["te"])),
-        _ => Err(SimpleError::new(format!("Unknown channel {} in  {}", channel, msg))),
+        _ => Err(SimpleError::new(format!("Unknown channel {channel} in  {msg}"))),
     }
 }
 
@@ -214,7 +214,7 @@ fn calc_quantity_and_volume(
 
             (quantity, quantity * price)
         }
-        _ => panic!("Unknown market_type {}", market_type),
+        _ => panic!("Unknown market_type {market_type}"),
     }
 }
 
@@ -223,7 +223,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     assert_eq!(ws_msg[0].as_str().unwrap(), "future_tick");
     let raw_trade: RawTradeMsg = serde_json::from_value(ws_msg[1].clone()).map_err(|_e| {
         SimpleError::new(format!("Failed to deserialize {} to RawTradeMsg", ws_msg[1]))
@@ -266,7 +266,7 @@ pub(crate) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {} to Vec<Value>", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
     assert_eq!(ws_msg[0].as_str().unwrap(), "future_snapshot_depth");
     let raw_orderbook: RawOrderbookMsg =
         serde_json::from_value(ws_msg[1].clone()).map_err(|_e| {

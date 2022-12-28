@@ -14,7 +14,7 @@ pub(super) fn extract_timestamp(
     msg: &str,
 ) -> Result<Option<i64>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     if let Some(raw_channel) = obj.get("channel") {
         // websocket
         let raw_channel = raw_channel.as_str().unwrap();
@@ -26,7 +26,7 @@ pub(super) fn extract_timestamp(
                 if let Some(timestamp) = timestamp {
                     Ok(Some(timestamp * 1000))
                 } else {
-                    Err(SimpleError::new(format!("data is empty in {}", msg)))
+                    Err(SimpleError::new(format!("data is empty in {msg}")))
                 }
             }
             "Depth" | "DepthWhole" => {
@@ -39,7 +39,7 @@ pub(super) fn extract_timestamp(
                     if let Some(timestamp) = timestamp {
                         Ok(Some(timestamp * 1000))
                     } else {
-                        Err(SimpleError::new(format!("data is empty in {}", msg)))
+                        Err(SimpleError::new(format!("data is empty in {msg}")))
                     }
                 } else {
                     let timestamp = obj["data"].as_array().unwrap()[6].as_i64().unwrap();
@@ -57,10 +57,10 @@ pub(super) fn extract_timestamp(
                     if let Some(timestamp) = timestamp {
                         Ok(Some(timestamp * 1000))
                     } else {
-                        Err(SimpleError::new(format!("data is empty in {}", msg)))
+                        Err(SimpleError::new(format!("data is empty in {msg}")))
                     }
                 } else {
-                    Err(SimpleError::new(format!("Failed to extract timestamp from {}", msg)))
+                    Err(SimpleError::new(format!("Failed to extract timestamp from {msg}")))
                 }
             }
         }
@@ -68,7 +68,7 @@ pub(super) fn extract_timestamp(
         // ZB linear_swap RESTful
         Ok(obj["data"].get("time").map(|x| x.as_i64().unwrap()))
     } else {
-        Err(SimpleError::new(format!("Unknown message format {}", msg)))
+        Err(SimpleError::new(format!("Unknown message format {msg}")))
     }
 }
 
@@ -78,7 +78,7 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Vec<[f64; 4]>>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Vec<[f64; 4]>>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Vec<[f64; 4]>>"))
     })?;
     debug_assert!(ws_msg.channel.ends_with(".Trade"));
     let symbol = ws_msg.channel.split('.').next().unwrap();
@@ -146,7 +146,7 @@ pub(super) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<Level2Msg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<Level2Msg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<Level2Msg>"))
     })?;
     let msg_type = if ws_msg.channel.ends_with(".DepthWhole") {
         MessageType::L2TopK

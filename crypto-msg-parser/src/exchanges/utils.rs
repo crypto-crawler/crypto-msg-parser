@@ -53,7 +53,7 @@ pub(super) fn calc_quantity_and_volume(
             let quantity_base = quantity * contract_value;
             (quantity_base, quantity_base * price, Some(quantity))
         }
-        _ => panic!("Unknown market_type {}", market_type),
+        _ => panic!("Unknown market_type {market_type}"),
     }
 }
 

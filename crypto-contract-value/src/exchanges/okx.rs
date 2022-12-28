@@ -197,7 +197,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
     // ctMult
     let option: HashMap<String, f64> = vec![("BTC/USD", 0.1), ("ETH/USD", 1.0), ("EOS/USD", 100.0)]
         .into_iter()
-        .map(|x| (x.0.to_string(), x.1 as f64))
+        .map(|x| (x.0.to_string(), x.1))
         .collect();
 
     let mut result = HashMap::<MarketType, HashMap<String, f64>>::new();
@@ -226,7 +226,7 @@ fn fetch_contract_val(inst_type: &str) -> BTreeMap<String, f64> {
 
     let markets = {
         // doc: https://www.okx.com/docs-v5/en/#rest-api-public-data-get-instruments
-        let url = format!("https://www.okx.com/api/v5/public/instruments?instType={}", inst_type);
+        let url = format!("https://www.okx.com/api/v5/public/instruments?instType={inst_type}");
         let txt = match http_get(url.as_str()) {
             Ok(txt) => {
                 let json_obj = serde_json::from_str::<HashMap<String, Value>>(&txt).unwrap();

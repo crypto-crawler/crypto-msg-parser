@@ -84,18 +84,18 @@ pub(super) fn parse_trade(
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("{} is not a JSON object", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("{msg} is not a JSON object")))?;
     let data = obj
         .get("data")
-        .ok_or_else(|| SimpleError::new(format!("There is no data field in {}", msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("There is no data field in {msg}")))?;
     let event_type = data["e"].as_str().ok_or_else(|| {
-        SimpleError::new(format!("There is no e field in the data field of {}", msg))
+        SimpleError::new(format!("There is no e field in the data field of {msg}"))
     })?;
 
     match event_type {
         "aggTrade" => {
             let agg_trade: AggTradeMsg = serde_json::from_value(data.clone()).map_err(|_e| {
-                SimpleError::new(format!("Failed to deserialize {} to AggTradeMsg", msg))
+                SimpleError::new(format!("Failed to deserialize {msg} to AggTradeMsg"))
             })?;
             let pair =
                 crypto_pair::normalize_pair(&agg_trade.s, EXCHANGE_NAME).ok_or_else(|| {
@@ -125,7 +125,7 @@ pub(super) fn parse_trade(
         }
         "trade" => {
             let raw_trade: RawTradeMsg = serde_json::from_value(data.clone()).map_err(|_e| {
-                SimpleError::new(format!("Failed to deserialize {} to RawTradeMsg", data))
+                SimpleError::new(format!("Failed to deserialize {data} to RawTradeMsg"))
             })?;
             let pair =
                 crypto_pair::normalize_pair(&raw_trade.s, EXCHANGE_NAME).ok_or_else(|| {
@@ -153,7 +153,7 @@ pub(super) fn parse_trade(
 
             Ok(vec![trade])
         }
-        _ => Err(SimpleError::new(format!("Unsupported event type {}", event_type))),
+        _ => Err(SimpleError::new(format!("Unsupported event type {event_type}"))),
     }
 }
 
@@ -240,7 +240,7 @@ pub(super) fn parse_bbo(
     received_at: Option<i64>,
 ) -> Result<Vec<BboMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawBboMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<RawBboMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawBboMsg>"))
     })?;
     debug_assert!(ws_msg.stream.ends_with("bookTicker"));
     let timestamp =
@@ -307,7 +307,7 @@ pub(super) fn parse_funding_rate(
     msg: &str,
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to HashMap<String, Value>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to HashMap<String, Value>"))
     })?;
     let stream = obj.get("stream").unwrap().as_str().unwrap();
     let data = if stream == "!markPrice@arr" {
@@ -321,7 +321,7 @@ pub(super) fn parse_funding_rate(
     } else if stream.ends_with("@markPrice") {
         vec![serde_json::from_value::<RawFundingRateMsg>(obj.get("data").unwrap().clone()).unwrap()]
     } else {
-        return Err(SimpleError::new(format!("Unknown funding rate messaeg {}", msg)));
+        return Err(SimpleError::new(format!("Unknown funding rate messaeg {msg}")));
     };
     let mut funding_rates: Vec<FundingRateMsg> = data
         .into_iter()

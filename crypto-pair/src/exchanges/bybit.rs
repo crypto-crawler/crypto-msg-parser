@@ -14,9 +14,9 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         let base = &symbol[..symbol.len() - 6];
         (base, "USD")
     } else {
-        panic!("Unknown symbol {}", symbol);
+        panic!("Unknown symbol {symbol}");
     };
-    Some(format!("{}/{}", base, quote))
+    Some(format!("{base}/{quote}"))
 }
 
 pub(crate) fn get_market_type(symbol: &str) -> MarketType {

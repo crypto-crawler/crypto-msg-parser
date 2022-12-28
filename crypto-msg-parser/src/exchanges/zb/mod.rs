@@ -14,7 +14,7 @@ const EXCHANGE_NAME: &str = "zb";
 
 pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<String, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {}", msg)))?;
+        .map_err(|_e| SimpleError::new(format!("Failed to parse the JSON string {msg}")))?;
     if let Some(channel) = obj.get("channel") {
         // websocket
         let channel = channel.as_str().unwrap();
@@ -25,7 +25,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
             let symbol = channel.split('_').next().unwrap();
             Ok(symbol.to_string())
         } else {
-            Err(SimpleError::new(format!("Failed to extract symbol from {}", msg)))
+            Err(SimpleError::new(format!("Failed to extract symbol from {msg}")))
         }
     } else if obj.contains_key("asks") && obj.contains_key("bids") {
         // e.g., https://api.zbex.site/data/v1/depth?market=btc_usdt&size=50
@@ -39,7 +39,7 @@ pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<Stri
             Ok("NONE".to_string())
         }
     } else {
-        Err(SimpleError::new(format!("Unknown message format {}", msg)))
+        Err(SimpleError::new(format!("Unknown message format {msg}")))
     }
 }
 

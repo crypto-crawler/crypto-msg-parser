@@ -79,7 +79,7 @@ struct RawCandlestickMsg {
 
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<SpotOrderbookMsg>"))
     })?;
     debug_assert_eq!(ws_msg.subject, "trade.l3match");
     debug_assert!(ws_msg.topic.starts_with("/market/match:"));
@@ -110,13 +110,13 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
 
 pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotOrderbookMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<SpotOrderbookMsg>"))
     })?;
     debug_assert_eq!(ws_msg.subject, "trade.l2update");
     debug_assert!(ws_msg.topic.starts_with("/market/level2:"));
     let symbol = ws_msg.data.symbol;
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let parse_order = |raw_order: &[String; 3]| -> Order {
         let price = raw_order[0].parse::<f64>().unwrap();
@@ -150,7 +150,7 @@ pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, S
 
 pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<SpotL2TopKMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {} to WebsocketMsg<SpotOrderbookMsg>", msg))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<SpotOrderbookMsg>"))
     })?;
     debug_assert_eq!(ws_msg.subject, "level2");
     debug_assert!(ws_msg.topic.starts_with("/spotMarket/level2Depth5:"));

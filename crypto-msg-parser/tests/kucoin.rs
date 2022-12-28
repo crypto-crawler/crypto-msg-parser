@@ -677,7 +677,7 @@ mod candlestick {
         assert_eq!(28014.1, candlestick_msg.low);
         assert_eq!(31613.8, candlestick_msg.close);
         assert_eq!(93044.50911291, candlestick_msg.volume);
-        assert_eq!(Some(2792095272.950902197), candlestick_msg.quote_volume);
+        assert_eq!(Some(2_792_095_272.950_902), candlestick_msg.quote_volume);
         assert_eq!("1week", candlestick_msg.period);
     }
 

@@ -100,7 +100,7 @@ pub(crate) fn parse_trade(
 
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let mut trades: Vec<TradeMsg> = ws_msg
         .tick
@@ -155,7 +155,7 @@ pub(crate) fn parse_l2(
         .map_err(SimpleError::from)?;
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let timestamp = ws_msg.ts;
 
     let msg_type = if ws_msg.ch.ends_with(".high_freq") {
@@ -195,7 +195,7 @@ pub(super) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
     debug_assert!(ws_msg.ch.ends_with(".bbo"));
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {} from {}", symbol, msg)))?;
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
     let best_ask = parse_order(market_type, &pair, &ws_msg.tick.ask);
     let best_bid = parse_order(market_type, &pair, &ws_msg.tick.bid);
