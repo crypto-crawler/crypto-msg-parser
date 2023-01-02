@@ -25,6 +25,7 @@ static CONTRACT_VALUES: Lazy<HashMap<String, f64>> = Lazy::new(|| {
         ("linear_swap.APT/USDT", 0.001),
         ("linear_swap.AVAX/USDT", 0.0001),
         ("linear_swap.BCH/USDT", 0.00001),
+        ("linear_swap.BMEX/USDT", 0.001),
         ("linear_swap.BNB/USDT", 0.0001),
         ("linear_swap.BTC/USDT", 0.000001),
         ("linear_swap.DEFIMEXT/USDT", 0.0001),
@@ -126,23 +127,17 @@ pub(crate) fn get_contract_value(market_type: MarketType, pair: &str) -> Option<
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use super::fetch_contract_values;
 
     #[ignore]
     #[test]
     fn test_fetch_contract_values() {
-        let new_data = fetch_contract_values();
-
-        let mut mapping: BTreeMap<String, f64> = BTreeMap::new();
+        let mut mapping = fetch_contract_values();
         for (key, value) in super::CONTRACT_VALUES.iter() {
-            mapping.insert(key.to_string(), *value);
+            if !mapping.contains_key(key) {
+                mapping.insert(key.to_string(), *value);
+            }
         }
-        for (key, value) in new_data.iter() {
-            mapping.insert(key.to_string(), *value);
-        }
-
         for (pair, contract_value) in &mapping {
             println!("(\"{pair}\", {contract_value}),");
         }

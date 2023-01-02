@@ -166,9 +166,11 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("GST/USDT", 0.1_f64),
             ("GT/USDT", 0.1_f64),
             ("HBAR/USDT", 10_f64),
+            ("HFT/USDT", 1_f64),
             ("HIGH/USDT", 1_f64),
             ("HIVE/USDT", 1_f64),
             ("HNT/USDT", 0.1_f64),
+            ("HOOK/USDT", 1_f64),
             ("HOT/USDT", 1000_f64),
             ("HT/USDT", 1_f64),
             ("ICP/USDT", 0.001_f64),
@@ -188,6 +190,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("KLAY/USDT", 1_f64),
             ("KNC/USDT", 1_f64),
             ("KSM/USDT", 0.1_f64),
+            ("LAZIO/USDT", 1_f64),
             ("LDO/USDT", 1_f64),
             ("LEO/USDT", 0.1_f64),
             ("LINA/USDT", 10_f64),
@@ -243,9 +246,11 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("POLS/USDT", 1_f64),
             ("POLY/USDT", 1_f64),
             ("POND/USDT", 10_f64),
+            ("PORTO/USDT", 1_f64),
             ("PRIV/USDT", 0.001_f64),
             ("PROM/USDT", 0.1_f64),
             ("PRQ/USDT", 10_f64),
+            ("PSG/USDT", 1_f64),
             ("PUNDIX/USDT", 1_f64),
             ("PYR/USDT", 9.6_f64),
             ("QNT/USDT", 0.01_f64),
@@ -255,6 +260,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("RACA/USDT", 100_f64),
             ("RAD/USDT", 0.1_f64),
             ("RAMP/USDT", 10_f64),
+            ("RARE/USDT", 10_f64),
             ("RAY/USDT", 0.1_f64),
             ("REEF/USDT", 100_f64),
             ("REN/USDT", 10_f64),
@@ -268,6 +274,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("RUNE/USDT", 0.1_f64),
             ("RVN/USDT", 10_f64),
             ("SAND/USDT", 1_f64),
+            ("SANTOS/USDT", 1_f64),
             ("SC/USDT", 100_f64),
             ("SCRT/USDT", 1_f64),
             ("SERO/USDT", 10_f64),
@@ -304,9 +311,11 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("UST/USDT", 1_f64),
             ("USTC/USDT", 100_f64),
             ("VET/USDT", 100_f64),
+            ("VGX/USDT", 1_f64),
             ("VRA/USDT", 10_f64),
             ("WAVES/USDT", 1_f64),
             ("WAXP/USDT", 1_f64),
+            ("WEMIX/USDT", 1_f64),
             ("WIN/USDT", 10000_f64),
             ("WOO/USDT", 1_f64),
             ("WSB/USDT", 0.001_f64),
@@ -409,12 +418,19 @@ pub(crate) fn get_contract_value(market_type: MarketType, pair: &str) -> Option<
 
 #[cfg(test)]
 mod tests {
+    use crypto_market_type::MarketType;
+
     use super::{fetch_quanto_multipliers, INVERSE_SWAP_URL, LINEAR_FUTURE_URL, LINEAR_SWAP_URL};
 
     #[ignore]
     #[test]
     fn inverse_swap() {
-        let mapping = fetch_quanto_multipliers(INVERSE_SWAP_URL);
+        let mut mapping = fetch_quanto_multipliers(INVERSE_SWAP_URL);
+        for (key, value) in super::CONTRACT_VALUES[&MarketType::InverseSwap].iter() {
+            if !mapping.contains_key(key) {
+                mapping.insert(key.to_string(), *value);
+            }
+        }
         for (pair, contract_value) in &mapping {
             println!("(\"{pair}\", {contract_value}_f64),");
         }
@@ -423,7 +439,12 @@ mod tests {
     #[ignore]
     #[test]
     fn linear_swap() {
-        let mapping = fetch_quanto_multipliers(LINEAR_SWAP_URL);
+        let mut mapping = fetch_quanto_multipliers(LINEAR_SWAP_URL);
+        for (key, value) in super::CONTRACT_VALUES[&MarketType::LinearSwap].iter() {
+            if !mapping.contains_key(key) {
+                mapping.insert(key.to_string(), *value);
+            }
+        }
         for (pair, contract_value) in &mapping {
             println!("(\"{pair}\", {contract_value}_f64),");
         }
@@ -432,7 +453,12 @@ mod tests {
     #[ignore]
     #[test]
     fn linear_future() {
-        let mapping = fetch_quanto_multipliers(LINEAR_FUTURE_URL);
+        let mut mapping = fetch_quanto_multipliers(LINEAR_FUTURE_URL);
+        for (key, value) in super::CONTRACT_VALUES[&MarketType::LinearFuture].iter() {
+            if !mapping.contains_key(key) {
+                mapping.insert(key.to_string(), *value);
+            }
+        }
         for (pair, contract_value) in &mapping {
             println!("(\"{pair}\", {contract_value}_f64),");
         }

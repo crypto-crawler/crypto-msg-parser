@@ -257,8 +257,6 @@ pub(crate) fn get_contract_value(market_type: MarketType, pair: &str) -> Option<
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use crypto_market_type::MarketType;
 
     use super::{fetch_contract_size, LINEAR_OPTION_URL, LINEAR_SWAP_URL};
@@ -266,16 +264,12 @@ mod tests {
     #[ignore]
     #[test]
     fn linear_swap() {
-        let new_data = fetch_contract_size(LINEAR_SWAP_URL);
-
-        let mut mapping: BTreeMap<String, f64> = BTreeMap::new();
+        let mut mapping = fetch_contract_size(LINEAR_SWAP_URL);
         for (key, value) in super::CONTRACT_VALUES[&MarketType::LinearSwap].iter() {
-            mapping.insert(key.to_string(), *value);
+            if !mapping.contains_key(key) {
+                mapping.insert(key.to_string(), *value);
+            }
         }
-        for (key, value) in new_data.iter() {
-            mapping.insert(key.to_string(), *value);
-        }
-
         for (pair, contract_value) in &mapping {
             println!("(\"{pair}\", {contract_value}_f64),");
         }

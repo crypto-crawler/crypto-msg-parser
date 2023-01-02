@@ -32,6 +32,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("BAT/USDT", 10_f64),
             ("BCH/USDT", 0.1_f64),
             ("BICO/USDT", 1_f64),
+            ("BNB/USDT", 0.01_f64),
             ("BNT/USDT", 10_f64),
             ("BSV/USDT", 1_f64),
             ("BTC/USDC", 0.0001_f64),
@@ -127,6 +128,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("SWEAT/USDT", 100_f64),
             ("SWRV/USDT", 1_f64),
             ("THETA/USDT", 10_f64),
+            ("TON/USDT", 1_f64),
             ("TONCOIN/USDT", 1_f64),
             ("TORN/USDT", 0.01_f64),
             ("TRB/USDT", 0.1_f64),
@@ -260,8 +262,6 @@ pub(crate) fn get_contract_value(market_type: MarketType, pair: &str) -> Option<
 
 #[cfg(test)]
 mod tests {
-    use std::collections::BTreeMap;
-
     use crypto_market_type::MarketType;
 
     use super::fetch_contract_val;
@@ -269,16 +269,12 @@ mod tests {
     #[ignore]
     #[test]
     fn linear_swap() {
-        let new_data = fetch_contract_val("SWAP");
-
-        let mut mapping: BTreeMap<String, f64> = BTreeMap::new();
+        let mut mapping = fetch_contract_val("SWAP");
         for (key, value) in super::CONTRACT_VALUES[&MarketType::LinearSwap].iter() {
-            mapping.insert(key.to_string(), *value);
+            if !mapping.contains_key(key) {
+                mapping.insert(key.to_string(), *value);
+            }
         }
-        for (key, value) in new_data.iter() {
-            mapping.insert(key.to_string(), *value);
-        }
-
         for (pair, contract_value) in &mapping {
             println!("(\"{pair}\", {contract_value}_f64),");
         }
@@ -287,16 +283,12 @@ mod tests {
     #[ignore]
     #[test]
     fn linear_future() {
-        let new_data = fetch_contract_val("FUTURES");
-
-        let mut mapping: BTreeMap<String, f64> = BTreeMap::new();
+        let mut mapping = fetch_contract_val("FUTURES");
         for (key, value) in super::CONTRACT_VALUES[&MarketType::LinearFuture].iter() {
-            mapping.insert(key.to_string(), *value);
+            if !mapping.contains_key(key) {
+                mapping.insert(key.to_string(), *value);
+            }
         }
-        for (key, value) in new_data.iter() {
-            mapping.insert(key.to_string(), *value);
-        }
-
         for (pair, contract_value) in &mapping {
             println!("(\"{pair}\", {contract_value}_f64),");
         }
