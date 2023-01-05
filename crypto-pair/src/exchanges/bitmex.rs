@@ -163,6 +163,7 @@ mod tests {
         assert_eq!(MarketType::LinearFuture, super::get_market_type("ETHPOWZ22"));
         assert_eq!(MarketType::LinearFuture, super::get_market_type("ETHZ22"));
         assert_eq!(MarketType::Unknown, super::get_market_type("ETHYLDZ22"));
+        assert_eq!(MarketType::Unknown, super::get_market_type(".BETHYLD"));
     }
 
     #[test]

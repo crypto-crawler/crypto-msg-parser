@@ -685,9 +685,7 @@ pub(crate) fn parse_funding_rate(
     received_at: i64,
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawFundingRateMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"
-        ))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"))
     })?;
     debug_assert_eq!("funding", ws_msg.table);
     let mut rates: Vec<FundingRateMsg> = ws_msg

@@ -480,9 +480,8 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
             SimpleError::new(format!("Failed to deserialize {msg} to Vec<String>"))
         })?;
         let symbol = arr[3].to_lowercase();
-        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
-        })?;
+        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
+            .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
         let timestamp = arr[2].parse::<i64>().unwrap() * 1000;
 
         let mut asks: Vec<Order> = Vec::new();

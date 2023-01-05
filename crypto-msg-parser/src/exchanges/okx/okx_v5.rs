@@ -222,9 +222,7 @@ pub(super) fn parse_funding_rate(
     received_at: i64,
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawFundingRateMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"
-        ))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"))
     })?;
 
     let mut rates: Vec<FundingRateMsg> = ws_msg
@@ -399,9 +397,9 @@ pub(super) fn parse_candlestick(
             (vol_ccy, Some(vol * contract_value))
         }
         MarketType::LinearFuture | MarketType::LinearSwap => (obj.volCcy.parse().unwrap(), None),
-        _ => Err(SimpleError::new(format!(
-            "Unknown market type: {market_type} of {EXCHANGE_NAME}"
-        )))?,
+        _ => {
+            Err(SimpleError::new(format!("Unknown market type: {market_type} of {EXCHANGE_NAME}")))?
+        }
     };
 
     let candlestick_msg = CandlestickMsg {

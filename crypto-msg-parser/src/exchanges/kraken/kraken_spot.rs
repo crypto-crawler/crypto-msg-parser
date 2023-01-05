@@ -69,9 +69,8 @@ pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
         }
     } else {
         // websocket
-        let arr = serde_json::from_str::<Vec<Value>>(msg).map_err(|_e| {
-            SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>"))
-        })?;
+        let arr = serde_json::from_str::<Vec<Value>>(msg)
+            .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
         let symbol = arr[arr.len() - 1].as_str().unwrap();
         Ok(symbol.to_string())
     }

@@ -228,9 +228,8 @@ pub(super) fn parse_l2(
 
     for raw_orderbook in ws_msg.data.iter() {
         let symbol = raw_orderbook.instrument_id.as_str();
-        let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
-        })?;
+        let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
+            .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
         let timestamp = raw_orderbook.timestamp.parse::<i64>().unwrap();
 
         let parse_order = |raw_order: &[String; 2]| -> Order {

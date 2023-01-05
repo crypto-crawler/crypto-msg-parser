@@ -289,9 +289,8 @@ pub(super) fn parse_l2_topk(
             ))
         })?;
         let symbol = raw_orderbook.contract;
-        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
-        })?;
+        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
+            .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
         let timestamp = if market_type != MarketType::LinearFuture {
             raw_orderbook.t.unwrap()
         } else {
@@ -340,9 +339,8 @@ pub(super) fn parse_l2_topk(
         } else {
             raw_orderbook[0].contract.clone().unwrap()
         };
-        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
-        })?;
+        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
+            .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
         let timestamp = ws_msg.time * 1000;
 
         let parse_order = |raw_order: &RawOrderLegacy| -> Order {
@@ -449,9 +447,7 @@ pub(super) fn parse_l2(
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<OrderbookUpdateMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!(
-            "Failed to deserialize {msg} to WebsocketMsg<OrderbookUpdateMsg>"
-        ))
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<OrderbookUpdateMsg>"))
     })?;
     debug_assert_eq!(ws_msg.channel, "futures.order_book_update");
     let result = ws_msg.result;

@@ -160,9 +160,8 @@ pub(crate) fn parse_l2(
                 SimpleError::new(format!("Failed to deserialize {msg} to OrderbookSnapshotMsg"))
             })?;
         let symbol = orderbook_snapshot.product_id;
-        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
-        })?;
+        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
+            .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
         let orderbook = OrderBookMsg {
             exchange: EXCHANGE_NAME.to_string(),
@@ -185,9 +184,8 @@ pub(crate) fn parse_l2(
             SimpleError::new(format!("Failed to deserialize {msg} to OrderbookUpdateMsg"))
         })?;
         let symbol = orderbook_updates.product_id;
-        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).ok_or_else(|| {
-            SimpleError::new(format!("Failed to normalize {symbol} from {msg}"))
-        })?;
+        let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
+            .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
         let timestamp = DateTime::parse_from_rfc3339(&orderbook_updates.time).unwrap();
 
         let orderbook = OrderBookMsg {
