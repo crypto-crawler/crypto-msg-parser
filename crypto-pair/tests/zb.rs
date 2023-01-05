@@ -35,7 +35,6 @@ fn fetch_swap_markets(url: &str) -> Vec<SwapMarket> {
 }
 
 fn fetch_swap_markets_all() -> Vec<SwapMarket> {
-    
     fetch_swap_markets("https://fapi.zb.com/Server/api/v2/config/marketList")
     // let qc_markets = fetch_swap_markets("https://fapi.zb.com/qc/Server/api/v2/config/marketList");
     // usdt_markets

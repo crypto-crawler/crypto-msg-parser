@@ -13,12 +13,12 @@ const EXCHANGE_NAME: &str = "okx";
 #[derive(Serialize, Deserialize)]
 #[allow(non_snake_case)]
 struct RawMarket {
-    instType: String,  // Instrument type
-    instId: String,    // Instrument ID, e.g. BTC-USD-SWAP
-    baseCcy: String,   // Base currency, e.g. BTC inBTC-USDT. Only applicable to SPOT
-    quoteCcy: String,  // Quote currency, e.g. USDT in BTC-USDT. Only applicable to SPOT
+    instType: String, // Instrument type
+    instId: String,   // Instrument ID, e.g. BTC-USD-SWAP
+    baseCcy: String,  // Base currency, e.g. BTC inBTC-USDT. Only applicable to SPOT
+    quoteCcy: String, // Quote currency, e.g. USDT in BTC-USDT. Only applicable to SPOT
     settleCcy: String, /* Settlement and margin currency, e.g. BTC. Only applicable to
-                        * FUTURES/SWAP/OPTION */
+                       * FUTURES/SWAP/OPTION */
     ctValCcy: String, // Contract value currency. Only applicable to FUTURES/SWAP/OPTION
     ctType: String,   // Contract type, linear, inverse. Only applicable to FUTURES/SWAP
     state: String,    // Instrument status, live, suspend, preopen, settlement
