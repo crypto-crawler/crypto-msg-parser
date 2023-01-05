@@ -78,6 +78,7 @@ fn fetch_option_markets_raw() -> Vec<OptionMarket> {
     resp.data.optionSymbols
 }
 
+#[ignore = "Binance has banned US IP addresses and returned 451 status code"]
 #[test]
 fn verify_spot_symbols() {
     let markets = fetch_spot_markets_raw();
@@ -94,6 +95,7 @@ fn verify_spot_symbols() {
     }
 }
 
+#[ignore = "Binance has banned US IP addresses and returned 451 status code"]
 #[test]
 fn verify_inverse_symbols() {
     let markets = fetch_inverse_markets_raw();
@@ -112,6 +114,7 @@ fn verify_inverse_symbols() {
     }
 }
 
+#[ignore = "Binance has banned US IP addresses and returned 451 status code"]
 #[test]
 fn verify_linear_symbols() {
     let markets = fetch_linear_markets_raw();
