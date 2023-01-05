@@ -40,6 +40,7 @@ fn fetch_spot_markets_raw() -> Vec<SpotMarket> {
     resp.datas
 }
 
+#[ignore = "Always get HTTP 503 on Github action runners"]
 #[test]
 fn verify_spot_symbols() {
     let markets = fetch_spot_markets_raw();
