@@ -205,6 +205,8 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("FCTM17", (190, 0.000001)),
         ("FCTXBT", (93, 0.000001)),
         ("FILUSDT", (556, 0.01)),
+        ("FLRUSD", (1224, 0.0001)),
+        ("FLRUSDT", (1223, 0.0001)),
         ("FLRUSDTH23", (1214, 0.0001)),
         ("FTMUSDT", (755, 0.0001)),
         ("FTTUSD", (1169, 0.01)),
@@ -334,6 +336,7 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("XBTF23", (1192, 0.5)),
         ("XBTG15", (12, 0.01)),
         ("XBTG22", (765, 0.5)),
+        ("XBTG23", (1216, 0.5)),
         ("XBTH15", (3, 0.01)),
         ("XBTH15_G15", (14, 0.01)),
         ("XBTH16", (55, 0.01)),
@@ -640,9 +643,8 @@ pub(crate) fn parse_trade(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradeMsg>"))
-    })?;
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(SimpleError::from)?;
     debug_assert_eq!("trade", ws_msg.table);
     let raw_trades = ws_msg.data;
     let mut trades: Vec<TradeMsg> = raw_trades
@@ -684,9 +686,8 @@ pub(crate) fn parse_funding_rate(
     msg: &str,
     received_at: i64,
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<RawFundingRateMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawFundingRateMsg>"))
-    })?;
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<RawFundingRateMsg>>(msg).map_err(SimpleError::from)?;
     debug_assert_eq!("funding", ws_msg.table);
     let mut rates: Vec<FundingRateMsg> = ws_msg
         .data
@@ -742,9 +743,7 @@ pub(crate) fn parse_l2(
     msg: &str,
     received_at: i64,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrder>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrder>"))
-    })?;
+    let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrder>>(msg).map_err(SimpleError::from)?;
     debug_assert!(ws_msg.table.starts_with("orderBookL2")); // orderBookL2, orderBookL2_25
     let snapshot = ws_msg.action == "partial";
     if ws_msg.data.is_empty() {
@@ -829,9 +828,8 @@ pub(crate) fn parse_l2_topk(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<OrderBook10Msg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawOrder>"))
-    })?;
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<OrderBook10Msg>>(msg).map_err(SimpleError::from)?;
     debug_assert_eq!("orderBook10", ws_msg.table);
     if ws_msg.data.is_empty() {
         return Ok(Vec::new());

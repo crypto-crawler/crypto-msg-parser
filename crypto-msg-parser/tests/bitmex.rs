@@ -85,6 +85,32 @@ mod trade {
     }
 
     #[test]
+    #[ignore = "Not sure how to handle Settlement trdType"]
+    fn inverse_future_2() {
+        let raw_msg = r#"{"table":"trade","action":"insert","data":[{"timestamp":"2023-01-27T12:00:00.000Z","symbol":"XBTF23","size":1500,"price":22957.36,"tickDirection":"ZeroMinusTick","trdMatchID":"cea62111-3db1-2f9a-e03e-f0b6ae16695f","grossValue":6533850,"homeNotional":0.0653385,"foreignNotional":1500,"trdType":"Settlement"}]}"#;
+        let trade = &parse_trade(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap()[0];
+
+        crate::utils::check_trade_fields(
+            EXCHANGE_NAME,
+            MarketType::InverseFuture,
+            "BTC/USD".to_string(),
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap(),
+            trade,
+            raw_msg,
+        );
+        assert_eq!(
+            1616289162361,
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap().unwrap()
+        );
+
+        assert_eq!(trade.price, 62695.5);
+        assert_eq!(trade.quantity_base, 0.1276);
+        assert_eq!(trade.quantity_quote, 8000.0);
+        assert_eq!(trade.quantity_contract, Some(8000.0));
+        assert_eq!(trade.side, TradeSide::Sell);
+    }
+
+    #[test]
     fn linear_future() {
         let raw_msg = r#"{"table":"trade","action":"insert","data":[{"timestamp":"2021-03-12T01:46:03.886Z","symbol":"ETHH21","side":"Buy","size":1,"price":0.03191,"tickDirection":"PlusTick","trdMatchID":"a9371640-78d6-53d9-c9e4-31f7b7afb06d","grossValue":3191000,"homeNotional":1,"foreignNotional":0.03191}]}"#;
         let trade = &parse_trade(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap()[0];
