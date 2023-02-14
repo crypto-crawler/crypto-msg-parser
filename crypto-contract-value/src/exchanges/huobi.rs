@@ -50,6 +50,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("CHZ/USDT", 10_f64),
             ("CLV/USDT", 1_f64),
             ("COMP/USDT", 0.01_f64),
+            ("CORE/USDT", 0.1_f64),
             ("COTI/USDT", 10_f64),
             ("CRO/USDT", 10_f64),
             ("CRV/USDT", 1_f64),
