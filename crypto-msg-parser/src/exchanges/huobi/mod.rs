@@ -44,7 +44,7 @@ pub(crate) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
 
 pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
     let json_obj = serde_json::from_str::<HashMap<String, Value>>(msg).unwrap();
-    Ok(Some(json_obj["ts"].as_i64().unwrap()))
+    Ok(Some(json_obj.get("ts").expect(msg).as_i64().unwrap()))
 }
 
 pub(crate) fn get_msg_type(msg: &str) -> MessageType {
