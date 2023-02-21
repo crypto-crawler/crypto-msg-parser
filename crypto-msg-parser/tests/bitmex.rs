@@ -702,6 +702,40 @@ mod l2_topk {
     }
 
     #[test]
+    fn linear_swap_2() {
+        let raw_msg = r#"{"table":"orderBook10","action":"insert","data":[{"symbol":"BLURUSDT","bids":[[1.02,150000000]],"timestamp":"2023-02-16T04:00:30.587Z"}]}"#;
+        let orderbook =
+            &parse_l2_topk(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg, None).unwrap()[0];
+
+        assert_eq!(orderbook.asks.len(), 0);
+        assert_eq!(orderbook.bids.len(), 1);
+        assert!(orderbook.snapshot);
+
+        crate::utils::check_orderbook_fields(
+            EXCHANGE_NAME,
+            MarketType::LinearSwap,
+            MessageType::L2TopK,
+            "BLUR/USDT".to_string(),
+            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap(),
+            orderbook,
+            raw_msg,
+        );
+        assert_eq!(
+            1676520030587,
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
+        );
+
+        assert_eq!(orderbook.timestamp, 1676520030587);
+        assert_eq!(orderbook.seq_id, None);
+        assert_eq!(orderbook.prev_seq_id, None);
+
+        assert_eq!(orderbook.bids[0].price, 1.02);
+        assert_eq!(orderbook.bids[0].quantity_base, 150000000.0);
+        assert_eq!(orderbook.bids[0].quantity_quote, 1.02 * 150000000.0);
+        assert_eq!(orderbook.bids[0].quantity_contract.unwrap(), 150000000.0);
+    }
+
+    #[test]
     fn quanto_swap() {
         let raw_msg = r#"{"table":"orderBook10","action":"update","data":[{"symbol":"ETHUSD","asks":[[1801.2,75],[1801.35,600],[1801.65,94],[1801.7,600],[1801.75,50],[1801.8,50],[1801.95,50],[1802.5,3534],[1802.8,4],[1802.9,360]],"timestamp":"2022-06-04T23:48:43.562Z","bids":[[1801.15,10],[1800.95,85],[1800.55,93],[1800.5,148],[1799.95,14],[1799.85,473],[1799.65,102],[1799.6,50],[1799.55,227],[1799.5,560]]}]}"#;
 

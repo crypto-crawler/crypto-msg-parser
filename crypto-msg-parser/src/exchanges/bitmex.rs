@@ -808,8 +808,8 @@ pub(crate) fn parse_l2(
 struct OrderBook10Msg {
     symbol: String,
     timestamp: String,
-    asks: Vec<[f64; 2]>,
-    bids: Vec<[f64; 2]>,
+    asks: Option<Vec<[f64; 2]>>,
+    bids: Option<Vec<[f64; 2]>>,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
 }
@@ -848,7 +848,7 @@ pub(crate) fn parse_l2_topk(
 
     let orderbooks: Vec<OrderBookMsg> = ws_msg
         .data
-        .iter()
+        .into_iter()
         .map(|orderbook10_msg| {
             let symbol = orderbook10_msg.symbol.as_str();
             let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
@@ -864,8 +864,12 @@ pub(crate) fn parse_l2_topk(
                 timestamp,
                 seq_id: None,
                 prev_seq_id: None,
-                asks: orderbook10_msg.asks.iter().map(|x| parse_order(x, &pair)).collect(),
-                bids: orderbook10_msg.bids.iter().map(|x| parse_order(x, &pair)).collect(),
+                asks: orderbook10_msg
+                    .asks
+                    .map_or(Vec::new(), |v| v.iter().map(|x| parse_order(x, &pair)).collect()),
+                bids: orderbook10_msg
+                    .bids
+                    .map_or(Vec::new(), |v| v.iter().map(|x| parse_order(x, &pair)).collect()),
                 snapshot: true,
                 json: msg.to_string(),
             }
