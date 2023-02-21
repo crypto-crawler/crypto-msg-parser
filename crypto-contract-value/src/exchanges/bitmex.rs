@@ -16,6 +16,7 @@ static CONTRACT_VALUES: Lazy<HashMap<String, f64>> = Lazy::new(|| {
         ("inverse_swap.BTC/USD", 1.0),
         ("inverse_swap.ETH/USD", 1.0),
         ("linear_future.ADA/BTC", 0.01),
+        ("linear_future.BTC/USDT", 0.000001),
         ("linear_future.ETH/BTC", 0.00001),
         ("linear_future.ETH/USDT", 0.00001),
         ("linear_future.ETHPOW/USDT", 0.00001),
