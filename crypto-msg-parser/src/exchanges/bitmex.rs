@@ -218,6 +218,8 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("GALUSDT", (882, 0.0001)),
         ("GMTUSD", (839, 0.0001)),
         ("GMTUSDT", (838, 0.0001)),
+        ("GMXUSD", (1251, 0.01)),
+        ("GMXUSDT", (1250, 0.01)),
         ("GNOM17", (184, 0.000001)),
         ("KLAYUSD", (1069, 0.00001)),
         ("KLAYUSDT", (1070, 0.00001)),
