@@ -76,6 +76,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("FLOKI/USDT", 100000_f64),
             ("FTM/USDT", 10_f64),
             ("GALA/USDT", 10_f64),
+            ("GFT/USDT", 100_f64),
             ("GMT/USDT", 1_f64),
             ("GMX/USDT", 0.1_f64),
             ("GODS/USDT", 1_f64),

@@ -23,6 +23,7 @@ static LINEAR_CONTRACT_VALUES: Lazy<HashMap<String, f64>> = Lazy::new(|| {
         ("API3/USDT", 0.1_f64),
         ("APT/USDT", 0.1_f64),
         ("ARPA/USDT", 10_f64),
+        ("ASTR/USDT", 10_f64),
         ("ATOM/USDT", 0.1_f64),
         ("AUDIO/USDT", 1_f64),
         ("AVAX/USDT", 0.1_f64),
