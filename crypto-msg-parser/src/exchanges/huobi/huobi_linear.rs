@@ -8,6 +8,8 @@ use serde_json::Value;
 use simple_error::SimpleError;
 use std::collections::HashMap;
 
+use crate::exchanges::utils::calc_quantity_and_volume;
+
 use super::message::WebsocketMsg;
 
 const EXCHANGE_NAME: &str = "huobi";
@@ -21,7 +23,7 @@ struct LinearTradeMsg {
     ts: i64,
     amount: f64,
     quantity: f64,
-    trade_turnover: f64,
+    trade_turnover: Option<f64>,
     price: f64,
     direction: String, // sell, buy
     #[serde(flatten)]
@@ -57,9 +59,7 @@ pub(crate) fn parse_trade(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<TradeMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<TradeTick>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<TradeTick>"))
-    })?;
+    let ws_msg = serde_json::from_str::<WebsocketMsg<TradeTick>>(msg).map_err(SimpleError::from)?;
 
     let symbol = ws_msg.ch.split('.').nth(1).unwrap();
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME)
@@ -69,20 +69,33 @@ pub(crate) fn parse_trade(
         .tick
         .data
         .into_iter()
-        .map(|raw_trade| TradeMsg {
-            exchange: EXCHANGE_NAME.to_string(),
-            market_type,
-            symbol: symbol.to_string(),
-            pair: pair.to_string(),
-            msg_type: MessageType::Trade,
-            timestamp: raw_trade.ts,
-            price: raw_trade.price,
-            quantity_base: raw_trade.quantity,
-            quantity_quote: raw_trade.trade_turnover,
-            quantity_contract: Some(raw_trade.amount),
-            side: if raw_trade.direction == "sell" { TradeSide::Sell } else { TradeSide::Buy },
-            trade_id: raw_trade.id.to_string(),
-            json: serde_json::to_string(&raw_trade).unwrap(),
+        .map(|raw_trade| {
+            let (_, quantity_quote, _) = calc_quantity_and_volume(
+                EXCHANGE_NAME,
+                market_type,
+                &pair,
+                raw_trade.price,
+                raw_trade.amount,
+            );
+            TradeMsg {
+                exchange: EXCHANGE_NAME.to_string(),
+                market_type,
+                symbol: symbol.to_string(),
+                pair: pair.to_string(),
+                msg_type: MessageType::Trade,
+                timestamp: raw_trade.ts,
+                price: raw_trade.price,
+                quantity_base: raw_trade.quantity,
+                quantity_quote: if let Some(x) = raw_trade.trade_turnover {
+                    x
+                } else {
+                    quantity_quote
+                },
+                quantity_contract: Some(raw_trade.amount),
+                side: if raw_trade.direction == "sell" { TradeSide::Sell } else { TradeSide::Buy },
+                trade_id: raw_trade.id.to_string(),
+                json: serde_json::to_string(&raw_trade).unwrap(),
+            }
         })
         .collect();
 

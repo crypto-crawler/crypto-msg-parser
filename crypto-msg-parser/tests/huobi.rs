@@ -7,7 +7,7 @@ mod trade {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
     use crypto_message::TradeSide;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_trade};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_trade, round};
 
     #[test]
     fn spot() {
@@ -143,6 +143,31 @@ mod trade {
         assert_eq!(trade.quantity_quote, 332.487);
         assert_eq!(trade.quantity_contract, Some(18.0));
         assert_eq!(trade.side, TradeSide::Sell);
+    }
+
+    #[test]
+    fn linear_swap_2() {
+        let raw_msg = r#"{"ch":"market.PEOPLE-USDT.trade.detail","ts":1677643151579,"tick":{"id":100000023131161,"ts":1677643151577,"data":[{"amount":308,"quantity":3080.000000000000000000,"ts":1677643151577,"id":1000000231311610000,"price":0.02645,"direction":"buy"}]}}"#;
+        let trade = &parse_trade(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()[0];
+        crate::utils::check_trade_fields(
+            EXCHANGE_NAME,
+            MarketType::LinearSwap,
+            "PEOPLE/USDT".to_string(),
+            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap(),
+            trade,
+            raw_msg,
+        );
+        assert_eq!(
+            1677643151579,
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
+        );
+
+        assert_eq!(trade.timestamp, 1677643151577);
+        assert_eq!(trade.price, 0.02645);
+        assert_eq!(trade.quantity_base, 3080.0);
+        assert_eq!(trade.quantity_quote, round(0.02645 * 3080.0));
+        assert_eq!(trade.quantity_contract, Some(308.0));
+        assert_eq!(trade.side, TradeSide::Buy);
     }
 
     #[test]
