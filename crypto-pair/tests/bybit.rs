@@ -49,7 +49,6 @@ fn verify_swap_symbols() {
         assert_eq!(pair.as_str(), pair_expected);
 
         let market_type = get_market_type(&market.name, EXCHANGE_NAME, None);
-        println!("{market_type}");
         assert!(
             market_type == MarketType::LinearSwap
                 || market_type == MarketType::InverseSwap
