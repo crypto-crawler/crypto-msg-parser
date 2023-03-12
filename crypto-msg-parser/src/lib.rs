@@ -265,6 +265,7 @@ pub fn parse_candlestick(
         "bybit" => exchanges::bybit::parse_candlestick(market_type, msg),
         "gate" => exchanges::gate::parse_candlestick(market_type, msg),
         "huobi" => exchanges::huobi::parse_candlestick(market_type, msg),
+        "kraken" => exchanges::kraken::parse_candlestick(market_type, msg),
         "kucoin" => exchanges::kucoin::parse_candlestick(market_type, msg),
         "okx" => exchanges::okx::parse_candlestick(
             market_type,

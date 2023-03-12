@@ -2,7 +2,7 @@ use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
 use crate::exchanges::utils::calc_quantity_and_volume;
-use crypto_message::{BboMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{BboMsg, CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -432,4 +432,55 @@ pub(super) fn parse_bbo(msg: &str, _received_at: Option<i64>) -> Result<Vec<BboM
     };
 
     Ok(vec![bbo_msg])
+}
+
+// https://docs.kraken.com/websockets/#message-ohlc
+#[derive(Serialize, Deserialize)]
+struct RawCandlestickMsg {
+    time: String,
+    etime: String,
+    open: String,
+    high: String,
+    low: String,
+    close: String,
+    vwap: String,
+    volume: String,
+    count: i64,
+}
+
+pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let arr = serde_json::from_str::<Vec<Value>>(msg).map_err(SimpleError::from)?;
+
+    let raw_candlestick_msg = serde_json::from_value::<RawCandlestickMsg>(arr[1].clone()).unwrap();
+    let timestamp = (raw_candlestick_msg.time.parse::<f64>().unwrap() * 1000.0) as i64;
+
+    let end_time = (raw_candlestick_msg.etime.parse::<f64>().unwrap()) as i64;
+    let period = arr[arr.len() - 2].as_str().unwrap().strip_prefix("ohlc-").unwrap();
+    let begin_time = end_time - period.parse::<i64>().unwrap() * 60;
+
+    let symbol = arr[arr.len() - 1].as_str().unwrap();
+    let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+
+    let vwap = raw_candlestick_msg.vwap.parse::<f64>().unwrap();
+    let volume = raw_candlestick_msg.volume.parse::<f64>().unwrap();
+
+    let candlestick_msg = CandlestickMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type: MarketType::Spot,
+        msg_type: MessageType::Candlestick,
+        symbol: symbol.to_string(),
+        pair,
+        timestamp,
+        period: period.to_string(),
+        begin_time,
+        open: raw_candlestick_msg.open.parse::<f64>().unwrap(),
+        high: raw_candlestick_msg.high.parse::<f64>().unwrap(),
+        low: raw_candlestick_msg.low.parse::<f64>().unwrap(),
+        close: raw_candlestick_msg.close.parse::<f64>().unwrap(),
+        volume,
+        quote_volume: Some(vwap * volume),
+        json: msg.to_string(),
+    };
+
+    Ok(vec![candlestick_msg])
 }

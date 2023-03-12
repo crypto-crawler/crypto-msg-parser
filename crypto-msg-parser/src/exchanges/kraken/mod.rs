@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
-use crate::{BboMsg, OrderBookMsg, TradeMsg};
+use crate::{BboMsg, CandlestickMsg, OrderBookMsg, TradeMsg};
 
 use serde_json::Value;
 use simple_error::SimpleError;
@@ -95,6 +95,16 @@ pub(crate) fn parse_bbo(
 ) -> Result<Vec<BboMsg>, SimpleError> {
     match market_type {
         MarketType::Spot => kraken_spot::parse_bbo(msg, received_at),
+        _ => Err(SimpleError::new("Not implemented")),
+    }
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    match market_type {
+        MarketType::Spot => kraken_spot::parse_candlestick(msg),
         _ => Err(SimpleError::new("Not implemented")),
     }
 }

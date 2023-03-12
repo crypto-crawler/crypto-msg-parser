@@ -446,17 +446,33 @@ mod bbo {
 mod candlestick {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_candlestick};
 
     #[test]
     fn spot() {
-        let raw_msg = r#"[343,["1654081540.967902","1654081560.000000","31527.70000","31527.70000","31527.70000","31527.70000","31527.70000","0.00526133",2],"ohlc-1","XBT/USD"]"#;
+        let raw_msg = r#"[343,["1675209613.118218","1675209660.000000","23135.00000","23135.40000","23135.00000","23135.40000","23135.13297","0.39012812",7],"ohlc-1","XBT/USD"]"#;
 
         assert_eq!(
-            1654081540967,
+            1675209613118,
             extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
         );
         assert_eq!("XBT/USD", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
+
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::Spot, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("XBT/USD", candlestick_msg.symbol);
+        assert_eq!(1675209613118, candlestick_msg.timestamp);
+        assert_eq!(1675209600, candlestick_msg.begin_time);
+        assert_eq!("1", candlestick_msg.period);
+
+        assert_eq!(23135.0, candlestick_msg.open);
+        assert_eq!(23135.4, candlestick_msg.high);
+        assert_eq!(23135.0, candlestick_msg.low);
+        assert_eq!(23135.4, candlestick_msg.close);
+        assert_eq!(0.39012812, candlestick_msg.volume);
+        assert_eq!(Some(0.39012812 * 23135.13297), candlestick_msg.quote_volume);
     }
 }
 
