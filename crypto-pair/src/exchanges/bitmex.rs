@@ -60,6 +60,8 @@ pub(crate) fn normalize_pair(mut symbol: &str) -> Option<String> {
         (symbol.strip_suffix("_USDT").unwrap().to_string(), "USDT".to_string())
     } else if symbol.ends_with("USDT") {
         (symbol.strip_suffix("USDT").unwrap().to_string(), "USDT".to_string())
+    } else if symbol.ends_with("USDC") {
+        (symbol.strip_suffix("USDC").unwrap().to_string(), "USDC".to_string())
     } else if symbol.ends_with("EUR") {
         (symbol.strip_suffix("EUR").unwrap().to_string(), "EUR".to_string())
     } else {
@@ -103,7 +105,9 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
         symbol
     };
     // 0, linear; 1, inverse; 2, quanto; 3, Yield
-    let linear_inverse_quanto = if real_symbol.ends_with("USDT") {
+    let linear_inverse_quanto = if real_symbol == "USDTUSDC" {
+        2
+    } else if real_symbol.ends_with("USDT") {
         0
     } else if real_symbol.starts_with("XBT") || symbol.ends_with("_ETH") {
         1
@@ -153,6 +157,7 @@ mod tests {
         assert_eq!(MarketType::InverseSwap, super::get_market_type("XBTUSD"));
         assert_eq!(MarketType::LinearSwap, super::get_market_type("XBTUSDT"));
         assert_eq!(MarketType::InverseSwap, super::get_market_type("XBTEUR"));
+        assert_eq!(MarketType::QuantoSwap, super::get_market_type("USDTUSDC"));
 
         assert_eq!(MarketType::QuantoSwap, super::get_market_type("ETHUSD"));
         assert_eq!(MarketType::LinearSwap, super::get_market_type("ETHUSDT"));
@@ -172,6 +177,7 @@ mod tests {
         assert_eq!("BTC/USDT", super::normalize_pair("XBT_USDT").unwrap());
         assert_eq!("BTC/USDT", super::normalize_pair("XBTUSDT").unwrap());
         assert_eq!("BTC/EUR", super::normalize_pair("XBTEUR").unwrap());
+        assert_eq!("USDT/USDC", super::normalize_pair("USDTUSDC").unwrap());
 
         assert_eq!("ETH/USD", super::normalize_pair("ETHUSD").unwrap());
         assert_eq!("ETH/USDT", super::normalize_pair("ETHUSDT").unwrap());
