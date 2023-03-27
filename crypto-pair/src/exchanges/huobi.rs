@@ -11,8 +11,8 @@ use std::collections::HashMap;
 static SPOT_QUOTES: Lazy<HashSet<String>> = Lazy::new(|| {
     // offline data, in case the network is down
     let mut set: HashSet<String> = vec![
-        "brl", "btc", "eth", "eur", "euroc", "gbp", "ht", "husd", "rub", "trx", "try", "uah",
-        "usdc", "usdd", "usdt", "ust", "ustc",
+        "brl", "btc", "eth", "eur", "euroc", "gbp", "ht", "husd", "rub", "trx", "try", "tusd",
+        "uah", "usdc", "usdd", "usdt", "ust", "ustc",
     ]
     .into_iter()
     .map(|x| x.to_string())
@@ -100,8 +100,11 @@ mod tests {
 
     #[test]
     fn spot_quotes() {
-        let map = fetch_spot_quotes();
-        for quote in map {
+        let mut set = fetch_spot_quotes();
+        for quote in super::SPOT_QUOTES.iter() {
+            set.insert(quote.clone());
+        }
+        for quote in set {
             println!("\"{quote}\",");
         }
     }
