@@ -59,6 +59,8 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
         ("APE_USDT", (860, 0.001)),
         ("APTUSD", (1157, 0.001)),
         ("APTUSDT", (1156, 0.001)),
+        ("ARBUSD", (1278, 0.001)),
+        ("ARBUSDT", (1277, 0.001)),
         ("ARBUSDTM23", (1268, 0.001)),
         ("AVAXUSD", (675, 0.001)),
         ("AVAXUSDT", (808, 0.001)),
@@ -545,7 +547,7 @@ fn fetch_tick_sizes() -> BTreeMap<String, (usize, f64)> {
 struct RawTradeMsg {
     timestamp: String,
     symbol: String,
-    side: String, // Sell, Buy'
+    side: Option<String>, // Sell, Buy'
     size: f64,
     price: f64,
     tickDirection: String, // MinusTick, PlusTick, ZeroMinusTick, ZeroPlusTick
@@ -672,6 +674,19 @@ pub(crate) fn parse_trade(
             } else {
                 market_type
             };
+            let side = if let Some(ref s) = raw_trade.side {
+                if s == "Sell" {
+                    TradeSide::Sell
+                } else {
+                    TradeSide::Buy
+                }
+            } else {
+                match raw_trade.tickDirection.as_str() {
+                    "PlusTick" | "ZeroPlusTick" => TradeSide::Buy,
+                    "MinusTick" | "ZeroMinusTick" => TradeSide::Sell,
+                    _ => panic!("Unknown tickDirection {}", raw_trade.tickDirection),
+                }
+            };
             TradeMsg {
                 exchange: EXCHANGE_NAME.to_string(),
                 market_type,
@@ -683,7 +698,7 @@ pub(crate) fn parse_trade(
                 quantity_base: raw_trade.homeNotional,
                 quantity_quote: raw_trade.foreignNotional,
                 quantity_contract: Some(raw_trade.size),
-                side: if raw_trade.side == "Sell" { TradeSide::Sell } else { TradeSide::Buy },
+                side,
                 trade_id: raw_trade.trdMatchID.clone(),
                 json: serde_json::to_string(&raw_trade).unwrap(),
             }

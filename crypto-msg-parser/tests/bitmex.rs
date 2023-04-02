@@ -111,6 +111,31 @@ mod trade {
     }
 
     #[test]
+    fn inverse_future_3() {
+        let raw_msg = r#"{"table":"trade","action":"insert","data":[{"timestamp":"2023-03-31T12:00:00.000Z","symbol":"ETHUSDH23_ETH","size":2,"price":1793.23,"tickDirection":"ZeroMinusTick","trdMatchID":"f523f225-f853-8e02-6017-a60110a5870e","grossValue":1115306,"homeNotional":0.001115306,"foreignNotional":2.0}]}"#;
+        let trade = &parse_trade(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap()[0];
+
+        crate::utils::check_trade_fields(
+            EXCHANGE_NAME,
+            MarketType::InverseFuture,
+            "ETH/USD".to_string(),
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap(),
+            trade,
+            raw_msg,
+        );
+        assert_eq!(
+            1680264000000,
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap().unwrap()
+        );
+
+        assert_eq!(trade.price, 1793.23);
+        assert_eq!(trade.quantity_base, 0.001115306);
+        assert_eq!(trade.quantity_quote, 2.0);
+        assert_eq!(trade.quantity_contract, Some(2.0));
+        assert_eq!(trade.side, TradeSide::Sell);
+    }
+
+    #[test]
     fn linear_future() {
         let raw_msg = r#"{"table":"trade","action":"insert","data":[{"timestamp":"2021-03-12T01:46:03.886Z","symbol":"ETHH21","side":"Buy","size":1,"price":0.03191,"tickDirection":"PlusTick","trdMatchID":"a9371640-78d6-53d9-c9e4-31f7b7afb06d","grossValue":3191000,"homeNotional":1,"foreignNotional":0.03191}]}"#;
         let trade = &parse_trade(EXCHANGE_NAME, MarketType::Unknown, raw_msg).unwrap()[0];
