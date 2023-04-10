@@ -996,6 +996,11 @@ pub(crate) fn parse_candlestick(
             let timestamp = DateTime::parse_from_rfc3339(raw_candlestick_msg.timestamp.as_str())
                 .unwrap()
                 .timestamp_millis();
+            let quote_volume = if raw_candlestick_msg.foreignNotional > 0.0 {
+                Some(raw_candlestick_msg.foreignNotional)
+            } else {
+                None
+            };
 
             CandlestickMsg {
                 exchange: EXCHANGE_NAME.to_string(),
@@ -1011,7 +1016,7 @@ pub(crate) fn parse_candlestick(
                 low: raw_candlestick_msg.low,
                 close: raw_candlestick_msg.close,
                 volume: raw_candlestick_msg.homeNotional,
-                quote_volume: Some(raw_candlestick_msg.foreignNotional),
+                quote_volume: quote_volume,
                 json: msg.to_string(),
             }
         })
