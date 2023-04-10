@@ -961,11 +961,12 @@ struct RawCandlestickMsg {
     trades: i64,
     volume: f64,
     vwap: Option<f64>,
-    //lastSize:i64,
-    //turnover:i64,
-    //homeNotional:f64,
-    //foreignNotional:f64
+    lastSize: Option<f64>,
+    turnover: f64,
+    homeNotional: f64,
+    foreignNotional: f64,
 }
+
 pub(crate) fn parse_candlestick(
     market_type: MarketType,
     msg: &str,
@@ -996,11 +997,6 @@ pub(crate) fn parse_candlestick(
                 .unwrap()
                 .timestamp_millis();
 
-            let volume = match raw_candlestick_msg.vwap {
-                None => raw_candlestick_msg.volume,
-                Some(vwap) => raw_candlestick_msg.volume / vwap,
-            };
-
             CandlestickMsg {
                 exchange: EXCHANGE_NAME.to_string(),
                 market_type,
@@ -1008,14 +1004,14 @@ pub(crate) fn parse_candlestick(
                 symbol: symbol.to_string(),
                 pair,
                 timestamp,
-                period: period.to_string(),
+                period: format!("{}m", period),
                 begin_time: timestamp - period * 60000,
                 open: raw_candlestick_msg.open,
                 high: raw_candlestick_msg.high,
                 low: raw_candlestick_msg.low,
                 close: raw_candlestick_msg.close,
-                volume,
-                quote_volume: Some(raw_candlestick_msg.volume),
+                volume: raw_candlestick_msg.homeNotional,
+                quote_volume: Some(raw_candlestick_msg.foreignNotional),
                 json: msg.to_string(),
             }
         })
