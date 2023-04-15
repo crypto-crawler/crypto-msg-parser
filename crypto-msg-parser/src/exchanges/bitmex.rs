@@ -1,5 +1,7 @@
 use crypto_market_type::MarketType;
-use crypto_message::{BboMsg, FundingRateMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{
+    BboMsg, CandlestickMsg, FundingRateMsg, Order, OrderBookMsg, TradeMsg, TradeSide,
+};
 use crypto_msg_type::MessageType;
 use crypto_pair::get_market_type;
 
@@ -945,6 +947,81 @@ pub(crate) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
         .collect();
 
     Ok(bbo_messages)
+}
+
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawCandlestickMsg {
+    timestamp: String,
+    symbol: String,
+    open: f64,
+    high: f64,
+    low: f64,
+    close: f64,
+    trades: i64,
+    volume: f64,
+    vwap: Option<f64>,
+    lastSize: Option<f64>,
+    turnover: f64,
+    homeNotional: f64,
+    foreignNotional: f64,
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg: WebsocketMsg<RawCandlestickMsg> =
+        serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(SimpleError::from)?;
+    //debug_assert_eq!("tradeBin",ws_msg.table.as_str().substr(0,8));
+    if ws_msg.data.is_empty() {
+        return Ok(Vec::new());
+    }
+    let period = ws_msg
+        .table
+        .as_str()
+        .strip_prefix("tradeBin")
+        .unwrap()
+        .strip_suffix('m')
+        .unwrap()
+        .parse::<i64>()
+        .unwrap();
+
+    let candlestick_msgs: Vec<CandlestickMsg> = ws_msg
+        .data
+        .iter()
+        .map(|raw_candlestick_msg| {
+            let symbol = raw_candlestick_msg.symbol.as_str();
+            let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+            let timestamp = DateTime::parse_from_rfc3339(raw_candlestick_msg.timestamp.as_str())
+                .unwrap()
+                .timestamp_millis();
+            let quote_volume = if raw_candlestick_msg.foreignNotional > 0.0 {
+                Some(raw_candlestick_msg.foreignNotional)
+            } else {
+                None
+            };
+
+            CandlestickMsg {
+                exchange: EXCHANGE_NAME.to_string(),
+                market_type,
+                msg_type: MessageType::Candlestick,
+                symbol: symbol.to_string(),
+                pair,
+                timestamp,
+                period: format!("{}m", period),
+                begin_time: timestamp - period * 60000,
+                open: raw_candlestick_msg.open,
+                high: raw_candlestick_msg.high,
+                low: raw_candlestick_msg.low,
+                close: raw_candlestick_msg.close,
+                volume: raw_candlestick_msg.homeNotional,
+                quote_volume: quote_volume,
+                json: msg.to_string(),
+            }
+        })
+        .collect();
+    Ok(candlestick_msgs)
 }
 
 #[cfg(test)]

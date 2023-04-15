@@ -1149,9 +1149,10 @@ mod candlestick {
         let candlestick_msg = &arr[0];
 
         assert_eq!("BTCUSDT", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
         assert_eq!(1653818762502, candlestick_msg.timestamp);
-        assert_eq!("1m", candlestick_msg.period);
         assert_eq!(1653818760, candlestick_msg.begin_time);
+        assert_eq!("1m", candlestick_msg.period);
 
         assert_eq!(29038.46, candlestick_msg.open);
         assert_eq!(29038.47, candlestick_msg.high);

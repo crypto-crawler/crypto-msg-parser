@@ -842,31 +842,215 @@ mod bbo {
 mod candlestick {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_candlestick};
+
+    #[test]
+    fn spot() {
+        let raw_msg: &str = r#"{"table":"tradeBin1m","action":"insert","data":[{"timestamp":"2023-03-01T00:06:00.000Z","symbol":"XBT_USDT","open":23118,"high":23145.5,"low":23143,"close":23145.5,"trades":2,"volume":170000,"vwap":23144.470588235294,"lastSize":100000,"turnover":39345600,"homeNotional":0.0017000000000000001,"foreignNotional":39.3456}]}"#;
+        assert_eq!(
+            1677629160000,
+            extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
+        );
+        assert_eq!("XBT_USDT", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::Spot, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("XBT_USDT", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
+        assert_eq!(1677629160000, candlestick_msg.timestamp);
+        assert_eq!(1677629100000, candlestick_msg.begin_time);
+        assert_eq!("1m", candlestick_msg.period);
+
+        assert_eq!(23118.0, candlestick_msg.open);
+        assert_eq!(23145.5, candlestick_msg.high);
+        assert_eq!(23143.0, candlestick_msg.low);
+        assert_eq!(23145.5, candlestick_msg.close);
+        assert_eq!(0.0017, candlestick_msg.volume);
+        assert_eq!(Some(39.3456), candlestick_msg.quote_volume);
+    }
 
     #[test]
     fn inverse_swap() {
-        let raw_msg = r#"{"table":"tradeBin1m","action":"insert","data":[{"timestamp":"2022-06-01T10:03:00.000Z","symbol":"XBTUSD","open":31639.5,"high":31639.5,"low":31635.5,"close":31635.5,"trades":6,"volume":101400,"vwap":31639.3619,"lastSize":200,"turnover":320487014,"homeNotional":3.2048701399999997,"foreignNotional":101400}]}"#;
-
+        let raw_msg: &str = r#"{"table":"tradeBin1m","action":"insert","data":[{"timestamp":"2023-02-01T00:07:00.000Z","symbol":"XBTUSD","open":23077.5,"high":23096.5,"low":23076.5,"close":23085,"trades":93,"volume":342600,"vwap":23081.1487,"lastSize":100,"turnover":1484330812,"homeNotional":14.843308120000001,"foreignNotional":342600}]}"#;
         assert_eq!(
-            1654077780000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
+            1675210020000,
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap().unwrap()
         );
-        assert_eq!("XBTUSD", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
+        assert_eq!(
+            "XBTUSD",
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap()
+        );
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("XBTUSD", candlestick_msg.symbol);
+        assert_eq!("BTC/USD", candlestick_msg.pair);
+        assert_eq!(1675210020000, candlestick_msg.timestamp);
+        assert_eq!(1675209960000, candlestick_msg.begin_time);
+        assert_eq!("1m", candlestick_msg.period);
+
+        assert_eq!(23077.5, candlestick_msg.open);
+        assert_eq!(23096.5, candlestick_msg.high);
+        assert_eq!(23076.5, candlestick_msg.low);
+        assert_eq!(23085.0, candlestick_msg.close);
+        assert_eq!(14.84330812, candlestick_msg.volume);
+        assert_eq!(Some(342600.0), candlestick_msg.quote_volume);
     }
 
     #[test]
     fn linear_swap() {
-        let raw_msg = r#"{"table":"tradeBin1m","action":"insert","data":[{"timestamp":"2022-06-01T10:10:00.000Z","symbol":"XBTUSDT","open":31592.5,"high":31600,"low":31582.5,"close":31583.5,"trades":5,"volume":1634000,"vwap":31587.127,"lastSize":1233000,"turnover":51613365500,"homeNotional":1.6340000000000001,"foreignNotional":51613.3655}]}"#;
+        let raw_msg = r#"{"table":"tradeBin5m","action":"insert","data":[{"timestamp":"2023-03-01T00:00:00.000Z","symbol":"XBTUSDT","open":23111.5,"high":23132.5,"low":23108.5,"close":23132.5,"trades":42,"volume":2547000,"vwap":23121.979,"lastSize":108000,"turnover":58891679000,"homeNotional":2.5470000000000006,"foreignNotional":58891.679000000004}]}"#;
 
         assert_eq!(
-            1654078200000,
+            1677628800000,
             extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
         assert_eq!(
             "XBTUSDT",
             extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
         );
+
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("XBTUSDT", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
+        assert_eq!(1677628800000, candlestick_msg.timestamp);
+        assert_eq!(1677628500000, candlestick_msg.begin_time);
+        assert_eq!("5m", candlestick_msg.period);
+
+        assert_eq!(23111.5, candlestick_msg.open);
+        assert_eq!(23132.5, candlestick_msg.high);
+        assert_eq!(23108.5, candlestick_msg.low);
+        assert_eq!(23132.5, candlestick_msg.close);
+        assert_eq!(2.5470000000000006, candlestick_msg.volume);
+        assert_eq!(Some(58891.679), candlestick_msg.quote_volume);
+    }
+
+    #[test]
+    fn inverse_future() {
+        let raw_msg: &str = r#"{"table":"tradeBin5m","action":"insert","data":[{"timestamp":"2023-03-01T00:05:00.000Z","symbol":"XBTH23","open":23200,"high":23250,"low":23215.5,"close":23250,"trades":7,"volume":10200,"vwap":23233.6609,"lastSize":5000,"turnover":43901908,"homeNotional":0.43901908,"foreignNotional":10200}]}"#;
+        assert_eq!(
+            1677629100000,
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap().unwrap()
+        );
+        assert_eq!(
+            "XBTH23",
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap()
+        );
+        let arr =
+            parse_candlestick(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("XBTH23", candlestick_msg.symbol);
+        assert_eq!("BTC/USD", candlestick_msg.pair);
+        assert_eq!(1677629100000, candlestick_msg.timestamp);
+        assert_eq!(1677628800000, candlestick_msg.begin_time);
+        assert_eq!("5m", candlestick_msg.period);
+
+        assert_eq!(23200.0, candlestick_msg.open);
+        assert_eq!(23250.0, candlestick_msg.high);
+        assert_eq!(23215.5, candlestick_msg.low);
+        assert_eq!(23250.0, candlestick_msg.close);
+        assert_eq!(0.43901908, candlestick_msg.volume);
+        assert_eq!(Some(10200.0), candlestick_msg.quote_volume);
+    }
+
+    #[test]
+    fn linear_future() {
+        let raw_msg = r#"{"table":"tradeBin5m","action":"insert","data":[{"timestamp":"2023-03-31T19:30:00.000Z","symbol":"XBTUSDTM23","open":28656.5,"high":28667.0,"low":28640.0,"close":28640.0,"trades":2,"volume":4000,"vwap":28646.75,"lastSize":3000,"turnover":114587000,"homeNotional":0.004,"foreignNotional":114.587}]}"#;
+
+        assert_eq!(
+            1680291000000,
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
+        );
+        assert_eq!(
+            "XBTUSDTM23",
+            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
+        );
+
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("XBTUSDTM23", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
+        assert_eq!(1680291000000, candlestick_msg.timestamp);
+        assert_eq!(1680290700000, candlestick_msg.begin_time);
+        assert_eq!("5m", candlestick_msg.period);
+
+        assert_eq!(28656.5, candlestick_msg.open);
+        assert_eq!(28667.0, candlestick_msg.high);
+        assert_eq!(28640.0, candlestick_msg.low);
+        assert_eq!(28640.0, candlestick_msg.close);
+        assert_eq!(0.004, candlestick_msg.volume);
+        assert_eq!(Some(114.587), candlestick_msg.quote_volume);
+    }
+
+    #[test]
+    fn quanto_swap() {
+        let raw_msg = r#"{"table":"tradeBin5m","action":"insert","data":[{"timestamp":"2023-03-01T00:05:00.000Z","symbol":"ETHUSD","open":1605.6,"high":1606.5,"low":1605.1,"close":1605.35,"trades":161,"volume":20866,"vwap":1605.72,"lastSize":2,"turnover":3350483285,"homeNotional":482.9497031934368,"foreignNotional":775479.207152367}]}"#;
+
+        assert_eq!(
+            1677629100000,
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
+        );
+        assert_eq!(
+            "ETHUSD",
+            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
+        );
+
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("ETHUSD", candlestick_msg.symbol);
+        assert_eq!("ETH/USD", candlestick_msg.pair);
+        assert_eq!(1677629100000, candlestick_msg.timestamp);
+        assert_eq!(1677628800000, candlestick_msg.begin_time);
+        assert_eq!("5m", candlestick_msg.period);
+
+        assert_eq!(1605.6, candlestick_msg.open);
+        assert_eq!(1606.5, candlestick_msg.high);
+        assert_eq!(1605.1, candlestick_msg.low);
+        assert_eq!(1605.35, candlestick_msg.close);
+        assert_eq!(482.9497031934368, candlestick_msg.volume);
+        assert_eq!(Some(775479.207152367), candlestick_msg.quote_volume);
+    }
+
+    #[test]
+    fn quanto_future() {
+        let raw_msg = r#"{"table":"tradeBin1m","action":"insert","data":[{"timestamp":"2023-03-31T12:00:00.000Z","symbol":"ETHUSDH23","open":1792.5,"high":1793.23,"low":1793.23,"close":1793.23,"trades":9,"volume":69011,"vwap":1793.23,"lastSize":10090,"turnover":12375259553,"homeNotional":1928.2201732327467,"foreignNotional":3457742.261246158}]}"#;
+
+        assert_eq!(
+            1680264000000,
+            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
+        );
+        assert_eq!(
+            "ETHUSDH23",
+            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
+        );
+
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("ETHUSDH23", candlestick_msg.symbol);
+        assert_eq!("ETH/USD", candlestick_msg.pair);
+        assert_eq!(1680264000000, candlestick_msg.timestamp);
+        assert_eq!(1680263940000, candlestick_msg.begin_time);
+        assert_eq!("1m", candlestick_msg.period);
+
+        assert_eq!(1792.5, candlestick_msg.open);
+        assert_eq!(1793.23, candlestick_msg.high);
+        assert_eq!(1793.23, candlestick_msg.low);
+        assert_eq!(1793.23, candlestick_msg.close);
+        assert_eq!(1928.220173232747, candlestick_msg.volume);
+        assert_eq!(Some(3457742.261246158), candlestick_msg.quote_volume);
     }
 }
 
