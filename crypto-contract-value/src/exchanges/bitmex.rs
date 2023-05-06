@@ -49,6 +49,7 @@ static CONTRACT_VALUES: Lazy<HashMap<String, f64>> = Lazy::new(|| {
         ("linear_swap.SAND/USDT", 0.001),
         ("linear_swap.SHIB/USDT", 1.0),
         ("linear_swap.SOL/USDT", 0.0001),
+        ("linear_swap.SUI/USDT", 0.001),
         ("linear_swap.TRX/USDT", 0.1),
         ("linear_swap.XRP/USDT", 0.01),
         ("quanto_swap.EUR/USDT", 1.0),
