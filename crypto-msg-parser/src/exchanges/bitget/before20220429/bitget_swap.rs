@@ -2,7 +2,7 @@ use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
 use super::super::super::utils::calc_quantity_and_volume;
-use crypto_message::{FundingRateMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{CandlestickMsg, FundingRateMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use super::super::EXCHANGE_NAME;
 use chrono::prelude::*;
@@ -32,6 +32,12 @@ struct SwapOrderbookMsg {
     bids: Vec<[String; 2]>,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct RawCandlestickMsg {
+    candle: [String; 7],
+    instrument_id: String,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -259,4 +265,52 @@ pub(super) fn parse_l2(
     }
 
     Ok(orderbooks)
+}
+
+pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg = serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(|_e| {
+        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawCandlestickMsg>"))
+    })?;
+    let period = ws_msg.table.as_str().strip_prefix("swap/candle").unwrap().to_string();
+    let time_unit = period.to_string().pop().unwrap();
+    let m_seconds = match time_unit {
+        's' => period.strip_suffix('s').unwrap().parse::<i64>().unwrap() * 1000,
+        'm' => period.strip_suffix('m').unwrap().parse::<i64>().unwrap() * 1000 * 60,
+        'd' => period.strip_suffix('d').unwrap().parse::<i64>().unwrap() * 1000 * 24 * 60 * 60,
+        _ => 0,
+    };
+    debug_assert_eq!("swap/candle", ws_msg.table[0..11].to_string());
+
+    let market_type = MarketType::LinearSwap;
+    let ins_id = ws_msg.data.instrument_id;
+    let symbol = ins_id;
+    let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).unwrap();
+    let raw_candlestickmsg = ws_msg.data.candle;
+    let timestamp = raw_candlestickmsg[0].parse::<i64>().unwrap();
+    let open = raw_candlestickmsg[1].parse::<f64>().unwrap();
+    let high = raw_candlestickmsg[2].parse::<f64>().unwrap();
+    let low = raw_candlestickmsg[3].parse::<f64>().unwrap();
+    let close = raw_candlestickmsg[4].parse::<f64>().unwrap();
+    let volume = raw_candlestickmsg[5].parse::<f64>().unwrap();
+    let quote_volume = None;
+
+    let candlestick_msg = CandlestickMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type,
+        msg_type: MessageType::Candlestick,
+        symbol,
+        pair,
+        timestamp,
+        period,
+        begin_time: timestamp - m_seconds,
+        open,
+        high,
+        low,
+        close,
+        volume,
+        quote_volume,
+        json: serde_json::to_string(&raw_candlestickmsg).unwrap(),
+    };
+
+    Ok(vec![candlestick_msg])
 }

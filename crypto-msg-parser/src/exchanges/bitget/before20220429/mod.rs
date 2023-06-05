@@ -3,7 +3,7 @@ mod bitget_swap;
 use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
-use crate::{FundingRateMsg, OrderBookMsg, TradeMsg};
+use crate::{CandlestickMsg, FundingRateMsg, OrderBookMsg, TradeMsg};
 
 use simple_error::SimpleError;
 
@@ -49,4 +49,8 @@ pub(super) fn parse_funding_rate(
     msg: &str,
 ) -> Result<Vec<FundingRateMsg>, SimpleError> {
     bitget_swap::parse_funding_rate(market_type, msg)
+}
+
+pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    bitget_swap::parse_candlestick(msg)
 }

@@ -1016,7 +1016,7 @@ pub(crate) fn parse_candlestick(
                 low: raw_candlestick_msg.low,
                 close: raw_candlestick_msg.close,
                 volume: raw_candlestick_msg.homeNotional,
-                quote_volume: quote_volume,
+                quote_volume,
                 json: msg.to_string(),
             }
         })
