@@ -202,8 +202,8 @@ pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
 }
 
 /// docs：
-/// * https://bitgetlimited.github.io/apidoc/en/spot/#candlesticks-channel */
-/// * https://bitgetlimited.github.io/apidoc/en/mix/#candlesticks-channel */
+/// * https://bitgetlimited.github.io/apidoc/en/spot/#candlesticks-channel
+/// * https://bitgetlimited.github.io/apidoc/en/mix/#candlesticks-channel
 pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<[String; 6]>>(msg)
         .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
