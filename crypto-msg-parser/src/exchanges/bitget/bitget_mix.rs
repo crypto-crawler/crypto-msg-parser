@@ -195,12 +195,11 @@ pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
 /// * https://bitgetlimited.github.io/apidoc/en/spot/#candlesticks-channel
 /// * https://bitgetlimited.github.io/apidoc/en/mix/#candlesticks-channel
 pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<[String; 6]>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<[String; 6]>>(msg).map_err(SimpleError::from)?;
     debug_assert!(ws_msg.arg.channel.starts_with("candle"));
     let period = ws_msg.arg.channel.as_str().strip_prefix("candle").unwrap();
-    let time_unit = period.to_string().pop().unwrap();
-    let m_seconds = match time_unit {
+    let m_seconds = match period.to_string().pop().unwrap() {
         's' => period.strip_suffix('s').unwrap().parse::<i64>().unwrap() * 1000,
         'm' => period.strip_suffix('m').unwrap().parse::<i64>().unwrap() * 1000 * 60,
         'd' => period.strip_suffix('d').unwrap().parse::<i64>().unwrap() * 1000 * 24 * 60 * 60,

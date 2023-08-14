@@ -1134,23 +1134,22 @@ mod before20220429 {
         }
     }
 
-    ///20220429
     #[cfg(test)]
     mod candlestick {
         use super::super::EXCHANGE_NAME;
         use crypto_market_type::MarketType;
-        use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_candlestick};
+        use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_candlestick, round};
 
         #[test]
         fn inverse_swap() {
-            let raw_msg = r#"{"data":{"candle":["1648801800000","45230.0","45230.0","45230.0","45230.0","0","0.000000000000"],"instrument_id":"btcusd"},"table":"swap/candle60s"}"#;
+            let raw_msg = r#"{"data":{"candle":["1646092800000","43156.0","43157.5","43156.0","43157.5","1547","0.035845449809"],"instrument_id":"btcusd"},"table":"swap/candle60s"}"#;
 
             assert_eq!(
                 "btcusd",
                 extract_symbol(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap()
             );
             assert_eq!(
-                1648801800000,
+                1646092800000,
                 extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg)
                     .unwrap()
                     .unwrap()
@@ -1162,16 +1161,16 @@ mod before20220429 {
 
             assert_eq!("btcusd", candlestick_msg.symbol);
             assert_eq!("BTC/USD", candlestick_msg.pair);
-            assert_eq!(1648801800000, candlestick_msg.timestamp);
-            assert_eq!(1648801740000, candlestick_msg.begin_time);
+            assert_eq!(1646092800000, candlestick_msg.timestamp);
+            assert_eq!(1646092740000, candlestick_msg.begin_time);
             assert_eq!("60s", candlestick_msg.period);
 
-            assert_eq!(45230.0, candlestick_msg.open);
-            assert_eq!(45230.0, candlestick_msg.high);
-            assert_eq!(45230.0, candlestick_msg.low);
-            assert_eq!(45230.0, candlestick_msg.close);
-            assert_eq!(0.0, candlestick_msg.volume);
-            assert_eq!(None, candlestick_msg.quote_volume);
+            assert_eq!(43156.0, candlestick_msg.open);
+            assert_eq!(43157.5, candlestick_msg.high);
+            assert_eq!(43156.0, candlestick_msg.low);
+            assert_eq!(43157.5, candlestick_msg.close);
+            assert_eq!(0.035845449809, candlestick_msg.volume);
+            assert_eq!(Some(1547.0), candlestick_msg.quote_volume);
         }
 
         #[test]
@@ -1201,8 +1200,8 @@ mod before20220429 {
             assert_eq!(45298.5, candlestick_msg.high);
             assert_eq!(45274.0, candlestick_msg.low);
             assert_eq!(45274.0, candlestick_msg.close);
-            assert_eq!(1273.0, candlestick_msg.volume);
-            assert_eq!(None, candlestick_msg.quote_volume);
+            assert_eq!(1.273, round(candlestick_msg.volume));
+            assert_eq!(Some(57633.802), candlestick_msg.quote_volume);
         }
     }
 }

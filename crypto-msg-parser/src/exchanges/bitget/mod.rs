@@ -171,11 +171,14 @@ pub(crate) fn parse_funding_rate(
     }
 }
 
-pub(crate) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
     let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
         .map_err(|_e| SimpleError::new(format!("failed to parse JSON string{msg}")))?;
     if obj.contains_key("data") && obj.contains_key("table") {
-        before20220429::parse_candlestick(msg)
+        before20220429::parse_candlestick(market_type, msg)
     } else if obj.contains_key("data") && obj.contains_key("arg") {
         bitget_mix::parse_candlestick(msg)
     } else {

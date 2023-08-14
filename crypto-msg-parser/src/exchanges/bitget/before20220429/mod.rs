@@ -51,6 +51,9 @@ pub(super) fn parse_funding_rate(
     bitget_swap::parse_funding_rate(market_type, msg)
 }
 
-pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
-    bitget_swap::parse_candlestick(msg)
+pub(super) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    bitget_swap::parse_candlestick(market_type, msg)
 }
