@@ -160,12 +160,12 @@ pub(crate) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, S
         seq_id: None,
         prev_seq_id: None,
         asks: if let Some(asks) = raw_orderbook.asks {
-            asks.iter().map(|x| parse_order(x)).collect()
+            asks.iter().map(parse_order).collect()
         } else {
             Vec::new()
         },
         bids: if let Some(bids) = raw_orderbook.bids {
-            bids.iter().map(|x| parse_order(x)).collect()
+            bids.iter().map(parse_order).collect()
         } else {
             Vec::new()
         },

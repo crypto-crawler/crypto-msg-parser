@@ -115,8 +115,8 @@ pub(crate) fn parse_l2(
         timestamp: ws_msg.ts,
         seq_id: ws_msg.data.version,
         prev_seq_id: None,
-        asks: ws_msg.data.asks.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
-        bids: ws_msg.data.bids.iter().map(|x| parse_order(x)).collect::<Vec<Order>>(),
+        asks: ws_msg.data.asks.iter().map(parse_order).collect::<Vec<Order>>(),
+        bids: ws_msg.data.bids.iter().map(parse_order).collect::<Vec<Order>>(),
         snapshot: msg_type == MessageType::L2TopK,
         json: msg.to_string(),
     };

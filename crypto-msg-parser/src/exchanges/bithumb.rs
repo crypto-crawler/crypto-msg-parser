@@ -166,8 +166,8 @@ pub(crate) fn parse_l2(
         timestamp,
         seq_id: ws_msg.data.ver.parse().ok(),
         prev_seq_id: None,
-        asks: ws_msg.data.s.iter().map(|x| parse_order(x)).collect(),
-        bids: ws_msg.data.b.iter().map(|x| parse_order(x)).collect(),
+        asks: ws_msg.data.s.iter().map(parse_order).collect(),
+        bids: ws_msg.data.b.iter().map(parse_order).collect(),
         snapshot,
         json: msg.to_string(),
     };

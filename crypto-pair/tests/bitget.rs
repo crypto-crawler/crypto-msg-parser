@@ -105,8 +105,8 @@ fn verify_swap_symbols() {
     let inverse_markets = fetch_swap_markets_raw("dmcbl");
     let markets = usdt_linear_markets
         .into_iter()
-        .chain(usdc_linear_markets.into_iter())
-        .chain(inverse_markets.into_iter())
+        .chain(usdc_linear_markets)
+        .chain(inverse_markets)
         .collect::<Vec<SwapMarket>>();
     for market in markets.iter() {
         let pair = normalize_pair(&market.symbol, EXCHANGE_NAME).unwrap();

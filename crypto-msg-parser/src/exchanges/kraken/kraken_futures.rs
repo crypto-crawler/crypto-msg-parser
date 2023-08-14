@@ -235,12 +235,12 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
             asks: orderbook_snapshot
                 .asks
                 .iter()
-                .map(|raw_order| parse_order(raw_order))
+                .map(parse_order)
                 .collect::<Vec<Order>>(),
             bids: orderbook_snapshot
                 .bids
                 .iter()
-                .map(|raw_order| parse_order(raw_order))
+                .map(parse_order)
                 .collect::<Vec<Order>>(),
             snapshot: true,
             json: msg.to_string(),

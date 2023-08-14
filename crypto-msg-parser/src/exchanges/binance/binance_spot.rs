@@ -67,13 +67,13 @@ pub(super) fn parse_l2_topk(
             .data
             .asks
             .iter()
-            .map(|raw_order| parse_order(raw_order))
+            .map(parse_order)
             .collect::<Vec<Order>>(),
         bids: ws_msg
             .data
             .bids
             .iter()
-            .map(|raw_order| parse_order(raw_order))
+            .map(parse_order)
             .collect::<Vec<Order>>(),
         snapshot: true,
         json: msg.to_string(),

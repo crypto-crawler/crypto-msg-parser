@@ -444,14 +444,14 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
                 )
                 .unwrap()
                 .iter()
-                .map(|x| parse_order(x))
+                .map(parse_order)
                 .collect::<Vec<Order>>();
                 let bids = serde_json::from_value::<Vec<[Value; 2]>>(
                     raw_orderbook[5].as_object().unwrap().get("bids").unwrap().clone(),
                 )
                 .unwrap()
                 .iter()
-                .map(|x| parse_order(x))
+                .map(parse_order)
                 .collect::<Vec<Order>>();
 
                 OrderBookMsg {

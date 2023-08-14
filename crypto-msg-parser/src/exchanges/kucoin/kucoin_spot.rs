@@ -139,8 +139,8 @@ pub(super) fn parse_l2(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMsg>, S
         timestamp: ws_msg.data.time.unwrap_or(timestamp),
         seq_id: Some(ws_msg.data.sequenceStart as u64),
         prev_seq_id: None,
-        asks: ws_msg.data.changes.asks.iter().map(|x| parse_order(x)).collect(),
-        bids: ws_msg.data.changes.bids.iter().map(|x| parse_order(x)).collect(),
+        asks: ws_msg.data.changes.asks.iter().map(parse_order).collect(),
+        bids: ws_msg.data.changes.bids.iter().map(parse_order).collect(),
         snapshot: false,
         json: msg.to_string(),
     };
@@ -179,8 +179,8 @@ pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError>
         timestamp,
         seq_id: None,
         prev_seq_id: None,
-        asks: ws_msg.data.asks.iter().map(|x| parse_order(x)).collect(),
-        bids: ws_msg.data.bids.iter().map(|x| parse_order(x)).collect(),
+        asks: ws_msg.data.asks.iter().map(parse_order).collect(),
+        bids: ws_msg.data.bids.iter().map(parse_order).collect(),
         snapshot: true,
         json: msg.to_string(),
     };
