@@ -192,8 +192,8 @@ pub(super) fn parse_l2(
         } else {
             None
         },
-        asks: ws_msg.data.a.iter().map(|raw_order| parse_order(raw_order)).collect::<Vec<Order>>(),
-        bids: ws_msg.data.b.iter().map(|raw_order| parse_order(raw_order)).collect::<Vec<Order>>(),
+        asks: ws_msg.data.a.iter().map(parse_order).collect::<Vec<Order>>(),
+        bids: ws_msg.data.b.iter().map(parse_order).collect::<Vec<Order>>(),
         snapshot: false,
         json: msg.to_string(),
     };

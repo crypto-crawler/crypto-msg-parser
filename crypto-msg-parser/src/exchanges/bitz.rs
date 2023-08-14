@@ -148,12 +148,12 @@ pub(crate) fn parse_l2(
         seq_id: None,
         prev_seq_id: None,
         asks: if let Some(asks) = ws_msg.data.asks {
-            asks.iter().map(|x| parse_order(x)).collect()
+            asks.iter().map(parse_order).collect()
         } else {
             Vec::new()
         },
         bids: if let Some(bids) = ws_msg.data.bids {
-            bids.iter().map(|x| parse_order(x)).collect()
+            bids.iter().map(parse_order).collect()
         } else {
             Vec::new()
         },

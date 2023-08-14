@@ -807,8 +807,8 @@ pub(crate) fn parse_l2(
         timestamp: timestamp.unwrap_or(received_at),
         seq_id: None,
         prev_seq_id: None,
-        asks: ws_msg.data.iter().filter(|x| x.side == "Sell").map(|x| parse_order(x)).collect(),
-        bids: ws_msg.data.iter().filter(|x| x.side == "Buy").map(|x| parse_order(x)).collect(),
+        asks: ws_msg.data.iter().filter(|x| x.side == "Sell").map(parse_order).collect(),
+        bids: ws_msg.data.iter().filter(|x| x.side == "Buy").map(parse_order).collect(),
         snapshot,
         json: msg.to_string(),
     };

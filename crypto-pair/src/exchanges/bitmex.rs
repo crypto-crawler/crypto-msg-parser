@@ -53,7 +53,13 @@ pub(crate) fn normalize_pair(mut symbol: &str) -> Option<String> {
         symbol = &symbol[..(symbol.len() - 3)]
     }
 
-    let (base, quote) = if symbol.ends_with("USD") {
+    let (base, quote) = if symbol.len() <= 3 {
+        if symbol == "XBT" {
+            ("XBT".to_string(), "USD".to_string())
+        } else {
+            (symbol.to_string(), "XBT".to_string())
+        }
+    } else if symbol.ends_with("USD") {
         (symbol.strip_suffix("USD").unwrap().to_string(), "USD".to_string())
     } else if symbol.ends_with("_USDT") {
         // spot
@@ -64,6 +70,8 @@ pub(crate) fn normalize_pair(mut symbol: &str) -> Option<String> {
         (symbol.strip_suffix("USDC").unwrap().to_string(), "USDC".to_string())
     } else if symbol.ends_with("EUR") {
         (symbol.strip_suffix("EUR").unwrap().to_string(), "EUR".to_string())
+    } else if symbol.ends_with("ETH") {
+        (symbol.strip_suffix("ETH").unwrap().to_string(), "ETH".to_string())
     } else {
         let base_symbol = symbol;
         let quote_symbol = if base_symbol == "XBT" {
@@ -155,9 +163,11 @@ mod tests {
     fn test_get_market_type() {
         assert_eq!(MarketType::Spot, super::get_market_type("XBT_USDT"));
         assert_eq!(MarketType::InverseSwap, super::get_market_type("XBTUSD"));
+        assert_eq!(MarketType::InverseSwap, super::get_market_type("XBTETH"));
         assert_eq!(MarketType::LinearSwap, super::get_market_type("XBTUSDT"));
         assert_eq!(MarketType::InverseSwap, super::get_market_type("XBTEUR"));
         assert_eq!(MarketType::QuantoSwap, super::get_market_type("USDTUSDC"));
+        assert_eq!(MarketType::InverseFuture, super::get_market_type("XBTU23"));
 
         assert_eq!(MarketType::QuantoSwap, super::get_market_type("ETHUSD"));
         assert_eq!(MarketType::LinearSwap, super::get_market_type("ETHUSDT"));
@@ -174,10 +184,12 @@ mod tests {
     #[test]
     fn test_normalize_pair() {
         assert_eq!("BTC/USD", super::normalize_pair("XBTUSD").unwrap());
+        assert_eq!("BTC/ETH", super::normalize_pair("XBTETH").unwrap());
         assert_eq!("BTC/USDT", super::normalize_pair("XBT_USDT").unwrap());
         assert_eq!("BTC/USDT", super::normalize_pair("XBTUSDT").unwrap());
         assert_eq!("BTC/EUR", super::normalize_pair("XBTEUR").unwrap());
         assert_eq!("USDT/USDC", super::normalize_pair("USDTUSDC").unwrap());
+        assert_eq!("BTC/USD", super::normalize_pair("XBTU23").unwrap());
 
         assert_eq!("ETH/USD", super::normalize_pair("ETHUSD").unwrap());
         assert_eq!("ETH/USDT", super::normalize_pair("ETHUSDT").unwrap());

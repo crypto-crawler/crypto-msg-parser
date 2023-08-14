@@ -319,8 +319,8 @@ pub(super) fn parse_l2_topk(
                 MessageType::L2Event
             },
             timestamp,
-            asks: raw_orderbook.asks.iter().map(|x| parse_order(x)).collect(),
-            bids: raw_orderbook.bids.iter().map(|x| parse_order(x)).collect(),
+            asks: raw_orderbook.asks.iter().map(parse_order).collect(),
+            bids: raw_orderbook.bids.iter().map(parse_order).collect(),
             seq_id: raw_orderbook.id,
             prev_seq_id: None,
             snapshot,
