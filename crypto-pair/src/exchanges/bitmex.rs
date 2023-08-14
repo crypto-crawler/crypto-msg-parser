@@ -53,7 +53,7 @@ pub(crate) fn normalize_pair(mut symbol: &str) -> Option<String> {
         symbol = &symbol[..(symbol.len() - 3)]
     }
 
-    let (base, quote) = if symbol.len() <=3 {
+    let (base, quote) = if symbol.len() <= 3 {
         if symbol == "XBT" {
             ("XBT".to_string(), "USD".to_string())
         } else {
