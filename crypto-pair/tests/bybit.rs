@@ -35,6 +35,7 @@ fn fetch_swap_markets_raw() -> Vec<BybitMarket> {
     resp.result
 }
 
+#[ignore = "403 ERROR, US IP addresses are blocked"]
 #[test]
 fn verify_swap_symbols() {
     let markets = fetch_swap_markets_raw();
