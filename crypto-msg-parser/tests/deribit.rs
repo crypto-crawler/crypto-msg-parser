@@ -583,48 +583,95 @@ mod bbo {
 mod candlestick {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp,parse_candlestick};
 
     #[test]
     fn inverse_future() {
         let raw_msg = r#"{"jsonrpc":"2.0","method":"subscription","params":{"channel":"chart.trades.BTC-30SEP22.1","data":{"volume":0.0,"tick":1654078920000,"open":31949.0,"low":31949.0,"high":31949.0,"cost":0.0,"close":31949.0}}}"#;
+        let arr=parse_candlestick(EXCHANGE_NAME,MarketType::InverseFuture,raw_msg,None).unwrap();
 
         assert_eq!(
             1654078920000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap().unwrap()
         );
         assert_eq!(
             "BTC-30SEP22",
-            extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap()
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap()
         );
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("BTC-30SEP22", candlestick_msg.symbol);
+        assert_eq!("BTC/USD", candlestick_msg.pair);
+        assert_eq!(1654078920000, candlestick_msg.timestamp);
+        assert_eq!(1654078860000, candlestick_msg.begin_time);
+        assert_eq!("1m", candlestick_msg.period);
+
+        assert_eq!(31949.0, candlestick_msg.open);
+        assert_eq!(31949.0, candlestick_msg.high);
+        assert_eq!(31949.0, candlestick_msg.low);
+        assert_eq!(31949.0, candlestick_msg.close);
+        assert_eq!(0.0, candlestick_msg.volume);
+        assert_eq!(Some(0.0), candlestick_msg.quote_volume);
     }
 
     #[test]
     fn inverse_swap() {
         let raw_msg = r#"{"jsonrpc":"2.0","method":"subscription","params":{"channel":"chart.trades.BTC-PERPETUAL.1","data":{"volume":0.02120555,"tick":1654079340000,"open":31595.5,"low":31595.5,"high":31595.5,"cost":670.0,"close":31595.5}}}"#;
+        let arr=parse_candlestick(EXCHANGE_NAME,MarketType::InverseFuture,raw_msg,None).unwrap();
 
         assert_eq!(
             1654079340000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap().unwrap()
         );
         assert_eq!(
             "BTC-PERPETUAL",
-            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap()
         );
+
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("BTC-PERPETUAL", candlestick_msg.symbol);
+        assert_eq!("BTC/USD", candlestick_msg.pair);
+        assert_eq!(1654079340000, candlestick_msg.timestamp);
+        assert_eq!(1654079280000, candlestick_msg.begin_time);
+        assert_eq!("1m", candlestick_msg.period);
+
+        assert_eq!(31595.5, candlestick_msg.open);
+        assert_eq!(31595.5, candlestick_msg.high);
+        assert_eq!(31595.5, candlestick_msg.low);
+        assert_eq!(31595.5, candlestick_msg.close);
+        assert_eq!(0.02120555, candlestick_msg.volume);
+        assert_eq!(Some(670.0), candlestick_msg.quote_volume);
     }
 
     #[test]
     fn option() {
         let raw_msg = r#"{"jsonrpc":"2.0","method":"subscription","params":{"channel":"chart.trades.BTC-30SEP22-60000-C.1","data":{"volume":0.0,"tick":1654079400000,"open":0.0115,"low":0.0115,"high":0.0115,"cost":0.0,"close":0.0115}}}"#;
+        let arr=parse_candlestick(EXCHANGE_NAME,MarketType::InverseFuture,raw_msg,None).unwrap();
 
         assert_eq!(
             1654079400000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
+            extract_timestamp(EXCHANGE_NAME, MarketType::EuropeanOption, raw_msg).unwrap().unwrap()
         );
         assert_eq!(
             "BTC-30SEP22-60000-C",
-            extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
+            extract_symbol(EXCHANGE_NAME, MarketType::EuropeanOption, raw_msg).unwrap()
         );
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("BTC-30SEP22-60000-C", candlestick_msg.symbol);
+        assert_eq!("BTC/BTC", candlestick_msg.pair);
+        assert_eq!(1654079400000, candlestick_msg.timestamp);
+        assert_eq!(1654079340000, candlestick_msg.begin_time);
+        assert_eq!("1m", candlestick_msg.period);
+
+        assert_eq!(0.0115, candlestick_msg.open);
+        assert_eq!(0.0115, candlestick_msg.high);
+        assert_eq!(0.0115, candlestick_msg.low);
+        assert_eq!(0.0115, candlestick_msg.close);
+        assert_eq!(0.0, candlestick_msg.volume);
+        assert_eq!(Some(0.0), candlestick_msg.quote_volume);
     }
 }
 
