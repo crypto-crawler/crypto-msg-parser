@@ -1,7 +1,7 @@
 use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
-use crypto_message::{BboMsg, Order, OrderBookMsg, TradeMsg, TradeSide,CandlestickMsg,};
+use crypto_message::{BboMsg, CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -82,14 +82,14 @@ struct RawBboMsg {
 //See <https://docs.deribit.com/#chart-trades-instrument_name-resolution>
 #[derive(Serialize, Deserialize)]
 #[allow(non_snake_case)]
-struct RawCandlestickMsg{
-    volume:f64,
-    tick:i64,
-    open:f64,
-    low:f64,
-    high:f64,
-    cost:f64,
-    close:f64
+struct RawCandlestickMsg {
+    volume: f64,
+    tick: i64,
+    open: f64,
+    low: f64,
+    high: f64,
+    cost: f64,
+    close: f64,
 }
 
 pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<String, SimpleError> {
@@ -353,31 +353,31 @@ pub(crate) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
     Ok(vec![bbo_msg])
 }
 
-pub(crate) fn parse_candlestick(market_type:MarketType,msg:&str) ->Result<Vec<CandlestickMsg>,SimpleError>{
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(|_e| {
         SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawCandlestickMsg>"))
     })?;
     debug_assert!(ws_msg.params.channel.starts_with("chart."));
-    let resolution = ws_msg.params.channel.split(".").nth(3).unwrap();
-    let period= if resolution.ends_with('D')
-    {
-        resolution.strip_suffix('D').unwrap().parse::<i64>().unwrap()*24*60
-    }
-    else 
-    {
+    let resolution = ws_msg.params.channel.split('.').nth(3).unwrap();
+    let period = if resolution.ends_with('D') {
+        resolution.strip_suffix('D').unwrap().parse::<i64>().unwrap() * 24 * 60
+    } else {
         resolution.parse::<i64>().unwrap()
     };
 
-    let raw_candlestick_msg=ws_msg.params.data;
-    let symbol= extract_symbol(market_type, msg).unwrap();
-    let pair =crypto_pair::normalize_pair(&symbol,EXCHANGE_NAME).unwrap();
-    let candlestick_msg=CandlestickMsg{
+    let raw_candlestick_msg = ws_msg.params.data;
+    let symbol = extract_symbol(market_type, msg).unwrap();
+    let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).unwrap();
+    let candlestick_msg = CandlestickMsg {
         exchange: EXCHANGE_NAME.to_string(),
         market_type,
         msg_type: MessageType::Candlestick,
-        symbol: symbol.to_string(),
+        symbol,
         pair,
-        timestamp:raw_candlestick_msg.tick,
+        timestamp: raw_candlestick_msg.tick,
         period: format!("{}m", period),
         begin_time: raw_candlestick_msg.tick - period * 60000,
         open: raw_candlestick_msg.open,
@@ -389,5 +389,4 @@ pub(crate) fn parse_candlestick(market_type:MarketType,msg:&str) ->Result<Vec<Ca
         json: msg.to_string(),
     };
     Ok(vec![candlestick_msg])
-
 }

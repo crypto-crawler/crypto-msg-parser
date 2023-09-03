@@ -583,12 +583,13 @@ mod bbo {
 mod candlestick {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp,parse_candlestick};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_candlestick};
 
     #[test]
     fn inverse_future() {
         let raw_msg = r#"{"jsonrpc":"2.0","method":"subscription","params":{"channel":"chart.trades.BTC-30SEP22.1","data":{"volume":0.0,"tick":1654078920000,"open":31949.0,"low":31949.0,"high":31949.0,"cost":0.0,"close":31949.0}}}"#;
-        let arr=parse_candlestick(EXCHANGE_NAME,MarketType::InverseFuture,raw_msg,None).unwrap();
+        let arr =
+            parse_candlestick(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg, None).unwrap();
 
         assert_eq!(
             1654078920000,
@@ -618,7 +619,8 @@ mod candlestick {
     #[test]
     fn inverse_swap() {
         let raw_msg = r#"{"jsonrpc":"2.0","method":"subscription","params":{"channel":"chart.trades.BTC-PERPETUAL.1","data":{"volume":0.02120555,"tick":1654079340000,"open":31595.5,"low":31595.5,"high":31595.5,"cost":670.0,"close":31595.5}}}"#;
-        let arr=parse_candlestick(EXCHANGE_NAME,MarketType::InverseFuture,raw_msg,None).unwrap();
+        let arr =
+            parse_candlestick(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg, None).unwrap();
 
         assert_eq!(
             1654079340000,
@@ -648,7 +650,8 @@ mod candlestick {
     #[test]
     fn option() {
         let raw_msg = r#"{"jsonrpc":"2.0","method":"subscription","params":{"channel":"chart.trades.BTC-30SEP22-60000-C.1","data":{"volume":0.0,"tick":1654079400000,"open":0.0115,"low":0.0115,"high":0.0115,"cost":0.0,"close":0.0115}}}"#;
-        let arr=parse_candlestick(EXCHANGE_NAME,MarketType::InverseFuture,raw_msg,None).unwrap();
+        let arr =
+            parse_candlestick(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg, None).unwrap();
 
         assert_eq!(
             1654079400000,
