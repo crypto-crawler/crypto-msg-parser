@@ -4,6 +4,7 @@ mod bitget_mix;
 use std::collections::HashMap;
 
 use crypto_market_type::MarketType;
+use crypto_message::CandlestickMsg;
 use crypto_msg_type::MessageType;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -167,5 +168,20 @@ pub(crate) fn parse_funding_rate(
         Err(SimpleError::new("Not implemented"))
     } else {
         Err(SimpleError::new(format!("Unsupported FundingRate message {msg}")))
+    }
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let obj = serde_json::from_str::<HashMap<String, Value>>(msg)
+        .map_err(|_e| SimpleError::new(format!("failed to parse JSON string{msg}")))?;
+    if obj.contains_key("data") && obj.contains_key("table") {
+        before20220429::parse_candlestick(market_type, msg)
+    } else if obj.contains_key("data") && obj.contains_key("arg") {
+        bitget_mix::parse_candlestick(msg)
+    } else {
+        Err(SimpleError::new(format!("Unsupported Candlestick message {msg}")))
     }
 }

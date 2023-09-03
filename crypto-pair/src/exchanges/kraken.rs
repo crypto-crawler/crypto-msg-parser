@@ -17,7 +17,7 @@ static SPOT_QUOTES: Lazy<HashSet<String>> = Lazy::new(|| {
     .collect();
 
     let from_online = fetch_spot_quotes();
-    set.extend(from_online.into_iter());
+    set.extend(from_online);
 
     set
 });

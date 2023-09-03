@@ -1,7 +1,7 @@
 use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
-use crypto_message::{Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use super::EXCHANGE_NAME;
 use serde::{Deserialize, Serialize};
@@ -33,6 +33,24 @@ struct RawOrderBook {
     bids: Vec<[String; 2]>,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
+}
+
+fn extract_market_type_and_symbol(arg: &Arg) -> (MarketType, String) {
+    match arg.instType.as_str() {
+        "sp" => (MarketType::Spot, format!("{}_SPBL", arg.instId)),
+        "mc" => {
+            let (market_type, suffix) = if arg.instId.ends_with("USDT") {
+                (MarketType::LinearSwap, "UMCBL")
+            } else if arg.instId.ends_with("USD") {
+                (MarketType::InverseSwap, "DMCBL")
+            } else {
+                panic!("Unknown instId {}", arg.instId);
+            };
+            let symbol = format!("{}_{}", arg.instId, suffix);
+            (market_type, symbol)
+        }
+        _ => panic!("Unknown instType {}", arg.instType),
+    }
 }
 
 pub(super) fn extract_symbol(msg: &str) -> Result<String, SimpleError> {
@@ -91,21 +109,7 @@ pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<[String; 4]>>(msg)
         .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     debug_assert_eq!("trade", ws_msg.arg.channel.as_str());
-    let (market_type, symbol) = match ws_msg.arg.instType.as_str() {
-        "sp" => (MarketType::Spot, format!("{}_SPBL", ws_msg.arg.instId)),
-        "mc" => {
-            let (market_type, suffix) = if ws_msg.arg.instId.ends_with("USDT") {
-                (MarketType::LinearSwap, "UMCBL")
-            } else if ws_msg.arg.instId.ends_with("USD") {
-                (MarketType::InverseSwap, "DMCBL")
-            } else {
-                panic!("Unknown instId {} in {}", ws_msg.arg.instId, msg);
-            };
-            let symbol = format!("{}_{}", ws_msg.arg.instId, suffix);
-            (market_type, symbol)
-        }
-        _ => panic!("Unknown instType {} in {}", ws_msg.arg.instType, msg),
-    };
+    let (market_type, symbol) = extract_market_type_and_symbol(&ws_msg.arg);
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).unwrap();
     let mut trades: Vec<TradeMsg> = ws_msg
         .data
@@ -151,21 +155,7 @@ pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawOrderBook>>(msg)
         .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
     let snapshot = ws_msg.action == "snapshot";
-    let (market_type, symbol) = match ws_msg.arg.instType.as_str() {
-        "sp" => (MarketType::Spot, format!("{}_SPBL", ws_msg.arg.instId)),
-        "mc" => {
-            let (market_type, suffix) = if ws_msg.arg.instId.ends_with("USDT") {
-                (MarketType::LinearSwap, "UMCBL")
-            } else if ws_msg.arg.instId.ends_with("USD") {
-                (MarketType::InverseSwap, "DMCBL")
-            } else {
-                panic!("Unknown instId {} in {}", ws_msg.arg.instId, msg);
-            };
-            let symbol = format!("{}_{}", ws_msg.arg.instId, suffix);
-            (market_type, symbol)
-        }
-        _ => panic!("Unknown instType {} in {}", ws_msg.arg.instType, msg),
-    };
+    let (market_type, symbol) = extract_market_type_and_symbol(&ws_msg.arg);
     let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).unwrap();
 
     let parse_order = |raw_order: &[String; 2]| -> Order {
@@ -191,12 +181,62 @@ pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
             timestamp: raw_orderbook.ts.parse::<i64>().unwrap(),
             seq_id: None,
             prev_seq_id: None,
-            asks: raw_orderbook.asks.iter().map(|x| parse_order(x)).collect(),
-            bids: raw_orderbook.bids.iter().map(|x| parse_order(x)).collect(),
+            asks: raw_orderbook.asks.iter().map(parse_order).collect(),
+            bids: raw_orderbook.bids.iter().map(parse_order).collect(),
             snapshot,
             json: serde_json::to_string(raw_orderbook).unwrap(),
         })
         .collect();
 
     Ok(orderbooks)
+}
+
+/// docs：
+/// * https://bitgetlimited.github.io/apidoc/en/spot/#candlesticks-channel
+/// * https://bitgetlimited.github.io/apidoc/en/mix/#candlesticks-channel
+pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<[String; 6]>>(msg).map_err(SimpleError::from)?;
+    debug_assert!(ws_msg.arg.channel.starts_with("candle"));
+    let period = ws_msg.arg.channel.as_str().strip_prefix("candle").unwrap();
+    let m_seconds = match period.to_string().pop().unwrap() {
+        's' => period.strip_suffix('s').unwrap().parse::<i64>().unwrap() * 1000,
+        'm' => period.strip_suffix('m').unwrap().parse::<i64>().unwrap() * 1000 * 60,
+        'd' => period.strip_suffix('d').unwrap().parse::<i64>().unwrap() * 1000 * 24 * 60 * 60,
+        _ => 0,
+    };
+
+    let (market_type, symbol) = extract_market_type_and_symbol(&ws_msg.arg);
+    let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).unwrap();
+    let candlestick_msgs: Vec<CandlestickMsg> = ws_msg
+        .data
+        .into_iter()
+        .map(|raw_candlestickmsg| {
+            let timestamp = raw_candlestickmsg[0].parse::<i64>().unwrap();
+            let open = raw_candlestickmsg[1].parse::<f64>().unwrap();
+            let high = raw_candlestickmsg[2].parse::<f64>().unwrap();
+            let low = raw_candlestickmsg[3].parse::<f64>().unwrap();
+            let close = raw_candlestickmsg[4].parse::<f64>().unwrap();
+            let volume = raw_candlestickmsg[5].parse::<f64>().unwrap();
+
+            CandlestickMsg {
+                exchange: EXCHANGE_NAME.to_string(),
+                market_type,
+                msg_type: MessageType::Candlestick,
+                symbol: symbol.clone(),
+                pair: pair.clone(),
+                timestamp,
+                period: period.to_string(),
+                begin_time: timestamp - m_seconds,
+                open,
+                high,
+                low,
+                close,
+                volume,
+                quote_volume: None,
+                json: serde_json::to_string(&raw_candlestickmsg).unwrap(),
+            }
+        })
+        .collect();
+    Ok(candlestick_msgs)
 }

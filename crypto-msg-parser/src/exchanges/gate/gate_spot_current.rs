@@ -244,12 +244,12 @@ pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError>
         seq_id: Some(result.lastUpdateId),
         prev_seq_id: None,
         asks: if let Some(asks) = result.asks {
-            asks.iter().map(|x| parse_order(x)).collect()
+            asks.iter().map(parse_order).collect()
         } else {
             Vec::new()
         },
         bids: if let Some(bids) = result.bids {
-            bids.iter().map(|x| parse_order(x)).collect()
+            bids.iter().map(parse_order).collect()
         } else {
             Vec::new()
         },

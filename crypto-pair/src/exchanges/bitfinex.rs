@@ -67,7 +67,7 @@ static BITFINEX_MAPPING: Lazy<HashMap<String, String>> = Lazy::new(|| {
     .collect();
 
     let from_online = fetch_currency_mapping();
-    set.extend(from_online.into_iter());
+    set.extend(from_online);
 
     set
 });

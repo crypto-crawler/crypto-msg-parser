@@ -144,8 +144,8 @@ pub(crate) fn parse_l2(
         timestamp: raw_orderbook.microtimestamp.parse::<i64>().unwrap() / 1000,
         seq_id: None,
         prev_seq_id: None,
-        asks: raw_orderbook.asks.iter().map(|x| parse_order(x)).collect(),
-        bids: raw_orderbook.bids.iter().map(|x| parse_order(x)).collect(),
+        asks: raw_orderbook.asks.iter().map(parse_order).collect(),
+        bids: raw_orderbook.bids.iter().map(parse_order).collect(),
         snapshot: ws_msg.channel.starts_with("order_book_"),
         json: msg.to_string(),
     };

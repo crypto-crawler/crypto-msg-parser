@@ -11,16 +11,16 @@ use std::collections::HashMap;
 static SPOT_QUOTES: Lazy<HashSet<String>> = Lazy::new(|| {
     // offline data, in case the network is down
     let mut set: HashSet<String> = vec![
-        "AUD", "BIDR", "BKRW", "BNB", "BRL", "BTC", "BUSD", "BVND", "DAI", "DOGE", "DOT", "ETH",
-        "EUR", "GBP", "GYEN", "IDRT", "NGN", "PAX", "PLN", "RON", "RUB", "TRX", "TRY", "TUSD",
-        "UAH", "USDC", "USDP", "USDS", "USDT", "UST", "VAI", "XRP", "ZAR",
+        "ARS", "AUD", "BIDR", "BKRW", "BNB", "BRL", "BTC", "BUSD", "BVND", "DAI", "DOGE", "DOT",
+        "ETH", "EUR", "GBP", "GYEN", "IDRT", "NGN", "PAX", "PLN", "RON", "RUB", "TRX", "TRY",
+        "TUSD", "UAH", "USDC", "USDP", "USDS", "USDT", "UST", "VAI", "XRP", "ZAR",
     ]
     .into_iter()
     .map(|x| x.to_string())
     .collect();
 
     let from_online = fetch_spot_quotes();
-    set.extend(from_online.into_iter());
+    set.extend(from_online);
 
     set
 });
@@ -116,5 +116,6 @@ mod tests {
     fn normalize_pair() {
         assert_eq!("BDOT/DOT", super::normalize_pair("BDOTDOT").unwrap());
         assert_eq!("ETH/PLN", super::normalize_pair("ETHPLN").unwrap());
+        assert_eq!("USDT/ARS", super::normalize_pair("USDTARS").unwrap());
     }
 }

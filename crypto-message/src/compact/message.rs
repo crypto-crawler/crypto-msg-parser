@@ -501,9 +501,7 @@ impl Ord for FundingRateMsg {
 // Message
 impl PartialOrd for Message {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
-        let this_timestamp = self.get_timestamp();
-        let other_timestamp = other.get_timestamp();
-        Some(this_timestamp.cmp(&other_timestamp))
+        Some(self.cmp(other))
     }
 }
 

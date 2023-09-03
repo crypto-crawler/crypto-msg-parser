@@ -5,6 +5,8 @@ pub(crate) fn normalize_currency(currency: &str) -> String {
         "BTC"
     } else if currency == "BCHSV" {
         "BSV"
+    } else if currency == "ETH2" {
+        "ksETH"
     } else if currency == "R" {
         "REV"
     } else if currency == "WAX" {
@@ -63,12 +65,14 @@ mod tests {
 
     #[test]
     fn test_get_market_type() {
+        assert_eq!(MarketType::Spot, super::get_market_type("ETH2-ETH"));
         assert_eq!(MarketType::LinearSwap, super::get_market_type("XBTUSDTM"));
         assert_eq!(MarketType::LinearSwap, super::get_market_type("XBTUSDCM"));
     }
 
     #[test]
     fn test_normalize_pair() {
+        assert_eq!("KSETH/ETH", super::normalize_pair("ETH2-ETH").unwrap());
         assert_eq!("BTC/USDT", super::normalize_pair("XBTUSDTM").unwrap());
         assert_eq!("BTC/USDC", super::normalize_pair("XBTUSDCM").unwrap());
     }
