@@ -357,15 +357,14 @@ pub(crate) fn parse_candlestick(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<CandlestickMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawCandlestickMsg>"))
-    })?;
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(SimpleError::from)?;
     debug_assert!(ws_msg.params.channel.starts_with("chart."));
-    let resolution = ws_msg.params.channel.split('.').nth(3).unwrap();
-    let period = if resolution.ends_with('D') {
-        resolution.strip_suffix('D').unwrap().parse::<i64>().unwrap() * 24 * 60
+    let period = ws_msg.params.channel.split('.').last().unwrap();
+    let period_value = if period.ends_with('D') {
+        period.strip_suffix('D').unwrap().parse::<i64>().unwrap() * 24 * 60
     } else {
-        resolution.parse::<i64>().unwrap()
+        period.parse::<i64>().unwrap()
     };
 
     let raw_candlestick_msg = ws_msg.params.data;
@@ -378,8 +377,8 @@ pub(crate) fn parse_candlestick(
         symbol,
         pair,
         timestamp: raw_candlestick_msg.tick,
-        period: format!("{}m", period),
-        begin_time: raw_candlestick_msg.tick - period * 60000,
+        period: period.to_string(),
+        begin_time: raw_candlestick_msg.tick - period_value * 60000,
         open: raw_candlestick_msg.open,
         high: raw_candlestick_msg.high,
         low: raw_candlestick_msg.low,
