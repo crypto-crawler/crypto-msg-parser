@@ -269,6 +269,7 @@ pub fn parse_candlestick(
         "huobi" => exchanges::huobi::parse_candlestick(market_type, msg),
         "kraken" => exchanges::kraken::parse_candlestick(market_type, msg),
         "kucoin" => exchanges::kucoin::parse_candlestick(market_type, msg),
+        "deribit" => exchanges::deribit::parse_candlestick(market_type, msg),
         "okx" => exchanges::okx::parse_candlestick(
             market_type,
             msg,

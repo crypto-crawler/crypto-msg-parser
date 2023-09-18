@@ -1,7 +1,7 @@
 use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
-use crypto_message::{BboMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{BboMsg, CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -77,6 +77,19 @@ struct RawBboMsg {
     best_bid_amount: f64,
     best_ask_price: f64,
     best_ask_amount: f64,
+}
+
+//See <https://docs.deribit.com/#chart-trades-instrument_name-resolution>
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawCandlestickMsg {
+    volume: f64,
+    tick: i64,
+    open: f64,
+    low: f64,
+    high: f64,
+    cost: f64,
+    close: f64,
 }
 
 pub(crate) fn extract_symbol(_market_type: MarketType, msg: &str) -> Result<String, SimpleError> {
@@ -338,4 +351,41 @@ pub(crate) fn parse_bbo(market_type: MarketType, msg: &str) -> Result<Vec<BboMsg
     };
 
     Ok(vec![bbo_msg])
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(SimpleError::from)?;
+    debug_assert!(ws_msg.params.channel.starts_with("chart."));
+    let period = ws_msg.params.channel.split('.').last().unwrap();
+    let period_value = if period.ends_with('D') {
+        period.strip_suffix('D').unwrap().parse::<i64>().unwrap() * 24 * 60
+    } else {
+        period.parse::<i64>().unwrap()
+    };
+
+    let raw_candlestick_msg = ws_msg.params.data;
+    let symbol = extract_symbol(market_type, msg).unwrap();
+    let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME).unwrap();
+    let candlestick_msg = CandlestickMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type,
+        msg_type: MessageType::Candlestick,
+        symbol,
+        pair,
+        timestamp: raw_candlestick_msg.tick,
+        period: period.to_string(),
+        begin_time: raw_candlestick_msg.tick - period_value * 60000,
+        open: raw_candlestick_msg.open,
+        high: raw_candlestick_msg.high,
+        low: raw_candlestick_msg.low,
+        close: raw_candlestick_msg.close,
+        volume: raw_candlestick_msg.volume,
+        quote_volume: Some(raw_candlestick_msg.cost),
+        json: msg.to_string(),
+    };
+    Ok(vec![candlestick_msg])
 }
