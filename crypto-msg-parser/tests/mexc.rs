@@ -557,56 +557,112 @@ mod before_20220311 {
 mod candlestick {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_candlestick};
 
     #[test]
     fn spot() {
         let raw_msg = r#"{"symbol":"BTC_USDT","data":{"symbol":"BTC_USDT","interval":"Min1","t":1654083120,"o":31512.39,"c":31514.38,"h":31514.41,"l":31512.39,"v":273.4783858,"q":0.008678,"e":31512.39,"rh":31514.41,"rl":31512.39,"tdt":1654083133266},"channel":"push.kline","symbol_display":"BTC_USDT"}"#;
 
-        assert_eq!(
-            1654083133266,
-            extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
-        );
+        let timestamp = extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap();
+        assert_eq!(1654083133266, timestamp.unwrap());
         assert_eq!("BTC_USDT", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
+
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::Spot, raw_msg, timestamp).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+
+        assert_eq!("BTC_USDT", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
+        assert_eq!(1654083120 * 1000, candlestick_msg.timestamp);
+        assert_eq!(1654083120 * 1000 - 60 * 1000, candlestick_msg.begin_time);
+        assert_eq!("Min1", candlestick_msg.period);
+
+        assert_eq!(31512.39, candlestick_msg.open);
+        assert_eq!(31514.41, candlestick_msg.high);
+        assert_eq!(31512.39, candlestick_msg.low);
+        assert_eq!(31514.38, candlestick_msg.close);
+        assert_eq!(0.008678, candlestick_msg.volume);
+        assert_eq!(Some(273.4783858), candlestick_msg.quote_volume);
     }
 
     #[test]
     fn spot_sample_2() {
-        let raw_msg = r#"["push.kline",{"symbol":"DXGM_USDT","data":{"symbol":"DXGM_USDT","interval":"Min5","t":1638241800,"o":0.0268,"c":0.02456,"h":0.0273,"l":0.02286,"v":31416.3765539,"q":1264843.57},"symbol_display":"DXGM_USDT"}]"#;
+        let raw_msg = r#"["push.kline",
+        
+        {"symbol":"DXGM_USDT","data":{"symbol":"DXGM_USDT","interval":"Min5","t":1638241800,"o":0.0268,"c":0.02456,"h":0.0273,"l":0.02286,"v":31416.3765539,"q":1264843.57},"symbol_display":"DXGM_USDT"}]"#;
+        let timestamp = extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap();
+        assert_eq!(1638241800000, timestamp.unwrap());
 
-        assert_eq!(
-            1638241800000,
-            extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
-        );
         assert_eq!("DXGM_USDT", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::Spot, raw_msg, timestamp).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+        assert_eq!("DXGM_USDT", candlestick_msg.symbol);
+        assert_eq!("DXGM/USDT", candlestick_msg.pair);
+        assert_eq!(1638241800 * 1000, candlestick_msg.timestamp);
+        assert_eq!(1638241800 * 1000 - 5 * 60 * 1000, candlestick_msg.begin_time);
+        assert_eq!("Min5", candlestick_msg.period);
+
+        assert_eq!(0.0268, candlestick_msg.open);
+        assert_eq!(0.0273, candlestick_msg.high);
+        assert_eq!(0.02286, candlestick_msg.low);
+        assert_eq!(0.02456, candlestick_msg.close);
+        assert_eq!(1264843.57, candlestick_msg.volume);
+        assert_eq!(Some(31416.3765539), candlestick_msg.quote_volume)
     }
 
     #[test]
     fn inverse_swap() {
         let raw_msg = r#"{"channel":"push.kline","data":{"a":8.0759087605568165,"c":31439.5,"h":31439.5,"interval":"Min1","l":31439,"o":31439.5,"q":2539,"rc":31439.5,"rh":31439.5,"rl":31439,"ro":31439.5,"symbol":"BTC_USD","t":1654083720},"symbol":"BTC_USD","ts":1654083763923}"#;
-
-        assert_eq!(
-            1654083763923,
-            extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap().unwrap()
-        );
+        let timestamp = extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap();
+        assert_eq!(1654083763923, timestamp.unwrap());
         assert_eq!(
             "BTC_USD",
             extract_symbol(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap()
         );
+        let arr =
+            parse_candlestick(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg, timestamp).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+        assert_eq!("BTC_USD", candlestick_msg.symbol);
+        assert_eq!("BTC/USD", candlestick_msg.pair);
+        assert_eq!(1654083720 * 1000, candlestick_msg.timestamp);
+        assert_eq!(1654083720 * 1000 - 60 * 1000, candlestick_msg.begin_time);
+        assert_eq!("Min1", candlestick_msg.period);
+
+        assert_eq!(31439.5, candlestick_msg.open);
+        assert_eq!(31439.5, candlestick_msg.high);
+        assert_eq!(31439.0, candlestick_msg.low);
+        assert_eq!(31439.5, candlestick_msg.close);
+        assert_eq!(2539.0, candlestick_msg.volume);
+        assert_eq!(Some(8.0759087605568165), candlestick_msg.quote_volume)
     }
 
     #[test]
     fn linear_swap() {
         let raw_msg = r#"{"channel":"push.kline","data":{"a":99371.3865,"c":31575,"h":31585.5,"interval":"Min1","l":31574.5,"o":31576,"q":31468,"rc":31575,"rh":31585.5,"rl":31574.5,"ro":31576,"symbol":"BTC_USDT","t":1654083480},"symbol":"BTC_USDT","ts":1654083512507}"#;
-
-        assert_eq!(
-            1654083512507,
-            extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
-        );
+        let timestamp = extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap();
+        assert_eq!(1654083512507, timestamp.unwrap());
         assert_eq!(
             "BTC_USDT",
             extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap()
         );
+        let arr =
+            parse_candlestick(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg, timestamp).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+        assert_eq!("BTC_USDT", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
+        assert_eq!(1654083480 * 1000, candlestick_msg.timestamp);
+        assert_eq!(1654083480 * 1000 - 60 * 1000, candlestick_msg.begin_time);
+        assert_eq!("Min1", candlestick_msg.period);
+
+        assert_eq!(31576.0, candlestick_msg.open);
+        assert_eq!(31585.5, candlestick_msg.high);
+        assert_eq!(31574.5, candlestick_msg.low);
+        assert_eq!(31575.0, candlestick_msg.close);
+        assert_eq!(31468.0, candlestick_msg.volume);
+        assert_eq!(Some(99371.3865), candlestick_msg.quote_volume)
     }
 }
 
