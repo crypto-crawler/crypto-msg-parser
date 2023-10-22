@@ -270,6 +270,11 @@ pub fn parse_candlestick(
         "kraken" => exchanges::kraken::parse_candlestick(market_type, msg),
         "kucoin" => exchanges::kucoin::parse_candlestick(market_type, msg),
         "deribit" => exchanges::deribit::parse_candlestick(market_type, msg),
+        "mexc" => exchanges::mexc::parse_candlestick(
+            market_type,
+            msg,
+            received_at,
+        ),
         "okx" => exchanges::okx::parse_candlestick(
             market_type,
             msg,
