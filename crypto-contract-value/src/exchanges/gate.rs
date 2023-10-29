@@ -63,6 +63,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("ALPHA/USDT", 1_f64),
             ("ALPINE/USDT", 1_f64),
             ("ALT/USDT", 0.001_f64),
+            ("AMB/USDT", 100_f64),
             ("AMPL/USDT", 1_f64),
             ("ANC/USDT", 1_f64),
             ("ANKR/USDT", 10_f64),
@@ -72,6 +73,8 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("APT/USDT", 0.1_f64),
             ("AR/USDT", 0.1_f64),
             ("ARB/USDT", 1_f64),
+            ("ARDR/USDT", 10_f64),
+            ("ARK/USDT", 1_f64),
             ("ARKM/USDT", 1_f64),
             ("ARPA/USDT", 10_f64),
             ("ASD/USDT", 10_f64),
@@ -83,6 +86,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("ATOM/USDT", 1_f64),
             ("AUCTION/USDT", 0.1_f64),
             ("AUDIO/USDT", 1_f64),
+            ("AURORA/USDT", 10_f64),
             ("AVAX/USDT", 1_f64),
             ("AXS/USDT", 0.1_f64),
             ("BADGER/USDT", 0.1_f64),
@@ -97,6 +101,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("BEAM/USDT", 10_f64),
             ("BEL/USDT", 1_f64),
             ("BICO/USDT", 0.1_f64),
+            ("BIGTIME/USDT", 100_f64),
             ("BIT/USDT", 1_f64),
             ("BLUR/USDT", 1_f64),
             ("BLZ/USDT", 10_f64),
@@ -104,6 +109,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("BNT/USDT", 1_f64),
             ("BNX/USDT", 1_f64),
             ("BOBA/USDT", 1_f64),
+            ("BOND/USDT", 1_f64),
             ("BONK/USDT", 1000000_f64),
             ("BSHIBAI/USDT", 10_f64),
             ("BSV/USDT", 0.01_f64),
@@ -119,6 +125,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("CELO/USDT", 1_f64),
             ("CELR/USDT", 10_f64),
             ("CERE/USDT", 10_f64),
+            ("CETUS/USDT", 10_f64),
             ("CFX/USDT", 10_f64),
             ("CHESS/USDT", 1_f64),
             ("CHR/USDT", 10_f64),
@@ -140,6 +147,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("CVC/USDT", 10_f64),
             ("CVP/USDT", 1_f64),
             ("CVX/USDT", 0.1_f64),
+            ("CYBER/USDT", 0.1_f64),
             ("DAO/USDT", 1_f64),
             ("DAR/USDT", 1_f64),
             ("DASH/USDT", 0.01_f64),
@@ -182,6 +190,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("GAL/USDT", 0.1_f64),
             ("GALA/USDT", 10_f64),
             ("GARI/USDT", 10_f64),
+            ("GAS/USDT", 1_f64),
             ("GFT/USDT", 10_f64),
             ("GITCOIN/USDT", 0.1_f64),
             ("GLM/USDT", 10_f64),
@@ -237,6 +246,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("LOKA/USDT", 1_f64),
             ("LON/USDT", 1_f64),
             ("LOOKS/USDT", 1_f64),
+            ("LOOM/USDT", 10_f64),
             ("LPT/USDT", 0.1_f64),
             ("LQTY/USDT", 1_f64),
             ("LRC/USDT", 1_f64),
@@ -252,6 +262,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("MAV/USDT", 10_f64),
             ("MBABYDOGE/USDT", 100_f64),
             ("MBOX/USDT", 0.1_f64),
+            ("MC/USDT", 10_f64),
             ("MCB/USDT", 1_f64),
             ("MDT/USDT", 10_f64),
             ("MELON/USDT", 1_f64),
@@ -261,14 +272,18 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("MKR/USDT", 0.001_f64),
             ("MNGO/USDT", 10_f64),
             ("MOB/USDT", 1_f64),
+            ("MOVEZ/USDT", 1000_f64),
             ("MOVR/USDT", 0.01_f64),
             ("MTA/USDT", 10_f64),
             ("MTL/USDT", 0.1_f64),
             ("NEAR/USDT", 1_f64),
+            ("NEO/USDT", 1_f64),
             ("NEST/USDT", 10_f64),
             ("NEXO/USDT", 1_f64),
             ("NFT/USDT", 100000_f64),
             ("NKN/USDT", 1_f64),
+            ("NMR/USDT", 0.1_f64),
+            ("NTRN/USDT", 10_f64),
             ("NU/USDT", 1_f64),
             ("NYM/USDT", 1_f64),
             ("OAS/USDT", 10_f64),
@@ -284,6 +299,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("ONT/USDT", 1_f64),
             ("OOKI/USDT", 100_f64),
             ("OP/USDT", 1_f64),
+            ("ORBS/USDT", 10_f64),
             ("ORDI/USDT", 0.1_f64),
             ("OXT/USDT", 10_f64),
             ("OXY/USDT", 1_f64),
@@ -302,6 +318,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("POLYX/USDT", 10_f64),
             ("POND/USDT", 10_f64),
             ("PORTO/USDT", 1_f64),
+            ("POWR/USDT", 10_f64),
             ("PRIV/USDT", 0.001_f64),
             ("PROM/USDT", 0.1_f64),
             ("PRQ/USDT", 10_f64),
@@ -335,6 +352,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("SANTOS/USDT", 1_f64),
             ("SC/USDT", 100_f64),
             ("SCRT/USDT", 1_f64),
+            ("SEI/USDT", 10_f64),
             ("SERO/USDT", 10_f64),
             ("SFP/USDT", 1_f64),
             ("SHIB/USDT", 10000_f64),
@@ -346,11 +364,14 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("SPELL/USDT", 1000_f64),
             ("SRM/USDT", 1_f64),
             ("SSV/USDT", 0.1_f64),
+            ("STARL/USDT", 100000_f64),
             ("STEEM/USDT", 10_f64),
             ("STEP/USDT", 10_f64),
             ("STG/USDT", 1_f64),
             ("STMX/USDT", 100_f64),
             ("STORJ/USDT", 1_f64),
+            ("STPT/USDT", 10_f64),
+            ("STRAX/USDT", 10_f64),
             ("STX/USDT", 1_f64),
             ("SUI/USDT", 1_f64),
             ("SUN/USDT", 0.1_f64),
@@ -390,6 +411,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("WOJAK/USDT", 1000_f64),
             ("WOO/USDT", 1_f64),
             ("WSB/USDT", 0.001_f64),
+            ("WSM/USDT", 100_f64),
             ("XAUG/USDT", 0.001_f64),
             ("XCH/USDT", 0.001_f64),
             ("XCN/USDT", 10_f64),
@@ -411,6 +433,7 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
             ("ZIL/USDT", 10_f64),
             ("ZKS/USDT", 1_f64),
             ("ZRX/USDT", 1_f64),
+            ("ZTX/USDT", 100_f64),
         ]
         .into_iter()
         .map(|x| (x.0.to_string(), x.1))
@@ -425,10 +448,17 @@ static CONTRACT_VALUES: Lazy<HashMap<MarketType, HashMap<String, f64>>> = Lazy::
     };
 
     let linear_future: HashMap<String, f64> = {
-        let mut m: HashMap<String, f64> = vec![("BTC/USDT", 0.0001), ("ETH/USDT", 0.01)]
-            .into_iter()
-            .map(|x| (x.0.to_string(), x.1))
-            .collect();
+        let mut m: HashMap<String, f64> = vec![
+            ("BTC/USDT", 0.0001_f64),
+            ("EOS/USDT", 1_f64),
+            ("ETC/USDT", 0.1_f64),
+            ("ETH/USDT", 0.01_f64),
+            ("LTC/USDT", 0.1_f64),
+            ("XRP/USDT", 10_f64),
+        ]
+        .into_iter()
+        .map(|x| (x.0.to_string(), x.1))
+        .collect();
 
         let from_online = fetch_quanto_multipliers(LINEAR_FUTURE_URL);
         for (pair, contract_value) in &from_online {
