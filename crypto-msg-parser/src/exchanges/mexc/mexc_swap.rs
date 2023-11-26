@@ -34,7 +34,7 @@ struct RawOrderbookMsg {
     extra: HashMap<String, Value>,
 }
 
-// https://mexcdevelop.github.io/apidocs/spot_v2_cn/#k
+// https://mexcdevelop.github.io/apidocs/contract_v1_cn/#a6ff2d9336
 #[derive(Serialize, Deserialize)]
 #[allow(non_snake_case)]
 struct RawCandlestickMsg {
@@ -47,10 +47,8 @@ struct RawCandlestickMsg {
     l: f64,
     a: f64,
     q: f64,
-    //ro:f64,
-    //rc:f64,
-    //rh:f64,
-    //rl:f64,
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
 }
 
 #[derive(Serialize, Deserialize)]
@@ -149,61 +147,37 @@ pub(crate) fn parse_candlestick(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<CandlestickMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(|_e| {
-        SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawCandlestickMsg>"))
-    })?;
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(SimpleError::from)?;
     let symbol = ws_msg.symbol.as_str();
     let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
         .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
     let mut interval_in_seconds = 0;
-    if ws_msg.data.interval.as_str().starts_with("Min") {
+
+    let internal = ws_msg.data.interval.as_str();
+    if internal.starts_with("Min") {
+        interval_in_seconds = internal.strip_prefix("Min").unwrap().parse::<i64>().unwrap() * 60;
+    } else if internal.starts_with("Hour") {
         interval_in_seconds =
-            ws_msg.data.interval.as_str().strip_prefix("Min").unwrap().parse::<i64>().unwrap() * 60;
-    } else if ws_msg.data.interval.as_str().starts_with("Hour") {
+            internal.strip_prefix("Hour").unwrap().parse::<i64>().unwrap() * 60 * 60;
+    } else if internal.starts_with("Day") {
         interval_in_seconds =
-            ws_msg.data.interval.as_str().strip_prefix("Hour").unwrap().parse::<i64>().unwrap()
-                * 60
-                * 60;
-    } else if ws_msg.data.interval.as_str().starts_with("Day") {
+            internal.strip_prefix("Day").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24;
+    } else if internal.starts_with("Week") {
         interval_in_seconds =
-            ws_msg.data.interval.as_str().strip_prefix("Day").unwrap().parse::<i64>().unwrap()
-                * 60
-                * 60
-                * 24;
-    } else if ws_msg.data.interval.as_str().starts_with("Week") {
-        interval_in_seconds =
-            ws_msg.data.interval.as_str().strip_prefix("Week").unwrap().parse::<i64>().unwrap()
-                * 60
-                * 60
-                * 24
-                * 7;
-    } else if ws_msg.data.interval.as_str().starts_with("Month") {
+            internal.strip_prefix("Week").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24 * 7;
+    } else if internal.starts_with("Month") {
         //how to calculate Month intervals in milliseconds?
         interval_in_seconds =
-            ws_msg.data.interval.as_str().strip_prefix("Month").unwrap().parse::<i64>().unwrap()
-                * 60
-                * 60
-                * 24
-                * 7
-                * 30;
+            internal.strip_prefix("Month").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24 * 7 * 30;
     }
-    let (volume, quote_volume) = match market_type {
-        MarketType::InverseSwap => {
-            let volume = ws_msg.data.q;
-            let quote_volume = ws_msg.data.a;
-            (volume, quote_volume)
-        }
-        MarketType::LinearSwap => {
-            let contract_value = crypto_contract_value::get_contract_value(
-                EXCHANGE_NAME,
-                market_type,
-                pair.as_str(),
-            )
+
+    let contract_value =
+        crypto_contract_value::get_contract_value(EXCHANGE_NAME, market_type, pair.as_str())
             .unwrap();
-            let volume = ws_msg.data.q;
-            let quote_volume = ws_msg.data.a;
-            (volume * contract_value, quote_volume)
-        }
+    let (volume, quote_volume) = match market_type {
+        MarketType::InverseSwap => (ws_msg.data.a, ws_msg.data.q * contract_value),
+        MarketType::LinearSwap => (ws_msg.data.q * contract_value, ws_msg.data.a),
         _ => panic!("Unknown market_type: {}", market_type),
     };
 

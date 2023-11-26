@@ -151,13 +151,10 @@ pub(crate) fn parse_l2_topk(
 pub(crate) fn parse_candlestick(
     market_type: MarketType,
     msg: &str,
-    timestamp: Option<i64>,
+    received_at: Option<i64>,
 ) -> Result<Vec<CandlestickMsg>, SimpleError> {
     if market_type == MarketType::Spot {
-        mexc_spot::parse_candlestick(
-            msg,
-            timestamp.expect("MEXC Spot candlestick messages don't have timestamp"),
-        )
+        mexc_spot::parse_candlestick(msg, received_at)
     } else {
         mexc_swap::parse_candlestick(market_type, msg)
     }

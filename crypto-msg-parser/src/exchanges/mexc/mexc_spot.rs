@@ -209,27 +209,22 @@ pub(super) fn parse_l2_topk(msg: &str, timestamp: i64) -> Result<Vec<OrderBookMs
 struct RawCandlestickMsg {
     symbol: String,
     interval: String,
-    t: i64,
-    o: f64,
-    c: f64,
-    h: f64,
-    l: f64,
-    v: f64,
-    q: f64,
-    //e:f64,
-    //rh:f64,
-    //rl:f64,
-    //tdt:i64
+    t: i64,           // begin time
+    o: f64,           // open
+    c: f64,           // close
+    h: f64,           // high
+    l: f64,           // low
+    v: f64,           // quote trading volume
+    q: f64,           // base trading volume
+    tdt: Option<i64>, // event timestamp
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
 }
 
 pub(super) fn parse_candlestick(
     msg: &str,
-    timestamp: i64,
+    received_at: Option<i64>,
 ) -> Result<Vec<CandlestickMsg>, SimpleError> {
-    // let ws_msg =
-    //      serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).
-    // map_err(SimpleError::from)?;
-
     let ws_msg: WebsocketMsg<RawCandlestickMsg> =
         if let Ok(arr) = serde_json::from_str::<Vec<Value>>(msg) {
             assert_eq!(arr.len(), 2);
@@ -285,17 +280,17 @@ pub(super) fn parse_candlestick(
     let candlestick_msg = CandlestickMsg {
         exchange: super::EXCHANGE_NAME.to_string(),
         market_type: MarketType::Spot,
-        msg_type: MessageType::Candlestick,
         symbol: symbol.to_string(),
         pair,
-        timestamp,
-        period: ws_msg.data.interval,
+        msg_type: MessageType::Candlestick,
+        timestamp: ws_msg.data.tdt.unwrap_or(received_at.unwrap()),
         begin_time: ws_msg.data.t * 1000 - interval_in_seconds * 1000,
         open: ws_msg.data.o,
         high: ws_msg.data.h,
         low: ws_msg.data.l,
         close: ws_msg.data.c,
         volume: ws_msg.data.q,
+        period: ws_msg.data.interval,
         quote_volume: Some(ws_msg.data.v),
         json: msg.to_string(),
     };
