@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crypto_market_type::MarketType;
 
-use crate::{OrderBookMsg, TradeMsg};
+use crate::{CandlestickMsg, OrderBookMsg, TradeMsg};
 
 use serde_json::Value;
 use simple_error::SimpleError;
@@ -145,5 +145,17 @@ pub(crate) fn parse_l2_topk(
         )
     } else {
         mexc_swap::parse_l2(market_type, msg)
+    }
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+    received_at: Option<i64>,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    if market_type == MarketType::Spot {
+        mexc_spot::parse_candlestick(msg, received_at)
+    } else {
+        mexc_swap::parse_candlestick(market_type, msg)
     }
 }

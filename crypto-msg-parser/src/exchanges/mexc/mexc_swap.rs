@@ -1,8 +1,10 @@
 use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
+use super::EXCHANGE_NAME;
+
 use super::super::utils::calc_quantity_and_volume;
-use crypto_message::{Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -28,6 +30,23 @@ struct RawOrderbookMsg {
     version: Option<u64>,
     asks: Vec<[f64; 3]>,
     bids: Vec<[f64; 3]>,
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
+// https://mexcdevelop.github.io/apidocs/contract_v1_cn/#a6ff2d9336
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawCandlestickMsg {
+    symbol: String,
+    interval: String,
+    t: i64,
+    o: f64,
+    c: f64,
+    h: f64,
+    l: f64,
+    a: f64,
+    q: f64,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
 }
@@ -122,4 +141,63 @@ pub(crate) fn parse_l2(
     };
 
     Ok(vec![orderbook])
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg =
+        serde_json::from_str::<WebsocketMsg<RawCandlestickMsg>>(msg).map_err(SimpleError::from)?;
+    let symbol = ws_msg.symbol.as_str();
+    let pair = crypto_pair::normalize_pair(symbol, super::EXCHANGE_NAME)
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
+    let mut interval_in_seconds = 0;
+
+    let internal = ws_msg.data.interval.as_str();
+    if internal.starts_with("Min") {
+        interval_in_seconds = internal.strip_prefix("Min").unwrap().parse::<i64>().unwrap() * 60;
+    } else if internal.starts_with("Hour") {
+        interval_in_seconds =
+            internal.strip_prefix("Hour").unwrap().parse::<i64>().unwrap() * 60 * 60;
+    } else if internal.starts_with("Day") {
+        interval_in_seconds =
+            internal.strip_prefix("Day").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24;
+    } else if internal.starts_with("Week") {
+        interval_in_seconds =
+            internal.strip_prefix("Week").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24 * 7;
+    } else if internal.starts_with("Month") {
+        //how to calculate Month intervals in milliseconds?
+        interval_in_seconds =
+            internal.strip_prefix("Month").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24 * 7 * 30;
+    }
+
+    let contract_value =
+        crypto_contract_value::get_contract_value(EXCHANGE_NAME, market_type, pair.as_str())
+            .unwrap();
+    let (volume, quote_volume) = match market_type {
+        MarketType::InverseSwap => (ws_msg.data.a, ws_msg.data.q * contract_value),
+        MarketType::LinearSwap => (ws_msg.data.q * contract_value, ws_msg.data.a),
+        _ => panic!("Unknown market_type: {}", market_type),
+    };
+
+    let candlestick_msg = CandlestickMsg {
+        exchange: super::EXCHANGE_NAME.to_string(),
+        market_type,
+        msg_type: MessageType::Candlestick,
+        symbol: symbol.to_string(),
+        pair,
+        timestamp: ws_msg.data.t * 1000,
+        period: ws_msg.data.interval,
+        begin_time: ws_msg.data.t * 1000 - interval_in_seconds * 1000,
+        open: ws_msg.data.o,
+        high: ws_msg.data.h,
+        low: ws_msg.data.l,
+        close: ws_msg.data.c,
+        volume,
+        quote_volume: Some(quote_volume),
+        json: msg.to_string(),
+    };
+
+    Ok(vec![candlestick_msg])
 }
