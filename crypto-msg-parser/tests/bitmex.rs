@@ -731,7 +731,7 @@ mod l2_topk {
 
         assert_eq!(orderbook.bids[0].price, 1.02);
         assert_eq!(orderbook.bids[0].quantity_base, 150000.0);
-        assert_eq!(orderbook.bids[0].quantity_quote, 1.02 * 150000000.0);
+        assert_eq!(orderbook.bids[0].quantity_quote, 1.02 * 150000000.0 * 0.001);
         assert_eq!(orderbook.bids[0].quantity_contract.unwrap(), 150000000.0);
     }
 
