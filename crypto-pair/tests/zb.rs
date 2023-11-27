@@ -30,8 +30,16 @@ struct Response {
 // See https://github.com/ZBFuture/docs/blob/main/API%20V2%20_en.md#71-trading-pair
 fn fetch_swap_markets(url: &str) -> Vec<SwapMarket> {
     let txt = http_get(url).unwrap();
-    let resp = serde_json::from_str::<Response>(&txt).unwrap();
-    if resp.code == 1000 { resp.data } else { Vec::new() }
+    match serde_json::from_str::<Response>(&txt) {
+        Ok(resp) => {
+            if resp.code == 1000 {
+                resp.data
+            } else {
+                Vec::new()
+            }
+        }
+        Err(_) => Vec::new(),
+    }
 }
 
 fn fetch_swap_markets_all() -> Vec<SwapMarket> {
