@@ -3,7 +3,7 @@ mod zbg_swap;
 
 use crypto_market_type::MarketType;
 
-use crate::{OrderBookMsg, TradeMsg};
+use crate::{CandlestickMsg, OrderBookMsg, TradeMsg};
 
 use simple_error::SimpleError;
 
@@ -47,5 +47,16 @@ pub(crate) fn parse_l2(
         zbg_spot::parse_l2(msg)
     } else {
         zbg_swap::parse_l2(market_type, msg)
+    }
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    if market_type == MarketType::Spot {
+        zbg_spot::parse_candlestick(msg)
+    } else {
+        zbg_swap::parse_candlestick(market_type, msg)
     }
 }
