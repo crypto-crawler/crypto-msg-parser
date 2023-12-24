@@ -2,7 +2,7 @@ use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
 use super::super::utils::{convert_timestamp, http_get};
-use crypto_message::{Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -131,6 +131,17 @@ struct RawOrderbookMsg {
     asks: Vec<[String; 2]>,
     bids: Vec<[String; 2]>,
     time: i64,
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
+//https://zbgapi.github.io/docs/future/v1/en/#public-contract-kline
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawCandlestickMsg {
+    contractId: i64,
+    range: String,
+    lines: Vec<[Value; 6]>,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
 }
@@ -302,6 +313,59 @@ pub(crate) fn parse_l2(
     };
 
     Ok(vec![orderbook])
+}
+
+// https://zbgapi.github.io/docs/future/v1/en/#public-contract-kline
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg = serde_json::from_str::<Vec<Value>>(msg)
+        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
+    assert_eq!(ws_msg[0].as_str().unwrap(), "future_kline");
+    let raw_candlestick_msg: RawCandlestickMsg = serde_json::from_value(ws_msg[1].clone())
+        .map_err(|_e| {
+            SimpleError::new(format!("Failed to deserialize {} to RawCandlestickMsg", ws_msg[1]))
+        })?;
+    let contract_info = SWAP_CONTRACT_MAP.get(&raw_candlestick_msg.contractId).unwrap();
+    let symbol = contract_info.symbol.as_str();
+    let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+    let range = raw_candlestick_msg.range;
+
+    let candlestick_msgs: Vec<CandlestickMsg> = raw_candlestick_msg
+        .lines
+        .into_iter()
+        .map(|line| {
+            //let timestamp = line[0].clone().as_i64().unwrap();
+            let timestamp = line[0].as_i64().unwrap();
+            let open = line[1].as_str().unwrap().parse::<f64>().unwrap();
+            let high = line[2].as_str().unwrap().parse::<f64>().unwrap();
+            let low = line[3].as_str().unwrap().parse::<f64>().unwrap();
+            let close = line[4].as_str().unwrap().parse::<f64>().unwrap();
+            let size = line[5].as_str().unwrap().parse::<f64>().unwrap();
+            let (volume, quote_volume) =
+                calc_quantity_and_volume(market_type, contract_info.contract_id, open, size);
+
+            CandlestickMsg {
+                exchange: EXCHANGE_NAME.to_string(),
+                market_type,
+                msg_type: MessageType::Candlestick,
+                symbol: symbol.to_string(),
+                pair: pair.clone(),
+                timestamp,
+                period: range.clone(),
+                begin_time: timestamp - range.parse::<i64>().unwrap(),
+                open,
+                high,
+                low,
+                close,
+                volume,
+                quote_volume: Some(quote_volume),
+                json: msg.to_string(),
+            }
+        })
+        .collect();
+    Ok(candlestick_msgs)
 }
 
 #[cfg(test)]

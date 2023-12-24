@@ -4,7 +4,7 @@ use super::super::utils::{convert_timestamp, http_get};
 use crypto_market_type::MarketType;
 use crypto_msg_type::MessageType;
 
-use crypto_message::{Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
@@ -522,6 +522,80 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
         vec![orderbook]
     };
     Ok(orderbooks)
+}
+
+// https://zbgapi.github.io/docs/spot/v1/en/#market-candlestick
+// [K, symbol-id, symbol, timestamp, open, high, low, close, volume, change,
+// dollar-rate, period, conversion, amount.
+pub(crate) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let arr = if msg.starts_with(r#"[["K","#) {
+        serde_json::from_str::<Vec<Vec<String>>>(msg).map_err(|_e| {
+            SimpleError::new(format!("Failed to deserialize {msg} to Vec<Vec<String>>"))
+        })?
+    } else if msg.starts_with(r#"["K","#) {
+        let tmp = serde_json::from_str::<Vec<String>>(msg).map_err(|_e| {
+            SimpleError::new(format!("Failed to deserialize {msg} to Vec<String>"))
+        })?;
+        vec![tmp]
+    } else {
+        return Err(SimpleError::new(format!("Invalid trade msg {msg}")));
+    };
+
+    let mut candlestick_msgs: Vec<CandlestickMsg> = arr
+        .into_iter()
+        .map(|candlestick_msg| {
+            assert_eq!(candlestick_msg[0], "K");
+            let timestamp = candlestick_msg[3].parse::<i64>().unwrap() * 1000;
+            let symbol = candlestick_msg[2].as_str();
+            let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+            let period = candlestick_msg[11].as_str();
+            let m_seconds = match period.to_string().pop().unwrap() {
+                'M' => {
+                    period.to_string().strip_suffix('M').unwrap().parse::<i64>().unwrap()
+                        * 1000
+                        * 60
+                }
+                'H' => {
+                    period.to_string().strip_suffix('M').unwrap().parse::<i64>().unwrap()
+                        * 1000
+                        * 60
+                        * 60
+                }
+                'D' => {
+                    period.to_string().strip_suffix('D').unwrap().parse::<i64>().unwrap()
+                        * 1000
+                        * 24
+                        * 60
+                        * 60
+                }
+                _ => 0,
+            };
+            let begin_time = timestamp - m_seconds;
+
+            CandlestickMsg {
+                exchange: super::EXCHANGE_NAME.to_string(),
+                market_type: MarketType::Spot,
+                symbol: symbol.to_string(),
+                pair,
+                msg_type: MessageType::Candlestick,
+                timestamp,
+                begin_time,
+                open: candlestick_msg[4].parse::<f64>().unwrap(),
+                high: candlestick_msg[5].parse::<f64>().unwrap(),
+                low: candlestick_msg[6].parse::<f64>().unwrap(),
+                close: candlestick_msg[7].parse::<f64>().unwrap(),
+                volume: candlestick_msg[8].parse::<f64>().unwrap(),
+                period: period.to_string(),
+                quote_volume: Some(candlestick_msg[13].parse::<f64>().unwrap()),
+                json: msg.to_string(),
+            }
+        })
+        .collect();
+
+    if candlestick_msgs.len() == 1 {
+        candlestick_msgs[0].json = msg.to_string();
+    }
+    Ok(candlestick_msgs)
 }
 
 #[cfg(test)]
