@@ -9,8 +9,8 @@ use serde_json::Value;
 static SPOT_QUOTES: Lazy<HashSet<String>> = Lazy::new(|| {
     // offline data, in case the network is down
     let mut set: HashSet<String> = vec![
-        "AUD", "CAD", "CHF", "DAI", "DOT", "ETH", "EUR", "GBP", "JPY", "USD", "USDC", "USDT",
-        "XBT", "XET", "XXB", "ZAU", "ZCA", "ZEU", "ZGB", "ZJP", "ZUS",
+        "AUD", "CAD", "CHF", "DAI", "DOT", "ETH", "EUR", "GBP", "JPY", "PYUSD", "USD", "USDC",
+        "USDT", "XBT", "XET", "XXB", "ZAU", "ZCA", "ZEU", "ZGB", "ZJP", "ZUS",
     ]
     .into_iter()
     .map(|x| x.to_string())
@@ -102,11 +102,15 @@ pub(crate) fn normalize_pair(symbol: &str) -> Option<String> {
         };
         let base = symbol[3..pos].to_uppercase();
         Some(format!("{}/USD", normalize_currency(&base),))
-    } else if SPOT_QUOTES.contains(&symbol[(symbol.len() - 4)..]) {
+    } else if symbol.len() > 5 && SPOT_QUOTES.contains(&symbol[(symbol.len() - 5)..]) {
+        let base = &symbol[..(symbol.len() - 5)];
+        let quote = &symbol[(symbol.len() - 5)..];
+        Some(format!("{}/{}", normalize_currency(base), normalize_currency(quote)))
+    } else if symbol.len() > 4 && SPOT_QUOTES.contains(&symbol[(symbol.len() - 4)..]) {
         let base = &symbol[..(symbol.len() - 4)];
         let quote = &symbol[(symbol.len() - 4)..];
         Some(format!("{}/{}", normalize_currency(base), normalize_currency(quote)))
-    } else if SPOT_QUOTES.contains(&symbol[(symbol.len() - 3)..]) {
+    } else if symbol.len() > 3 && SPOT_QUOTES.contains(&symbol[(symbol.len() - 3)..]) {
         let base = &symbol[..(symbol.len() - 3)];
         let quote = &symbol[(symbol.len() - 3)..];
         Some(format!("{}/{}", normalize_currency(base), normalize_currency(quote)))
@@ -128,6 +132,12 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
 #[cfg(test)]
 mod tests {
     use super::{fetch_spot_quotes, SPOT_QUOTES};
+
+    #[test]
+    fn normalize_pair() {
+        assert_eq!("BTC/PYUSD", super::normalize_pair("XBT/PYUSD").unwrap());
+        assert_eq!("BTC/PYUSD", super::normalize_pair("XBTPYUSD").unwrap());
+    }
 
     #[test]
     fn spot_quotes() {
