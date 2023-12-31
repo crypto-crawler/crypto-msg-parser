@@ -277,6 +277,7 @@ pub fn parse_candlestick(
             received_at.expect("OKX candlestick messages don't have timestamp"),
         ),
         "zbg" => exchanges::zbg::parse_candlestick(market_type, msg),
+        "zb" => exchanges::zb::parse_candlestick(market_type, msg),
         _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     }
 }

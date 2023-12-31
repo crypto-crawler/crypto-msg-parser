@@ -4,6 +4,7 @@ mod zb_swap;
 use std::collections::HashMap;
 
 use crypto_market_type::MarketType;
+use crypto_message::CandlestickMsg;
 use serde_json::Value;
 
 use crate::{OrderBookMsg, TradeMsg};
@@ -84,5 +85,16 @@ pub(crate) fn parse_l2_topk(
         zb_spot::parse_l2_topk(msg)
     } else {
         zb_swap::parse_l2(market_type, msg)
+    }
+}
+
+pub(crate) fn parse_candlestick(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    if market_type == MarketType::Spot {
+        zb_spot::parse_candlestick(msg)
+    } else {
+        zb_swap::parse_candlestick(market_type, msg)
     }
 }

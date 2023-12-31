@@ -556,7 +556,7 @@ pub(crate) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, Simple
                         * 60
                 }
                 'H' => {
-                    period.to_string().strip_suffix('M').unwrap().parse::<i64>().unwrap()
+                    period.to_string().strip_suffix('H').unwrap().parse::<i64>().unwrap()
                         * 1000
                         * 60
                         * 60

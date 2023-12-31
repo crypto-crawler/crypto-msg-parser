@@ -1,9 +1,11 @@
 use crypto_market_type::MarketType;
-use crypto_message::{Order, OrderBookMsg, TradeMsg, TradeSide};
+use crypto_message::{CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 use crypto_msg_type::MessageType;
 use serde_json::Value;
 use simple_error::SimpleError;
 use std::collections::HashMap;
+
+use crate::exchanges::utils::calc_quantity_and_volume;
 
 use super::EXCHANGE_NAME;
 use serde::{Deserialize, Serialize};
@@ -88,6 +90,20 @@ struct L2TopKMsg {
     extra: HashMap<String, Value>,
 }
 
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawCandlestickMsg {
+    datas: Data,
+    channel: String,
+    isSuc: Value,
+}
+
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct Data {
+    data: Vec<[Value; 6]>,
+}
+
 pub(super) fn parse_trade(msg: &str) -> Result<Vec<TradeMsg>, SimpleError> {
     let ws_msg = serde_json::from_str::<WebsocketMsg<RawTradeMsg>>(msg).map_err(|_e| {
         SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawTradeMsg>"))
@@ -164,4 +180,76 @@ pub(super) fn parse_l2_topk(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError>
         json: msg.to_string(),
     };
     Ok(vec![orderbook])
+}
+
+// * https://www.zb.com/en/api #Market GetKline
+pub(super) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
+    let ws_msg = serde_json::from_str::<RawCandlestickMsg>(msg).map_err(|_e| {
+        SimpleError::new(format!("Failed to deserialize {msg} to RawCandlestickMsg"))
+    })?;
+
+    //handle channel string to get symbol and period
+    let mut s_temp = ws_msg.channel.split('_');
+    let symbol = s_temp.next().unwrap();
+    let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+    let period = s_temp.last().unwrap();
+    //handle period to get time unit
+    let mut m_seconds = 0;
+    if period.ends_with("min") {
+        m_seconds = period.strip_suffix("min").unwrap().parse::<i64>().unwrap() * 60 * 1000;
+    } else if period.ends_with("hour") {
+        m_seconds = period.strip_suffix("hour").unwrap().parse::<i64>().unwrap() * 60 * 60 * 1000;
+    } else if period.ends_with("day") {
+        m_seconds =
+            period.strip_suffix("day").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24 * 1000;
+    } else if period.ends_with("week") {
+        m_seconds =
+            period.strip_suffix("week").unwrap().parse::<i64>().unwrap() * 60 * 60 * 24 * 7 * 1000;
+    }
+
+    let arr = ws_msg.datas.data;
+    let mut candlestick_msgs: Vec<CandlestickMsg> = arr
+        .into_iter()
+        .map(|candlestick_msg| {
+            let timestamp = candlestick_msg[0].as_i64().unwrap();
+            let begin_time = timestamp - m_seconds;
+
+            let open = candlestick_msg[1].as_f64().unwrap();
+            let high = candlestick_msg[2].as_f64().unwrap();
+            let low = candlestick_msg[3].as_f64().unwrap();
+            let close = candlestick_msg[4].as_f64().unwrap();
+            let price = (open + high + low + close) / 4.0;
+            let quantity = candlestick_msg[5].as_f64().unwrap();
+            let (volume, quote_volume, _none) = calc_quantity_and_volume(
+                EXCHANGE_NAME,
+                MarketType::Spot,
+                pair.as_str(),
+                price,
+                quantity,
+            );
+
+            CandlestickMsg {
+                exchange: super::EXCHANGE_NAME.to_string(),
+                market_type: MarketType::Spot,
+                symbol: symbol.to_string(),
+                pair: pair.clone(),
+                msg_type: MessageType::Candlestick,
+                timestamp,
+                begin_time,
+                open,
+                high,
+                low,
+                close,
+                volume,
+                period: period.to_string(),
+                quote_volume: Some(crate::round(quote_volume)),
+                json: msg.to_string(),
+            }
+        })
+        .collect();
+
+    if candlestick_msgs.len() == 1 {
+        candlestick_msgs[0].json = msg.to_string();
+    }
+    Ok(candlestick_msgs)
 }
