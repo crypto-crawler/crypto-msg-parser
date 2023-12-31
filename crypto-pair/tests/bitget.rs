@@ -41,7 +41,7 @@ fn fetch_spot_markets_raw() -> Vec<SpotMarket> {
         code: String,
         msg: String,
         data: Vec<SpotMarket>,
-        requestTime: i64,
+        requestTime: Value,
         #[serde(flatten)]
         extra: HashMap<String, Value>,
     }
@@ -68,7 +68,7 @@ fn fetch_swap_markets_raw(product_type: &str) -> Vec<SwapMarket> {
         code: String,
         msg: String,
         data: Vec<SwapMarket>,
-        requestTime: String,
+        requestTime: Value,
         #[serde(flatten)]
         extra: HashMap<String, Value>,
     }
