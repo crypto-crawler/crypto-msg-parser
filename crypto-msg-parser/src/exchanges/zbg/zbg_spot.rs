@@ -529,9 +529,7 @@ pub(crate) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
 // dollar-rate, period, conversion, amount.
 pub(crate) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, SimpleError> {
     let arr = if msg.starts_with(r#"[["K","#) {
-        serde_json::from_str::<Vec<Vec<String>>>(msg).map_err(|_e| {
-            SimpleError::new(format!("Failed to deserialize {msg} to Vec<Vec<String>>"))
-        })?
+        serde_json::from_str::<Vec<Vec<String>>>(msg).map_err(SimpleError::from)?
     } else if msg.starts_with(r#"["K","#) {
         let tmp = serde_json::from_str::<Vec<String>>(msg).map_err(|_e| {
             SimpleError::new(format!("Failed to deserialize {msg} to Vec<String>"))
@@ -556,7 +554,7 @@ pub(crate) fn parse_candlestick(msg: &str) -> Result<Vec<CandlestickMsg>, Simple
                         * 60
                 }
                 'H' => {
-                    period.to_string().strip_suffix('M').unwrap().parse::<i64>().unwrap()
+                    period.to_string().strip_suffix('H').unwrap().parse::<i64>().unwrap()
                         * 1000
                         * 60
                         * 60

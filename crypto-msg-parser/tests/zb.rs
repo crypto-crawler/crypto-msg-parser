@@ -365,7 +365,7 @@ mod ticker {
 mod candlestick {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_candlestick};
 
     #[test]
     fn spot() {
@@ -377,6 +377,22 @@ mod candlestick {
             1653782160000,
             extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap().unwrap()
         );
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::Spot, raw_msg, None).unwrap();
+        assert_eq!(2, arr.len());
+        let candlestick_msg = &arr[0];
+        //[1653782100000,29055.22,29055.22,29030.81,29032.9,19.3130]
+        assert_eq!("btcusdt", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
+        assert_eq!(1653782100000, candlestick_msg.timestamp);
+        assert_eq!("1min", candlestick_msg.period);
+        assert_eq!(1653782040000, candlestick_msg.begin_time);
+
+        assert_eq!(29055.22, candlestick_msg.open);
+        assert_eq!(29055.22, candlestick_msg.high);
+        assert_eq!(29030.81, candlestick_msg.low);
+        assert_eq!(29032.9, candlestick_msg.close);
+        assert_eq!(19.3130, candlestick_msg.volume);
+        assert_eq!(Some(560917.8397375), candlestick_msg.quote_volume);
     }
 
     #[test]
@@ -392,6 +408,22 @@ mod candlestick {
             1653783840000,
             extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
+        let arr = parse_candlestick(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg, None).unwrap();
+        assert_eq!(1, arr.len());
+        let candlestick_msg = &arr[0];
+        //[28993.54,28996.39,28992.58,28994.78,0.921,1653783840]
+        assert_eq!("BTC_USDT", candlestick_msg.symbol);
+        assert_eq!("BTC/USDT", candlestick_msg.pair);
+        assert_eq!(1653783840000, candlestick_msg.timestamp);
+        assert_eq!("1M", candlestick_msg.period);
+        assert_eq!(1653783780000, candlestick_msg.begin_time);
+
+        assert_eq!(28993.54, candlestick_msg.open);
+        assert_eq!(28996.39, candlestick_msg.high);
+        assert_eq!(28992.58, candlestick_msg.low);
+        assert_eq!(28994.78, candlestick_msg.close);
+        assert_eq!(0.921, candlestick_msg.volume);
+        assert_eq!(Some(26703.7710225), candlestick_msg.quote_volume);
     }
 }
 
