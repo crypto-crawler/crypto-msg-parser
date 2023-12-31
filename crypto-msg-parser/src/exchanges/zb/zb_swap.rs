@@ -211,12 +211,13 @@ pub(super) fn parse_candlestick(
     let ws_msg = serde_json::from_str::<RawCandlestickMsg>(msg).map_err(|_e| {
         SimpleError::new(format!("Failed to deserialize {msg} to WebsocketMsg<RawCandlestickMsg>"))
     })?;
-    //handle channel string to get symbol and period
-    let mut s_temp = ws_msg.channel.split('.');
-    let symbol = s_temp.next().unwrap();
+
+    let (symbol, period) = {
+        let mut arr = ws_msg.channel.split('.');
+        (arr.next().unwrap(), arr.last().unwrap().split('_').last().unwrap())
+    };
     let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
-    let period = s_temp.last().unwrap().split('_').last().unwrap();
-    //handle period to get time unit
+
     let mut m_seconds = 0;
     if period.ends_with('M') {
         m_seconds = period.strip_suffix('M').unwrap().parse::<i64>().unwrap() * 60 * 1000;

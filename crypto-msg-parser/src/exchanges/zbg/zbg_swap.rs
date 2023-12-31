@@ -320,8 +320,7 @@ pub(crate) fn parse_candlestick(
     market_type: MarketType,
     msg: &str,
 ) -> Result<Vec<CandlestickMsg>, SimpleError> {
-    let ws_msg = serde_json::from_str::<Vec<Value>>(msg)
-        .map_err(|_e| SimpleError::new(format!("Failed to deserialize {msg} to Vec<Value>")))?;
+    let ws_msg = serde_json::from_str::<Vec<Value>>(msg).map_err(SimpleError::from)?;
     assert_eq!(ws_msg[0].as_str().unwrap(), "future_kline");
     let raw_candlestick_msg: RawCandlestickMsg = serde_json::from_value(ws_msg[1].clone())
         .map_err(|_e| {
