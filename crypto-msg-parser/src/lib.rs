@@ -262,22 +262,22 @@ pub fn parse_candlestick(
     match exchange {
         "binance" => exchanges::binance::parse_candlestick(market_type, msg),
         "bitfinex" => exchanges::bitfinex::parse_candlestick(market_type, msg),
-        "bitmex" => exchanges::bitmex::parse_candlestick(market_type, msg),
         "bitget" => exchanges::bitget::parse_candlestick(market_type, msg),
+        "bitmex" => exchanges::bitmex::parse_candlestick(market_type, msg),
         "bybit" => exchanges::bybit::parse_candlestick(market_type, msg),
+        "deribit" => exchanges::deribit::parse_candlestick(market_type, msg),
         "gate" => exchanges::gate::parse_candlestick(market_type, msg),
         "huobi" => exchanges::huobi::parse_candlestick(market_type, msg),
         "kraken" => exchanges::kraken::parse_candlestick(market_type, msg),
         "kucoin" => exchanges::kucoin::parse_candlestick(market_type, msg),
-        "deribit" => exchanges::deribit::parse_candlestick(market_type, msg),
         "mexc" => exchanges::mexc::parse_candlestick(market_type, msg, received_at),
         "okx" => exchanges::okx::parse_candlestick(
             market_type,
             msg,
             received_at.expect("OKX candlestick messages don't have timestamp"),
         ),
-        "zbg" => exchanges::zbg::parse_candlestick(market_type, msg),
         "zb" => exchanges::zb::parse_candlestick(market_type, msg),
+        "zbg" => exchanges::zbg::parse_candlestick(market_type, msg),
         _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     }
 }
