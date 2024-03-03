@@ -79,6 +79,32 @@ struct WebsocketMsg<T: Sized> {
     data: T,
 }
 
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawL2SnapshotInverseMsg {
+    lastUpdateId: u64, // Last update ID
+    E: i64,
+    T: i64,
+    symbol: String,
+    pair: String,
+    bids: Vec<RawOrder>,
+    asks: Vec<RawOrder>,
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RawL2SnapshotLinearMsg {
+    lastUpdateId: u64, // Last update ID
+    E: i64,
+    T: i64,
+    bids: Vec<RawOrder>,
+    asks: Vec<RawOrder>,
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
 pub(super) fn parse_trade(
     market_type: MarketType,
     msg: &str,
@@ -216,6 +242,100 @@ pub(super) fn parse_l2_topk(
     }
 }
 
+///
+pub(super) fn parse_l2_snapshot(
+    market_type: MarketType,
+    msg: &str,
+    symbol: Option<&str>,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    match market_type {
+        MarketType::InverseFuture | MarketType::InverseSwap => {
+            parse_l2_snapshot_inverse(market_type, msg)
+        }
+
+        MarketType::LinearFuture | MarketType::LinearSwap => {
+            parse_l2_snapshot_linear(market_type, msg, symbol)
+        }
+        _ => Err(SimpleError::new("Not implemented")),
+    }
+}
+
+pub(super) fn parse_l2_snapshot_inverse(
+    market_type: MarketType,
+    msg: &str,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    let ws_msg = serde_json::from_str::<RawL2SnapshotInverseMsg>(msg).map_err(SimpleError::from)?;
+    let pair = crypto_pair::normalize_pair(&ws_msg.symbol, EXCHANGE_NAME).ok_or_else(|| {
+        SimpleError::new(format!("Failed to normalize {} from {}", &ws_msg.symbol, msg))
+    })?;
+
+    let parse_order = |raw_order: &RawOrder| -> Order {
+        let price = raw_order[0].parse::<f64>().unwrap();
+        let (quantity_base, quantity_quote, quantity_contract) = calc_quantity_and_volume(
+            EXCHANGE_NAME,
+            market_type,
+            &pair,
+            price,
+            raw_order[1].parse::<f64>().unwrap(),
+        );
+        Order { price, quantity_base, quantity_quote, quantity_contract }
+    };
+
+    let orderbook = OrderBookMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type,
+        symbol: ws_msg.symbol.clone(),
+        pair: pair.clone(),
+        msg_type: MessageType::L2Snapshot,
+        timestamp: ws_msg.E,
+        seq_id: Some(ws_msg.lastUpdateId),
+        prev_seq_id: None,
+        asks: ws_msg.asks.iter().map(parse_order).collect::<Vec<Order>>(),
+        bids: ws_msg.bids.iter().map(parse_order).collect::<Vec<Order>>(),
+        snapshot: true,
+        json: msg.to_string(),
+    };
+    Ok(vec![orderbook])
+}
+
+pub(super) fn parse_l2_snapshot_linear(
+    market_type: MarketType,
+    msg: &str,
+    symbol: Option<&str>,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    let ws_msg = serde_json::from_str::<RawL2SnapshotLinearMsg>(msg).map_err(SimpleError::from)?;
+    let pair = crypto_pair::normalize_pair(symbol.unwrap(), EXCHANGE_NAME).ok_or_else(|| {
+        SimpleError::new(format!("Failed to normalize {} from {}", symbol.unwrap(), msg))
+    })?;
+
+    let parse_order = |raw_order: &RawOrder| -> Order {
+        let price = raw_order[0].parse::<f64>().unwrap();
+        let (quantity_base, quantity_quote, quantity_contract) = calc_quantity_and_volume(
+            EXCHANGE_NAME,
+            market_type,
+            &pair,
+            price,
+            raw_order[1].parse::<f64>().unwrap(),
+        );
+        Order { price, quantity_base, quantity_quote, quantity_contract }
+    };
+
+    let orderbook = OrderBookMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type,
+        symbol: symbol.unwrap().to_string(),
+        pair: pair.clone(),
+        msg_type: MessageType::L2Snapshot,
+        timestamp: ws_msg.E,
+        seq_id: Some(ws_msg.lastUpdateId),
+        prev_seq_id: None,
+        asks: ws_msg.asks.iter().map(parse_order).collect::<Vec<Order>>(),
+        bids: ws_msg.bids.iter().map(parse_order).collect::<Vec<Order>>(),
+        snapshot: true,
+        json: msg.to_string(),
+    };
+    Ok(vec![orderbook])
+}
 /// docs:
 /// * https://binance-docs.github.io/apidocs/spot/en/#all-book-tickers-stream
 /// * https://binance-docs.github.io/apidocs/futures/en/#all-book-tickers-stream
