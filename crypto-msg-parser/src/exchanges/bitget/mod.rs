@@ -89,7 +89,7 @@ pub(crate) fn get_msg_type(msg: &str) -> MessageType {
             }
         }
     } else {
-        MessageType::Other
+        MessageType::L2Snapshot
     }
 }
 
@@ -184,4 +184,12 @@ pub(crate) fn parse_candlestick(
     } else {
         Err(SimpleError::new(format!("Unsupported Candlestick message {msg}")))
     }
+}
+
+pub(crate) fn parse_l2_snapshot(
+    market_type: MarketType,
+    msg: &str,
+    symbol: Option<&str>,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    bitget_mix::parse_l2_snapshot(market_type, msg, symbol)
 }
