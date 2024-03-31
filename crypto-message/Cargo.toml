@@ -1,6 +1,6 @@
 [package]
 name = "crypto-message"
-version = "1.1.19"
+version = "1.1.20"
 edition = "2021"
 description = "Unified data structures for all cryptocurrency exchanges."
 license = "Apache-2.0"
@@ -9,14 +9,14 @@ keywords = ["cryptocurrency", "blockchain", "trading"]
 
 
 [dependencies]
-ahash = "0.8.6"
+ahash = "0.8.11"
 crypto-market-type = "1.1.6"
 crypto-msg-type = "1.0.12"
-protobuf = "3.3.0"
-serde = { version = "1.0.193", features = ["derive"] }
-serde_json = "1.0.108"
-strum = "0.25.0"
-strum_macros = "0.25.3"
+protobuf = "3.4.0"
+serde = { version = "1.0.197", features = ["derive"] }
+serde_json = "1.0.115"
+strum = "0.26.2"
+strum_macros = "0.26.2"
 
 [features]
 f32 = []
