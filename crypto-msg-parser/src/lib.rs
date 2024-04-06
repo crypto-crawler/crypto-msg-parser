@@ -282,6 +282,34 @@ pub fn parse_candlestick(
     }
 }
 
+/// Parse level2 snapshot orderbook messages.
+pub fn parse_l2_snapshot(
+    exchange: &str,
+    market_type: MarketType,
+    msg: &str,
+    symbol: Option<&str>,
+    received_at: Option<i64>,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    let ret = match exchange {
+        "binance" => exchanges::binance::parse_l2_snapshot(market_type, msg, symbol, received_at),
+        _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
+    };
+    match ret {
+        Ok(mut orderbooks) => {
+            for orderbook in orderbooks.iter_mut() {
+                if orderbook.snapshot {
+                    // sorted in ascending order by price
+                    orderbook.asks.sort_by(|a, b| a.price.partial_cmp(&b.price).unwrap());
+                    // sorted in descending order by price
+                    orderbook.bids.sort_by(|a, b| b.price.partial_cmp(&a.price).unwrap());
+                }
+            }
+            Ok(orderbooks)
+        }
+        Err(_) => ret,
+    }
+}
+
 /// Infer the message type from the message.
 pub fn get_msg_type(exchange: &str, msg: &str) -> MessageType {
     match exchange {

@@ -78,7 +78,9 @@ pub(crate) fn extract_timestamp(msg: &str) -> Result<Option<i64>, SimpleError> {
 
 pub(crate) fn get_msg_type(msg: &str) -> MessageType {
     if let Ok(obj) = serde_json::from_str::<HashMap<String, Value>>(msg) {
-        if let Some(stream) = obj.get("stream").unwrap().as_str() {
+        if obj.get("stream").is_none() {
+            MessageType::L2Snapshot
+        } else if let Some(stream) = obj.get("stream").unwrap().as_str() {
             if stream.ends_with("@aggTrade") {
                 MessageType::Trade
             } else if stream.ends_with("@depth") || stream.ends_with("@depth@100ms") {
@@ -167,4 +169,19 @@ pub(crate) fn parse_candlestick(
     msg: &str,
 ) -> Result<Vec<CandlestickMsg>, SimpleError> {
     binance_all::parse_candlestick(market_type, msg)
+}
+
+pub(crate) fn parse_l2_snapshot(
+    market_type: MarketType,
+    msg: &str,
+    symbol: Option<&str>,
+    received_at: Option<i64>,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    if market_type == MarketType::EuropeanOption {
+        Err(SimpleError::new("Not implemented"))
+    } else if market_type == MarketType::Spot {
+        binance_spot::parse_l2_snapshot(msg, symbol, received_at)
+    } else {
+        binance_all::parse_l2_snapshot(market_type, msg, symbol)
+    }
 }
