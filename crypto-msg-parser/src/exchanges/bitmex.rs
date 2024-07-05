@@ -568,7 +568,7 @@ struct RawOrder {
     id: usize,
     side: String,       // Sell, Buy
     size: Option<f64>,  // None if action = delete
-    price: Option<f64>, // always exists after May 31st 2023, see https://www.bitmex.com/app/wsAPI#OrderBookL2
+    price: Option<f64>, /* always exists after May 31st 2023, see https://www.bitmex.com/app/wsAPI#OrderBookL2 */
     timestamp: Option<String>,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
