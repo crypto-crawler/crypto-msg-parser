@@ -18,7 +18,7 @@ const EXCHANGE_NAME: &str = "bitmex";
 
 // symbol -> tickSize
 static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Lazy::new(|| {
-    let mut m: HashMap<String, (usize, f64)> = vec![
+    let m: HashMap<String, (usize, f64)> = vec![
         ("A50G16", (65, 2.5)),
         ("A50H16", (67, 2.5)),
         ("A50J16", (72, 2.5)),
@@ -491,14 +491,16 @@ static SYMBOL_INDEX_AND_TICK_SIZE_MAP: Lazy<HashMap<String, (usize, f64)>> = Laz
     .map(|x| (x.0.to_string(), x.1))
     .collect();
 
-    let from_online = fetch_tick_sizes();
-    for (symbol, tick_size) in from_online {
-        m.insert(symbol, tick_size);
-    }
+    // deprecated by May 31st 2023
+    // let from_online = fetch_tick_sizes();
+    // for (symbol, tick_size) in from_online {
+    //     m.insert(symbol, tick_size);
+    // }
 
     m
 });
 
+#[allow(dead_code)]
 fn fetch_tick_sizes() -> BTreeMap<String, (usize, f64)> {
     #[derive(Serialize, Deserialize)]
     #[allow(non_snake_case)]
@@ -566,7 +568,7 @@ struct RawOrder {
     id: usize,
     side: String,       // Sell, Buy
     size: Option<f64>,  // None if action = delete
-    price: Option<f64>, // None if action = delete
+    price: Option<f64>, /* always exists after May 31st 2023, see https://www.bitmex.com/app/wsAPI#OrderBookL2 */
     timestamp: Option<String>,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
