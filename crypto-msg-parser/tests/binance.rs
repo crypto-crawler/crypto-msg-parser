@@ -1293,15 +1293,64 @@ mod candlestick {
 mod l2_snapshot {
     use super::EXCHANGE_NAME;
     use crypto_market_type::MarketType;
-    use crypto_msg_parser::{extract_symbol, extract_timestamp};
+    use crypto_msg_parser::{extract_symbol, extract_timestamp, parse_l2_snapshot, round};
+    use crypto_msg_type::MessageType;
 
     #[test]
     fn spot() {
-        let raw_msg = r#"{"lastUpdateId":19689626134,"bids":[["30618.66000000","1.82881000"],["30618.61000000","0.02494000"],["30618.45000000","0.94258000"]],"asks":[["30618.67000000","3.28780000"],["30618.69000000","0.44985000"],["30618.70000000","0.03360000"]]}"#;
+        let raw_msg = r#"{"lastUpdateId":33933317943,"bids":[["23171.42000000","0.03000000"],["23171.16000000","0.00070000"],["23109.22000000","0.00050000"]],"asks":[["23171.68000000","0.00067000"],["23171.69000000","0.00047000"],["23224.58000000","0.04353000"]]}"#;
+        let received_at = Some(1677629076348);
 
         assert_eq!("NONE", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
 
         assert_eq!(None, extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
+
+        let orderbook = &parse_l2_snapshot(
+            EXCHANGE_NAME,
+            MarketType::Spot,
+            raw_msg,
+            Some("BTCUSDT"),
+            received_at,
+        )
+        .unwrap()[0];
+
+        assert_eq!(orderbook.asks.len(), 3);
+        assert_eq!(orderbook.bids.len(), 3);
+        assert!(orderbook.snapshot);
+
+        crate::utils::check_orderbook_fields(
+            EXCHANGE_NAME,
+            MarketType::Spot,
+            MessageType::L2Snapshot,
+            "BTC/USDT".to_string(),
+            "BTCUSDT".to_string(),
+            orderbook,
+            raw_msg,
+        );
+
+        assert_eq!(orderbook.timestamp, received_at.unwrap());
+        assert_eq!(orderbook.seq_id, Some(33933317943));
+        assert_eq!(orderbook.prev_seq_id, None);
+
+        assert_eq!(orderbook.asks[2].price, 23224.58);
+        assert_eq!(orderbook.asks[2].quantity_base, 0.04353);
+        assert_eq!(orderbook.asks[2].quantity_quote, 23224.58 * 0.04353);
+        assert_eq!(orderbook.asks[2].quantity_contract, None);
+
+        assert_eq!(orderbook.asks[0].price, 23171.68);
+        assert_eq!(orderbook.asks[0].quantity_base, 0.00067);
+        assert_eq!(orderbook.asks[0].quantity_quote, 23171.68 * 0.00067);
+        assert_eq!(orderbook.asks[0].quantity_contract, None);
+
+        assert_eq!(orderbook.bids[0].price, 23171.42);
+        assert_eq!(orderbook.bids[0].quantity_base, 0.03);
+        assert_eq!(orderbook.bids[0].quantity_quote, 23171.42 * 0.03);
+        assert_eq!(orderbook.bids[0].quantity_contract, None);
+
+        assert_eq!(orderbook.bids[2].price, 23109.22);
+        assert_eq!(orderbook.bids[2].quantity_base, 0.0005);
+        assert_eq!(orderbook.bids[2].quantity_quote, 23109.22 * 0.0005);
+        assert_eq!(orderbook.bids[2].quantity_contract, None);
     }
 
     #[test]
@@ -1317,6 +1366,48 @@ mod l2_snapshot {
             1654222838718,
             extract_timestamp(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap().unwrap()
         );
+
+        let orderbook =
+            &parse_l2_snapshot(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg, None, None)
+                .unwrap()[0];
+
+        assert_eq!(orderbook.asks.len(), 3);
+        assert_eq!(orderbook.bids.len(), 3);
+        assert!(orderbook.snapshot);
+
+        crate::utils::check_orderbook_fields(
+            EXCHANGE_NAME,
+            MarketType::InverseFuture,
+            MessageType::L2Snapshot,
+            "BTC/USD".to_string(),
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseFuture, raw_msg).unwrap(),
+            orderbook,
+            raw_msg,
+        );
+
+        assert_eq!(orderbook.timestamp, 1654222838718);
+        assert_eq!(orderbook.seq_id, Some(466364745366));
+        assert_eq!(orderbook.prev_seq_id, None);
+
+        assert_eq!(orderbook.asks[2].price, 30630.2);
+        assert_eq!(orderbook.asks[2].quantity_base, 4.0 * 100.0 / 30630.2);
+        assert_eq!(orderbook.asks[2].quantity_quote, 4.0 * 100.0);
+        assert_eq!(orderbook.asks[2].quantity_contract, Some(4.0));
+
+        assert_eq!(orderbook.asks[0].price, 30626.8);
+        assert_eq!(orderbook.asks[0].quantity_base, 114.0 * 100.0 / 30626.8);
+        assert_eq!(orderbook.asks[0].quantity_quote, 114.0 * 100.0);
+        assert_eq!(orderbook.asks[0].quantity_contract, Some(114.0));
+
+        assert_eq!(orderbook.bids[0].price, 30626.7);
+        assert_eq!(orderbook.bids[0].quantity_base, 827.0 * 100.0 / 30626.7);
+        assert_eq!(orderbook.bids[0].quantity_quote, 827.0 * 100.0);
+        assert_eq!(orderbook.bids[0].quantity_contract, Some(827.0));
+
+        assert_eq!(orderbook.bids[2].price, 30624.3);
+        assert_eq!(orderbook.bids[2].quantity_base, 1.0 * 100.0 / 30624.3);
+        assert_eq!(orderbook.bids[2].quantity_quote, 1.0 * 100.0);
+        assert_eq!(orderbook.bids[2].quantity_contract, Some(1.0));
     }
 
     #[test]
@@ -1332,6 +1423,53 @@ mod l2_snapshot {
             1654231622340,
             extract_timestamp(EXCHANGE_NAME, MarketType::LinearFuture, raw_msg).unwrap().unwrap()
         );
+
+        let orderbook = &parse_l2_snapshot(
+            EXCHANGE_NAME,
+            MarketType::LinearFuture,
+            raw_msg,
+            Some("BTCUSDT"),
+            None,
+        )
+        .unwrap()[0];
+
+        assert_eq!(orderbook.asks.len(), 3);
+        assert_eq!(orderbook.bids.len(), 3);
+        assert!(orderbook.snapshot);
+
+        crate::utils::check_orderbook_fields(
+            EXCHANGE_NAME,
+            MarketType::LinearFuture,
+            MessageType::L2Snapshot,
+            "BTC/USDT".to_string(),
+            "BTCUSDT".to_string(),
+            orderbook,
+            raw_msg,
+        );
+
+        assert_eq!(orderbook.timestamp, 1654231622340);
+        assert_eq!(orderbook.seq_id, Some(1570223094073));
+        assert_eq!(orderbook.prev_seq_id, None);
+
+        assert_eq!(orderbook.asks[2].price, 30569.7);
+        assert_eq!(orderbook.asks[2].quantity_base, 0.067);
+        assert_eq!(orderbook.asks[2].quantity_quote, round(30569.7 * 0.067));
+        assert_eq!(orderbook.asks[2].quantity_contract, Some(0.067));
+
+        assert_eq!(orderbook.asks[0].price, 30569.5);
+        assert_eq!(orderbook.asks[0].quantity_base, 0.141);
+        assert_eq!(orderbook.asks[0].quantity_quote, round(30569.5 * 0.141));
+        assert_eq!(orderbook.asks[0].quantity_contract, Some(0.141));
+
+        assert_eq!(orderbook.bids[0].price, 30564.6);
+        assert_eq!(orderbook.bids[0].quantity_base, 0.024);
+        assert_eq!(orderbook.bids[0].quantity_quote, round(30564.6 * 0.024));
+        assert_eq!(orderbook.bids[0].quantity_contract, Some(0.024));
+
+        assert_eq!(orderbook.bids[2].price, 30561.0);
+        assert_eq!(orderbook.bids[2].quantity_base, 0.055);
+        assert_eq!(orderbook.bids[2].quantity_quote, round(30561.0 * 0.055));
+        assert_eq!(orderbook.bids[2].quantity_contract, Some(0.055));
     }
 
     #[test]
@@ -1347,6 +1485,48 @@ mod l2_snapshot {
             1654232431449,
             extract_timestamp(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap().unwrap()
         );
+
+        let orderbook =
+            &parse_l2_snapshot(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg, None, None)
+                .unwrap()[0];
+
+        assert_eq!(orderbook.asks.len(), 3);
+        assert_eq!(orderbook.bids.len(), 3);
+        assert!(orderbook.snapshot);
+
+        crate::utils::check_orderbook_fields(
+            EXCHANGE_NAME,
+            MarketType::InverseSwap,
+            MessageType::L2Snapshot,
+            "BTC/USD".to_string(),
+            extract_symbol(EXCHANGE_NAME, MarketType::InverseSwap, raw_msg).unwrap(),
+            orderbook,
+            raw_msg,
+        );
+
+        assert_eq!(orderbook.timestamp, 1654232431449);
+        assert_eq!(orderbook.seq_id, Some(466437000380));
+        assert_eq!(orderbook.prev_seq_id, None);
+
+        assert_eq!(orderbook.asks[2].price, 30402.1);
+        assert_eq!(orderbook.asks[2].quantity_base, 384.0 * 100.0 / 30402.1);
+        assert_eq!(orderbook.asks[2].quantity_quote, 384.0 * 100.0);
+        assert_eq!(orderbook.asks[2].quantity_contract, Some(384.0));
+
+        assert_eq!(orderbook.asks[0].price, 30401.9);
+        assert_eq!(orderbook.asks[0].quantity_base, 1788.0 * 100.0 / 30401.9);
+        assert_eq!(orderbook.asks[0].quantity_quote, 1788.0 * 100.0);
+        assert_eq!(orderbook.asks[0].quantity_contract, Some(1788.0));
+
+        assert_eq!(orderbook.bids[0].price, 30401.8);
+        assert_eq!(orderbook.bids[0].quantity_base, 12984.0 * 100.0 / 30401.8);
+        assert_eq!(orderbook.bids[0].quantity_quote, 12984.0 * 100.0);
+        assert_eq!(orderbook.bids[0].quantity_contract, Some(12984.0));
+
+        assert_eq!(orderbook.bids[2].price, 30401.4);
+        assert_eq!(orderbook.bids[2].quantity_base, 150.0 * 100.0 / 30401.4);
+        assert_eq!(orderbook.bids[2].quantity_quote, 150.0 * 100.0);
+        assert_eq!(orderbook.bids[2].quantity_contract, Some(150.0));
     }
 
     #[test]
@@ -1359,6 +1539,53 @@ mod l2_snapshot {
             1654232606707,
             extract_timestamp(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap().unwrap()
         );
+
+        let orderbook = &parse_l2_snapshot(
+            EXCHANGE_NAME,
+            MarketType::LinearSwap,
+            raw_msg,
+            Some("BTCUSDT"),
+            None,
+        )
+        .unwrap()[0];
+
+        assert_eq!(orderbook.asks.len(), 3);
+        assert_eq!(orderbook.bids.len(), 3);
+        assert!(orderbook.snapshot);
+
+        crate::utils::check_orderbook_fields(
+            EXCHANGE_NAME,
+            MarketType::LinearSwap,
+            MessageType::L2Snapshot,
+            "BTC/USDT".to_string(),
+            "BTCUSDT".to_string(),
+            orderbook,
+            raw_msg,
+        );
+
+        assert_eq!(orderbook.timestamp, 1654232606707);
+        assert_eq!(orderbook.seq_id, Some(1570255790655));
+        assert_eq!(orderbook.prev_seq_id, None);
+
+        assert_eq!(orderbook.asks[2].price, 30431.30);
+        assert_eq!(orderbook.asks[2].quantity_base, 0.361);
+        assert_eq!(orderbook.asks[2].quantity_quote, round(30431.30 * 0.361));
+        assert_eq!(orderbook.asks[2].quantity_contract, Some(0.361));
+
+        assert_eq!(orderbook.asks[0].price, 30430.90);
+        assert_eq!(orderbook.asks[0].quantity_base, 1.685);
+        assert_eq!(orderbook.asks[0].quantity_quote, round(30430.90 * 1.685));
+        assert_eq!(orderbook.asks[0].quantity_contract, Some(1.685));
+
+        assert_eq!(orderbook.bids[0].price, 30430.80);
+        assert_eq!(orderbook.bids[0].quantity_base, 0.482);
+        assert_eq!(orderbook.bids[0].quantity_quote, round(30430.80 * 0.482));
+        assert_eq!(orderbook.bids[0].quantity_contract, Some(0.482));
+
+        assert_eq!(orderbook.bids[2].price, 30429.90);
+        assert_eq!(orderbook.bids[2].quantity_base, 0.001);
+        assert_eq!(orderbook.bids[2].quantity_quote, round(30429.90 * 0.001));
+        assert_eq!(orderbook.bids[2].quantity_contract, Some(0.001));
     }
 }
 

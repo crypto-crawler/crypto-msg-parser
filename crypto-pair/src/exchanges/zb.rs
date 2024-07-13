@@ -21,3 +21,15 @@ pub(crate) fn get_market_type(symbol: &str) -> MarketType {
     let lowercase = symbol.to_lowercase();
     if lowercase.as_str() == symbol { MarketType::Spot } else { MarketType::LinearSwap }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::normalize_pair;
+
+    #[test]
+    fn test_normalize_pair() {
+        assert_eq!(Some("BTC/USDT".to_string()), normalize_pair("btc_usdt"));
+        assert_eq!(Some("BTC/USDT".to_string()), normalize_pair("btcusdt"));
+        assert_eq!(Some("BTC/USDT".to_string()), normalize_pair("BTC_USDT"));
+    }
+}
