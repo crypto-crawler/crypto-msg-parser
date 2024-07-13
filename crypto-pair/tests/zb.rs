@@ -52,12 +52,14 @@ fn fetch_swap_markets_all() -> Vec<SwapMarket> {
 }
 
 #[test]
+#[ignore = "zb.com has shut down"]
 fn verify_spot_symbols() {
     assert_eq!(Some("BTC/USDT".to_string()), normalize_pair("btc_usdt", EXCHANGE_NAME));
     assert_eq!(Some("BTC/USDT".to_string()), normalize_pair("btcusdt", EXCHANGE_NAME));
 }
 
 #[test]
+#[ignore = "zb.com has shut down"]
 fn verify_swap_symbols() {
     let markets = fetch_swap_markets_all();
     for market in markets.iter() {
