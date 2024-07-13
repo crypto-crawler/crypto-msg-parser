@@ -183,6 +183,18 @@ pub(super) fn parse_trade(
     }
 }
 
+fn parse_order(market_type: MarketType, pair: &str, raw_order: &RawOrder) -> Order {
+    let price = raw_order[0].parse::<f64>().unwrap();
+    let (quantity_base, quantity_quote, quantity_contract) = calc_quantity_and_volume(
+        EXCHANGE_NAME,
+        market_type,
+        pair,
+        price,
+        raw_order[1].parse::<f64>().unwrap(),
+    );
+    Order { price, quantity_base, quantity_quote, quantity_contract }
+}
+
 pub(super) fn parse_l2(
     market_type: MarketType,
     msg: &str,
@@ -192,18 +204,6 @@ pub(super) fn parse_l2(
     let pair = crypto_pair::normalize_pair(&ws_msg.data.s, EXCHANGE_NAME).ok_or_else(|| {
         SimpleError::new(format!("Failed to normalize {} from {}", ws_msg.data.s, msg))
     })?;
-
-    let parse_order = |raw_order: &RawOrder| -> Order {
-        let price = raw_order[0].parse::<f64>().unwrap();
-        let (quantity_base, quantity_quote, quantity_contract) = calc_quantity_and_volume(
-            EXCHANGE_NAME,
-            market_type,
-            &pair,
-            price,
-            raw_order[1].parse::<f64>().unwrap(),
-        );
-        Order { price, quantity_base, quantity_quote, quantity_contract }
-    };
 
     let orderbook = OrderBookMsg {
         exchange: EXCHANGE_NAME.to_string(),
@@ -218,8 +218,18 @@ pub(super) fn parse_l2(
         } else {
             None
         },
-        asks: ws_msg.data.a.iter().map(parse_order).collect::<Vec<Order>>(),
-        bids: ws_msg.data.b.iter().map(parse_order).collect::<Vec<Order>>(),
+        asks: ws_msg
+            .data
+            .a
+            .iter()
+            .map(|raw_order| -> Order { parse_order(market_type, &pair, raw_order) })
+            .collect::<Vec<Order>>(),
+        bids: ws_msg
+            .data
+            .b
+            .iter()
+            .map(|raw_order| -> Order { parse_order(market_type, &pair, raw_order) })
+            .collect::<Vec<Order>>(),
         snapshot: false,
         json: msg.to_string(),
     };
@@ -269,18 +279,6 @@ pub(super) fn parse_l2_snapshot_inverse(
         SimpleError::new(format!("Failed to normalize {} from {}", &ws_msg.symbol, msg))
     })?;
 
-    let parse_order = |raw_order: &RawOrder| -> Order {
-        let price = raw_order[0].parse::<f64>().unwrap();
-        let (quantity_base, quantity_quote, quantity_contract) = calc_quantity_and_volume(
-            EXCHANGE_NAME,
-            market_type,
-            &pair,
-            price,
-            raw_order[1].parse::<f64>().unwrap(),
-        );
-        Order { price, quantity_base, quantity_quote, quantity_contract }
-    };
-
     let orderbook = OrderBookMsg {
         exchange: EXCHANGE_NAME.to_string(),
         market_type,
@@ -290,8 +288,16 @@ pub(super) fn parse_l2_snapshot_inverse(
         timestamp: ws_msg.E,
         seq_id: Some(ws_msg.lastUpdateId),
         prev_seq_id: None,
-        asks: ws_msg.asks.iter().map(parse_order).collect::<Vec<Order>>(),
-        bids: ws_msg.bids.iter().map(parse_order).collect::<Vec<Order>>(),
+        asks: ws_msg
+            .asks
+            .iter()
+            .map(|raw_order| -> Order { parse_order(market_type, &pair, raw_order) })
+            .collect::<Vec<Order>>(),
+        bids: ws_msg
+            .bids
+            .iter()
+            .map(|raw_order| -> Order { parse_order(market_type, &pair, raw_order) })
+            .collect::<Vec<Order>>(),
         snapshot: true,
         json: msg.to_string(),
     };
@@ -308,18 +314,6 @@ pub(super) fn parse_l2_snapshot_linear(
         SimpleError::new(format!("Failed to normalize {} from {}", symbol.unwrap(), msg))
     })?;
 
-    let parse_order = |raw_order: &RawOrder| -> Order {
-        let price = raw_order[0].parse::<f64>().unwrap();
-        let (quantity_base, quantity_quote, quantity_contract) = calc_quantity_and_volume(
-            EXCHANGE_NAME,
-            market_type,
-            &pair,
-            price,
-            raw_order[1].parse::<f64>().unwrap(),
-        );
-        Order { price, quantity_base, quantity_quote, quantity_contract }
-    };
-
     let orderbook = OrderBookMsg {
         exchange: EXCHANGE_NAME.to_string(),
         market_type,
@@ -329,8 +323,16 @@ pub(super) fn parse_l2_snapshot_linear(
         timestamp: ws_msg.E,
         seq_id: Some(ws_msg.lastUpdateId),
         prev_seq_id: None,
-        asks: ws_msg.asks.iter().map(parse_order).collect::<Vec<Order>>(),
-        bids: ws_msg.bids.iter().map(parse_order).collect::<Vec<Order>>(),
+        asks: ws_msg
+            .asks
+            .iter()
+            .map(|raw_order| -> Order { parse_order(market_type, &pair, raw_order) })
+            .collect::<Vec<Order>>(),
+        bids: ws_msg
+            .bids
+            .iter()
+            .map(|raw_order| -> Order { parse_order(market_type, &pair, raw_order) })
+            .collect::<Vec<Order>>(),
         snapshot: true,
         json: msg.to_string(),
     };
