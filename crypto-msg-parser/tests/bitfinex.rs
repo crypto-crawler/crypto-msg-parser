@@ -505,18 +505,20 @@ mod l2_snapshot {
 
     #[test]
     fn spot() {
-     
-     /* data sample excerpt
-     1677628803683   1677628803683   [[23144,3,0.87789],[23142,3,0.27991505],[23141,4,0.48547974],
-     [23325,5,-0.00297898],[23326,1,-0.00060965],[23327,2,-0.00119078]]
-      */
+        /* data sample excerpt
+        1677628803683   1677628803683   [[23144,3,0.87789],[23142,3,0.27991505],[23141,4,0.48547974],
+        [23325,5,-0.00297898],[23326,1,-0.00060965],[23327,2,-0.00119078]]
+         */
 
-       //let raw_msg = r#"[[30428,1,0.01],[30426,1,0.1],[30424,1,0.2954],[30423,1,0.3333],[30422,3,0.72231346],[30420,2,0.3349],[30416,2,0.29700845],[30415,3,0.482257],[30414,1,0.4],[30413,1,0.15439084]]"#;
+        //let raw_msg =
+        // r#"[[30428,1,0.01],[30426,1,0.1],[30424,1,0.2954],[30423,1,0.3333],[30422,3,
+        // 0.72231346],[30420,2,0.3349],[30416,2,0.29700845],[30415,3,0.482257],[30414,
+        // 1,0.4],[30413,1,0.15439084]]"#;
         let raw_msg = r#"[[23144,3,0.87789],[23142,3,0.27991505],[23141,4,0.48547974],[23325,5,-0.00297898],[23326,1,-0.00060965],[23327,2,-0.00119078]]"#;
-        let received_at=Some(1677628803683) ;
+        let received_at = Some(1677628803683);
         assert_eq!("NONE", extract_symbol(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
         assert_eq!(None, extract_timestamp(EXCHANGE_NAME, MarketType::Spot, raw_msg).unwrap());
-        
+
         let orderbook = &parse_l2_snapshot(
             EXCHANGE_NAME,
             MarketType::Spot,
@@ -544,13 +546,12 @@ mod l2_snapshot {
         assert_eq!(orderbook.seq_id, None);
         assert_eq!(orderbook.prev_seq_id, None);
         //"bids":[23144,3,0.87789],[23142,3,0.27991505],[23141,4,0.48547974] descending
-       
 
         assert_eq!(orderbook.bids[0].price, 23144.0);
         assert_eq!(orderbook.bids[0].quantity_base, 0.87789);
         assert_eq!(orderbook.bids[0].quantity_quote, 23144.0 * 0.87789);
         assert_eq!(orderbook.bids[0].quantity_contract, None);
-        
+
         assert_eq!(orderbook.bids[2].price, 23141.0);
         assert_eq!(orderbook.bids[2].quantity_base, 0.48547974);
         assert_eq!(orderbook.bids[2].quantity_quote, 23141.0 * 0.48547974);
@@ -569,13 +570,15 @@ mod l2_snapshot {
 
     #[test]
     fn linear_swap() {
-
         /*
         1677628819111   1677628819111   [[23143,5,0.4721613],[23142,3,0.22947044],[23141,2,0.6234],[23906,1,-0.005],[23920,1,-0.0026],[23923,1,-0.02]]
          */
-        //let raw_msg = r#"[[28293,1,0.0350506],[28291,1,0.0526735],[28289,2,0.1037385],[28287,1,0.1059222],[28285,1,0.1324028],[28284,1,0.1765371],[28282,1,0.2206713],[28280,1,0.2427385],[28277,1,0.2648056]]"#;
+        //let raw_msg =
+        // r#"[[28293,1,0.0350506],[28291,1,0.0526735],[28289,2,0.1037385],[28287,1,0.
+        // 1059222],[28285,1,0.1324028],[28284,1,0.1765371],[28282,1,0.2206713],[28280,
+        // 1,0.2427385],[28277,1,0.2648056]]"#;
         let raw_msg = r#"[[23143,5,0.4721613],[23142,3,0.22947044],[23141,2,0.6234],[23906,1,-0.005],[23920,1,-0.0026],[23923,1,-0.02]]"#;
-        let received_at=Some(1677628819111) ;
+        let received_at = Some(1677628819111);
         assert_eq!("NONE", extract_symbol(EXCHANGE_NAME, MarketType::LinearSwap, raw_msg).unwrap());
         assert_eq!(
             None,
@@ -587,7 +590,7 @@ mod l2_snapshot {
             MarketType::Spot,
             raw_msg,
             Some("tBTCF0:USTF0"),
-            received_at
+            received_at,
         )
         .unwrap()[0];
 
