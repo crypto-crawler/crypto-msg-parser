@@ -208,6 +208,66 @@ pub(crate) fn parse_l2(
     Ok(vec![orderbook])
 }
 
+// See https://docs.bitfinex.com/reference/rest-public-book
+// See https://api-pub.bitfinex.com/v2/book/{symbol}/{precision}
+// request example https://api-pub.bitfinex.com/v2/book/tBTCUSD/P0?len=100
+// [[68361,2,0.17328582],[68360,1,0.65244918],[68357,1,0.07]]
+// price ,count ,amount
+pub(crate) fn parse_l2_snapshot(
+    market_type: MarketType,
+    msg: &str,
+    symbol: Option<&str>,
+    received_at: Option<i64>,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    let raw_orders = serde_json::from_str::<Vec<[Value; 3]>>(msg).map_err(|_e| {
+        SimpleError::new(format!("Failed to deserialize {msg} to Vec<[Value;3]]>"))
+    })?;
+
+    let symbol = symbol.unwrap().to_string();
+    let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
+
+    let parse_order = |x: &[Value; 3]| -> Order {
+        let price = x[0].as_f64().unwrap();
+        // delete price level if count = 0
+        let quantity = x[2].as_f64().unwrap().abs();
+
+        let (quantity_base, quantity_quote, quantity_contract) =
+            calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
+
+        Order { price, quantity_base, quantity_quote, quantity_contract }
+    };
+
+    let mut asks = Vec::new();
+    let mut bids = Vec::new();
+
+    for raw_order in raw_orders.iter() {
+        let order = parse_order(raw_order);
+        if raw_order[2].as_f64().unwrap() > 0.0 {
+            bids.push(order);
+        } else {
+            asks.push(order);
+        }
+    }
+
+    let orderbook = OrderBookMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type,
+        symbol,
+        pair: pair.clone(),
+        msg_type: MessageType::L2Snapshot,
+        timestamp: received_at.unwrap(),
+        seq_id: None,
+        prev_seq_id: None,
+        asks: asks.clone(),
+        bids: bids.clone(),
+        snapshot: true,
+        json: msg.to_string(),
+    };
+
+    Ok(vec![orderbook])
+}
+
 fn parse_one_candle(
     market_type: MarketType,
     symbol: &str,
