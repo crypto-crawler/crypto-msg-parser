@@ -211,25 +211,22 @@ pub(crate) fn parse_l2(
 // See https://docs.bitfinex.com/reference/rest-public-book
 // See https://api-pub.bitfinex.com/v2/book/{symbol}/{precision}
 // request example https://api-pub.bitfinex.com/v2/book/tBTCUSD/P0?len=100
-//[[68361,2,0.17328582],[68360,1,0.65244918],[68357,1,0.07]]
-//price ,count ,amount
-// See https://binance-docs.github.io/apidocs/spot/en/#order-book
-
+// [[68361,2,0.17328582],[68360,1,0.65244918],[68357,1,0.07]]
+// price ,count ,amount
 pub(crate) fn parse_l2_snapshot(
     market_type: MarketType,
     msg: &str,
     symbol: Option<&str>,
     received_at: Option<i64>,
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
-    let rs_msg = serde_json::from_str::<Vec<[Value; 3]>>(msg).map_err(|_e| {
+    let raw_orders = serde_json::from_str::<Vec<[Value; 3]>>(msg).map_err(|_e| {
         SimpleError::new(format!("Failed to deserialize {msg} to Vec<[Value;3]]>"))
     })?;
 
-    let s = symbol.unwrap_or("").to_string();
-    let pair = crypto_pair::normalize_pair(&s, EXCHANGE_NAME)
-        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {s} from {msg}")))?;
+    let symbol = symbol.unwrap().to_string();
+    let pair = crypto_pair::normalize_pair(&symbol, EXCHANGE_NAME)
+        .ok_or_else(|| SimpleError::new(format!("Failed to normalize {symbol} from {msg}")))?;
 
-    let snapshot = true;
     let parse_order = |x: &[Value; 3]| -> Order {
         let price = x[0].as_f64().unwrap();
         // delete price level if count = 0
@@ -244,7 +241,7 @@ pub(crate) fn parse_l2_snapshot(
     let mut asks = Vec::new();
     let mut bids = Vec::new();
 
-    for raw_order in rs_msg.iter() {
+    for raw_order in raw_orders.iter() {
         let order = parse_order(raw_order);
         if raw_order[2].as_f64().unwrap() > 0.0 {
             bids.push(order);
@@ -256,7 +253,7 @@ pub(crate) fn parse_l2_snapshot(
     let orderbook = OrderBookMsg {
         exchange: EXCHANGE_NAME.to_string(),
         market_type,
-        symbol: s,
+        symbol,
         pair: pair.clone(),
         msg_type: MessageType::L2Snapshot,
         timestamp: received_at.unwrap(),
@@ -264,7 +261,7 @@ pub(crate) fn parse_l2_snapshot(
         prev_seq_id: None,
         asks: asks.clone(),
         bids: bids.clone(),
-        snapshot,
+        snapshot: true,
         json: msg.to_string(),
     };
 
