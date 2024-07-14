@@ -37,6 +37,7 @@ struct RawOrderBook {
     extra: HashMap<String, Value>,
 }
 
+// doc: https://bitgetlimited.github.io/apidoc/en/spot/#get-depth
 #[derive(Serialize, Deserialize)]
 #[allow(non_snake_case)]
 struct RestMsg<T: Sized> {
