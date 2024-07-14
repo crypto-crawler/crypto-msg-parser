@@ -3,6 +3,8 @@ use crypto_msg_type::MessageType;
 
 use crypto_message::{CandlestickMsg, Order, OrderBookMsg, TradeMsg, TradeSide};
 
+use crate::exchanges::utils::calc_quantity_and_volume;
+
 use super::EXCHANGE_NAME;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -33,6 +35,25 @@ struct RawOrderBook {
     bids: Vec<[String; 2]>,
     #[serde(flatten)]
     extra: HashMap<String, Value>,
+}
+
+// doc: https://bitgetlimited.github.io/apidoc/en/spot/#get-depth
+#[derive(Serialize, Deserialize)]
+#[allow(non_snake_case)]
+struct RestMsg<T: Sized> {
+    code: String,
+    msg: String,
+    requestTime: i64,
+    data: T,
+    #[serde(flatten)]
+    extra: HashMap<String, Value>,
+}
+
+#[derive(Serialize, Deserialize)]
+struct RawL2SnapshotData {
+    asks: Vec<[String; 2]>,
+    bids: Vec<[String; 2]>,
+    timestamp: String,
 }
 
 fn extract_market_type_and_symbol(arg: &Arg) -> (MarketType, String) {
@@ -189,6 +210,48 @@ pub(super) fn parse_l2(msg: &str) -> Result<Vec<OrderBookMsg>, SimpleError> {
         .collect();
 
     Ok(orderbooks)
+}
+
+/// docs:
+/// * https://bitgetlimited.github.io/apidoc/en/spot/
+/// * https://api.bitget.com/api/spot/v1/market/depth?symbol=BTCUSDT_SPBL&type=step0
+/// * https://bitgetlimited.github.io/apidoc/en/mix/#restapi
+/// * https://api.bitget.com/api/mix/v1/market/depth?symbol=BTCUSDT_UMCBL&limit=100
+pub(super) fn parse_l2_snapshot(
+    market_type: MarketType,
+    msg: &str,
+    symbol: Option<&str>,
+) -> Result<Vec<OrderBookMsg>, SimpleError> {
+    let rs_msg = serde_json::from_str::<RestMsg<RawL2SnapshotData>>(msg)
+        .map_err(|_e| SimpleError::new(format!("Failed to parse JSON string {msg}")))?;
+
+    let symbol = symbol.unwrap_or_default();
+    let pair = crypto_pair::normalize_pair(symbol, EXCHANGE_NAME).unwrap();
+
+    let parse_order = |raw_order: &[String; 2]| -> Order {
+        let price = raw_order[0].parse::<f64>().unwrap();
+        let quantity = raw_order[1].parse::<f64>().unwrap();
+        let (quantity_base, quantity_quote, quantity_contract) =
+            calc_quantity_and_volume(EXCHANGE_NAME, market_type, &pair, price, quantity);
+        Order { price, quantity_base, quantity_quote, quantity_contract }
+    };
+
+    let orderbook_msg = OrderBookMsg {
+        exchange: EXCHANGE_NAME.to_string(),
+        market_type,
+        symbol: symbol.to_string(),
+        pair: pair.clone(),
+        msg_type: MessageType::L2Snapshot,
+        timestamp: rs_msg.data.timestamp.parse::<i64>().unwrap(),
+        seq_id: None,
+        prev_seq_id: None,
+        asks: rs_msg.data.asks.iter().map(parse_order).collect(),
+        bids: rs_msg.data.bids.iter().map(parse_order).collect(),
+        snapshot: true,
+        json: serde_json::to_string(&rs_msg).unwrap(),
+    };
+
+    Ok(vec![orderbook_msg])
 }
 
 /// docs：

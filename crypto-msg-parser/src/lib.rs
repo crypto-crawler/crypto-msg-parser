@@ -292,6 +292,7 @@ pub fn parse_l2_snapshot(
 ) -> Result<Vec<OrderBookMsg>, SimpleError> {
     let ret = match exchange {
         "binance" => exchanges::binance::parse_l2_snapshot(market_type, msg, symbol, received_at),
+        "bitget" => exchanges::bitget::parse_l2_snapshot(market_type, msg, symbol),
         _ => Err(SimpleError::new(format!("Unknown exchange {exchange}"))),
     };
     match ret {
